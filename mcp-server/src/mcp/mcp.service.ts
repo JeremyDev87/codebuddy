@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
+import { Injectable, OnModuleInit, Logger, Inject } from '@nestjs/common';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import {
@@ -12,13 +12,18 @@ import {
   McpError,
 } from '@modelcontextprotocol/sdk/types.js';
 import { RulesService } from '../rules/rules.service';
+import { KeywordService } from '../keyword/keyword.service';
+import { KEYWORD_SERVICE } from '../keyword/keyword.module';
 
 @Injectable()
 export class McpService implements OnModuleInit {
   private server: Server;
   private readonly logger = new Logger(McpService.name);
 
-  constructor(private rulesService: RulesService) {
+  constructor(
+    private rulesService: RulesService,
+    @Inject(KEYWORD_SERVICE) private keywordService: KeywordService,
+  ) {
     this.server = new Server(
       {
         name: 'codebuddy-rules-server',
@@ -132,6 +137,22 @@ export class McpService implements OnModuleInit {
               required: ['agentName'],
             },
           },
+          {
+            name: 'parse_mode',
+            description:
+              'Parse workflow mode keyword from prompt and return mode-specific rules',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                prompt: {
+                  type: 'string',
+                  description:
+                    'User prompt that may start with PLAN/ACT/EVAL keyword',
+                },
+              },
+              required: ['prompt'],
+            },
+          },
         ],
       };
     });
@@ -169,6 +190,31 @@ export class McpService implements OnModuleInit {
             isError: true,
             content: [
               { type: 'text', text: `Agent '${agentName}' not found.` },
+            ],
+          };
+        }
+      }
+
+      if (name === 'parse_mode') {
+        const prompt = String(args?.prompt ?? '');
+        try {
+          const result = await this.keywordService.parseMode(prompt);
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(result, null, 2),
+              },
+            ],
+          };
+        } catch (error) {
+          return {
+            isError: true,
+            content: [
+              {
+                type: 'text',
+                text: `Failed to parse mode: ${error instanceof Error ? error.message : 'Unknown error'}`,
+              },
             ],
           };
         }

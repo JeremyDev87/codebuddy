@@ -126,6 +126,18 @@ For complete agent documentation, see [.ai-rules/agents/README.md](../../.ai-rul
 
 ---
 
+## Keyword Invocation
+
+When user prompt starts with `PLAN`, `ACT`, or `EVAL`:
+1. Call `parse_mode` MCP tool with the full prompt
+2. Follow returned `instructions` for the detected mode
+3. Use returned `rules` as context for the task
+4. If `warnings` exist, inform the user
+
+Example: `PLAN design auth feature` → call parse_mode → work in PLAN mode
+
+---
+
 ## 💬 Communication
 
 - **Always respond in Korean (한국어)**

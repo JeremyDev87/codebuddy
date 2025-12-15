@@ -2,9 +2,10 @@ import { Module } from '@nestjs/common';
 import { McpService } from './mcp.service';
 import { McpController } from './mcp.controller';
 import { RulesModule } from '../rules/rules.module';
+import { KeywordModule } from '../keyword/keyword.module';
 
 @Module({
-  imports: [RulesModule],
+  imports: [RulesModule, KeywordModule],
   controllers: [McpController],
   providers: [McpService],
   exports: [McpService],
