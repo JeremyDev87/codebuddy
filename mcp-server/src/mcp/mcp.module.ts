@@ -4,9 +4,9 @@ import { McpController } from './mcp.controller';
 import { RulesModule } from '../rules/rules.module';
 
 @Module({
-    imports: [RulesModule],
-    controllers: [McpController],
-    providers: [McpService],
-    exports: [McpService],
+  imports: [RulesModule],
+  controllers: [McpController],
+  providers: [McpService],
+  exports: [McpService],
 })
-export class McpModule { }
+export class McpModule {}

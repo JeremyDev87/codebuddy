@@ -4,10 +4,6 @@ import { RulesModule } from './rules/rules.module';
 import { McpModule } from './mcp/mcp.module';
 
 @Module({
-    imports: [
-        ConfigModule.forRoot(),
-        RulesModule,
-        McpModule,
-    ],
+  imports: [ConfigModule.forRoot(), RulesModule, McpModule],
 })
-export class AppModule { }
+export class AppModule {}
