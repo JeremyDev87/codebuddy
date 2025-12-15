@@ -56,6 +56,16 @@ Follow the common rules defined in `.ai-rules/` for consistency across all AI co
 
 See [.ai-rules/agents/README.md](../../.ai-rules/agents/README.md) for details.
 
+## Keyword Invocation
+
+사용자 프롬프트가 `PLAN`, `ACT`, `EVAL` 키워드로 시작하면:
+1. `parse_mode` MCP 도구를 호출하여 모드와 규칙을 가져옴
+2. 반환된 `instructions`를 따라 작업 수행
+3. 반환된 `rules`를 컨텍스트로 활용
+4. `warnings`가 있으면 사용자에게 안내
+
+예시: `PLAN 인증 기능 설계` → parse_mode 호출 → PLAN 모드로 작업
+
 ## Claude Code Specific
 
 - Always respond in **Korean (한국어)**
