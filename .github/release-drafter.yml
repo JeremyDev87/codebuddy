@@ -1,0 +1,49 @@
+name-template: 'v$NEXT_PATCH_VERSION 🌈'
+tag-template: 'v$NEXT_PATCH_VERSION'
+categories:
+  - title: '🎉 User stories'
+    labels:
+      - 'epic'
+      - 'Epic'
+      - 'user story'
+      - 'User story'
+      - 'user-story'
+  - title: '🚀 Features'
+    labels:
+      - 'feat'
+      - 'feature'
+      - 'Feature'
+      - 'enhancement'
+      - 'Enhancement'
+  - title: '🐛 Bug Fixes'
+    labels:
+      - 'fix'
+      - 'Fix'
+      - 'bugfix'
+      - 'bug'
+      - 'Bug'
+      - 'hotfix'
+  - title: '🦾 Refactoring'
+    labels:
+      - 'refactor'
+      - 'Refactor'
+  - title: '📚 Documentation'
+    labels:
+      - 'documentation'
+      - 'Documentation' 
+  - title: '🧰 Maintenance'
+    label:
+      - 'chore'
+      - 'Chore'
+      - 'ci'
+      - 'CI'
+      - 'build'
+      - 'Build'
+  - title: '🛠 Dependencies'
+    label:
+      - 'dependencies'    
+      - 'Dependencies'
+change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
+template: |
+  ## Changes
+  $CHANGES

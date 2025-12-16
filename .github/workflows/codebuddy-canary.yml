@@ -9,6 +9,10 @@ on:
       - 'mcp-server/**'
       - .github/workflows/codebuddy-canary.yml
 
+permissions:
+  statuses: write
+  contents: read
+
 jobs:
   publish-canary:
     runs-on: ubuntu-latest

@@ -9,6 +9,10 @@ on:
       - 'mcp-server/**'
       - .github/workflows/codebuddy-dev.yml
 
+permissions:
+  statuses: write
+  contents: read
+
 jobs:
   publish-dev:
     runs-on: ubuntu-latest
