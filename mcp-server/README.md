@@ -1,4 +1,4 @@
-# Codebuddy Rules MCP Server
+# Codingbuddy Rules MCP Server
 
 A NestJS-based Model Context Protocol (MCP) server that exposes the Multi-AI Rules System (`.ai-rules/`) to AI clients.
 
@@ -24,7 +24,7 @@ Add the following configuration to your Claude Desktop config:
 ```json
 {
   "mcpServers": {
-    "codebuddy-rules": {
+    "codingbuddy-rules": {
       "command": "npx",
       "args": ["codingbuddy"]
     }
@@ -43,8 +43,8 @@ Then configure Claude Desktop:
 ```json
 {
   "mcpServers": {
-    "codebuddy-rules": {
-      "command": "codebuddy-mcp"
+    "codingbuddy-rules": {
+      "command": "codingbuddy-mcp"
     }
   }
 }
@@ -61,9 +61,9 @@ yarn build
 ```json
 {
   "mcpServers": {
-    "codebuddy-rules": {
+    "codingbuddy-rules": {
       "command": "node",
-      "args": ["/ABSOLUTE/PATH/TO/codebuddy/mcp-server/dist/main.js"]
+      "args": ["/ABSOLUTE/PATH/TO/codingbuddy/mcp-server/dist/main.js"]
     }
   }
 }
@@ -76,8 +76,8 @@ Replace `/ABSOLUTE/PATH/TO` with your actual path.
 Build the Docker image from the **repository root**:
 
 ```bash
-# Run from codebuddy root
-docker build -f mcp-server/Dockerfile -t codebuddy-rules-mcp .
+# Run from codingbuddy root
+docker build -f mcp-server/Dockerfile -t codingbuddy-rules-mcp .
 ```
 
 Run the container:
@@ -86,7 +86,7 @@ Run the container:
 docker run -p 3000:3000 \
   -e MCP_TRANSPORT=sse \
   -e PORT=3000 \
-  codebuddy-rules-mcp
+  codingbuddy-rules-mcp
 ```
 
 The server will start in SSE mode, exposing:
@@ -99,7 +99,7 @@ The server will start in SSE mode, exposing:
 |----------|-------------|---------|
 | `MCP_TRANSPORT` | Transport mode (`stdio` or `sse`) | `stdio` |
 | `PORT` | HTTP port for SSE mode | `3000` |
-| `CODEBUDDY_RULES_DIR` | Custom path to `.ai-rules` directory | Auto-detected |
+| `CODINGBUDDY_RULES_DIR` | Custom path to `.ai-rules` directory | Auto-detected |
 
 ## Development
 

@@ -4,12 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Codebuddy** - Multi-AI Rules MCP Server for consistent coding practices across AI assistants (Cursor, Claude Code, Codex, Antigravity, Q, Kiro).
+**Codingbuddy** - Multi-AI Rules MCP Server for consistent coding practices across AI assistants (Cursor, Claude Code, Codex, Antigravity, Q, Kiro).
 
 ## Repository Structure
 
 ```
-codebuddy/
+codingbuddy/
 ├── .ai-rules/           # Shared AI coding rules (single source of truth)
 │   ├── rules/           # Core rules (workflow, project, augmented-coding)
 │   ├── agents/          # 12 specialist agent definitions (JSON)

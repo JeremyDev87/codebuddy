@@ -26,7 +26,7 @@ export class McpService implements OnModuleInit {
   ) {
     this.server = new Server(
       {
-        name: 'codebuddy-rules-server',
+        name: 'codingbuddy-rules-server',
         version: '1.0.0',
       },
       {

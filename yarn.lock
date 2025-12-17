@@ -2126,9 +2126,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"codebuddy@workspace:.":
+"codingbuddy-monorepo@workspace:.":
   version: 0.0.0-use.local
-  resolution: "codebuddy@workspace:."
+  resolution: "codingbuddy-monorepo@workspace:."
   dependencies:
     "@eslint/js": "npm:^9.17.0"
     "@typescript-eslint/eslint-plugin": "npm:^8.18.0"
@@ -2162,7 +2162,7 @@ __metadata:
     vitest: "npm:^4.0.15"
     zod: "npm:^3.22.0"
   bin:
-    codebuddy-mcp: ./dist/main.js
+    codingbuddy-mcp: ./dist/main.js
   languageName: unknown
   linkType: soft
 

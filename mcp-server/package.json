@@ -4,7 +4,7 @@
   "description": "Multi-AI Rules MCP Server",
   "main": "dist/main.js",
   "bin": {
-    "codebuddy-mcp": "./dist/main.js"
+    "codingbuddy-mcp": "./dist/main.js"
   },
   "files": [
     "dist",

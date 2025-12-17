@@ -18,8 +18,8 @@ export class RulesService {
     // 빌드 후 구조: dist/rules/rules.service.js
     // __dirname = dist/rules, 패키지 루트 = dist/rules/../.. = 패키지 루트
 
-    if (process.env.CODEBUDDY_RULES_DIR) {
-      this.rulesDir = process.env.CODEBUDDY_RULES_DIR;
+    if (process.env.CODINGBUDDY_RULES_DIR) {
+      this.rulesDir = process.env.CODINGBUDDY_RULES_DIR;
       this.logger.log(`Rules directory set from env: ${this.rulesDir}`);
       return;
     }
