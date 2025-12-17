@@ -1,5 +1,5 @@
 {
-  "name": "codebuddy",
+  "name": "codingbuddy-monorepo",
   "private": true,
   "workspaces": [
     "mcp-server"

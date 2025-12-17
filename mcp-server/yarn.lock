@@ -1880,7 +1880,7 @@ __metadata:
     vitest: "npm:^4.0.15"
     zod: "npm:^3.22.0"
   bin:
-    codebuddy-mcp: ./dist/main.js
+    codingbuddy-mcp: ./dist/main.js
   languageName: unknown
   linkType: soft
 
