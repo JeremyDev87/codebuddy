@@ -1,4 +1,4 @@
-name: codebuddy-release
+name: codingbuddy-release
 
 on:
   release:
