@@ -1,4 +1,4 @@
-name: codebuddy-dev
+name: codingbuddy-dev
 
 on:
   push:
@@ -13,7 +13,7 @@ on:
       - '.codex/**'
       - '.cursor/**'
       - 'scripts/**'
-      - .github/workflows/codebuddy-dev.yml
+      - .github/workflows/dev.yml
 
 permissions:
   statuses: write
@@ -21,6 +21,7 @@ permissions:
 
 jobs:
   publish-dev:
+    if: github.repository == 'JeremyDev87/codingbuddy'
     runs-on: ubuntu-latest
     defaults:
       run:
