@@ -24,7 +24,7 @@ Refer to `.ai-rules/rules/core.md` for detailed workflow guidance.
 
 ### Tech Stack & Project Structure
 - See `.ai-rules/rules/project.md` for complete project setup
-- 프로젝트의 package.json 참조
+- Refer to project's package.json
 - Layered architecture: app → widgets → features → entities → shared
 
 ### Coding Standards
@@ -37,35 +37,32 @@ Refer to `.ai-rules/rules/core.md` for detailed workflow guidance.
 - Refer to `.ai-rules/agents/*.json` for domain-specific guidance
 ```
 
-### Option 2: Using .codex/ directory
+### Option 2: Using .codex/ directory (Recommended)
 
-Create `.codex/rules/system-prompt.md`:
+This project includes a pre-configured `.codex/rules/system-prompt.md` file.
 
-```markdown
-# Codex System Prompt
+**Included features:**
+- Common AI rules reference from `.ai-rules/`
+- PLAN/ACT/EVAL workflow modes
+- Keyword Invocation support
+- TDD and code quality guidelines
+- Specialist agents reference
 
-Follow the common AI coding rules defined in `.ai-rules/`.
+**File location**: `.codex/rules/system-prompt.md`
 
-## Quick Reference
-
-- **Workflow**: `.ai-rules/rules/core.md` (PLAN/ACT/EVAL modes)
-- **Project**: `.ai-rules/rules/project.md` (tech stack, structure)
-- **Quality**: `.ai-rules/rules/augmented-coding.md` (TDD, SOLID)
-- **Agents**: `.ai-rules/agents/` (specialist knowledge)
-```
+See [docs/codex-adapter-configuration.md](../../docs/codex-adapter-configuration.md) for detailed configuration guide.
 
 ## Directory Structure
 
 ```
-.github/
-└── copilot-instructions.md  # GitHub Copilot instructions
-
 .codex/
-├── rules/
-│   └── system-prompt.md    # Codex-specific instructions
-└── config.json              # Configuration (optional)
+└── rules/
+    └── system-prompt.md    # Codex system prompt (pre-configured)
 
-.ai-rules/ # Common rules for all AI tools
+.github/
+└── copilot-instructions.md  # GitHub Copilot instructions (optional)
+
+.ai-rules/                   # Common rules for all AI tools
 ├── rules/
 │   ├── core.md
 │   ├── project.md
@@ -73,8 +70,14 @@ Follow the common AI coding rules defined in `.ai-rules/`.
 ├── agents/
 │   └── *.json
 └── adapters/
-    └── codex.md  # This guide
+    └── codex.md             # This guide
 ```
+
+## Configuration Guide
+
+For detailed setup instructions, see:
+- **Quick Start**: [docs/codex-adapter-configuration.md](../../docs/codex-adapter-configuration.md)
+- **Keyword Invocation**: [docs/keyword-invocation.md](../../docs/keyword-invocation.md)
 
 ## Usage
 

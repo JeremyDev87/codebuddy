@@ -47,4 +47,4 @@ coverage/
 .pnp.*
 
 # AI
-mcp.json
+.mcp.json
