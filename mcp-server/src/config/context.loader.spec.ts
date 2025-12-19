@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import {
   getContextFileType,
   isLoadableFile,
-  getFilesByType,
   formatContextForAI,
   type ContextFile,
 } from './context.loader';
@@ -59,45 +58,6 @@ describe('context.loader', () => {
       expect(isLoadableFile('doc.pdf')).toBe(false);
       expect(isLoadableFile('archive.zip')).toBe(false);
       expect(isLoadableFile('noextension')).toBe(false);
-    });
-  });
-
-  describe('getFilesByType', () => {
-    const mockFiles: ContextFile[] = [
-      { path: 'context/arch.md', content: 'arch', type: 'context', extension: '.md' },
-      { path: 'context/api.md', content: 'api', type: 'context', extension: '.md' },
-      { path: 'prompts/review.md', content: 'review', type: 'prompt', extension: '.md' },
-      { path: 'agents/dev.json', content: '{}', type: 'agent', extension: '.json' },
-      { path: 'readme.md', content: 'readme', type: 'other', extension: '.md' },
-    ];
-
-    it('should filter by context type', () => {
-      const result = getFilesByType(mockFiles, 'context');
-      expect(result).toHaveLength(2);
-      expect(result.map((f) => f.path)).toEqual(['context/arch.md', 'context/api.md']);
-    });
-
-    it('should filter by prompt type', () => {
-      const result = getFilesByType(mockFiles, 'prompt');
-      expect(result).toHaveLength(1);
-      expect(result[0].path).toBe('prompts/review.md');
-    });
-
-    it('should filter by agent type', () => {
-      const result = getFilesByType(mockFiles, 'agent');
-      expect(result).toHaveLength(1);
-      expect(result[0].path).toBe('agents/dev.json');
-    });
-
-    it('should filter by other type', () => {
-      const result = getFilesByType(mockFiles, 'other');
-      expect(result).toHaveLength(1);
-      expect(result[0].path).toBe('readme.md');
-    });
-
-    it('should return empty array for no matches', () => {
-      const result = getFilesByType([], 'context');
-      expect(result).toEqual([]);
     });
   });
 

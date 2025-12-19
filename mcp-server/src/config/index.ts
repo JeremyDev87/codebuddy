@@ -34,13 +34,7 @@ export {
 
 export type { ValidationResult, ValidationError } from './config.schema';
 
-export {
-  validateConfig,
-  parseConfig,
-  getDefaultConfig,
-  mergeWithDefaults,
-  isCodingBuddyConfig,
-} from './config.schema';
+export { validateConfig, parseConfig, isCodingBuddyConfig } from './config.schema';
 
 // ============================================================================
 // Config Loader
@@ -82,7 +76,6 @@ export {
   CONTEXT_DIR_NAME,
   KNOWN_SUBDIRS,
   loadContextFiles,
-  getFilesByType,
   formatContextForAI,
   hasContextDir,
 } from './context.loader';
