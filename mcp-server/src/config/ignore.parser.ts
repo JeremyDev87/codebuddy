@@ -58,7 +58,9 @@ export function parseIgnoreContent(content: string): string[] {
 /**
  * Load and parse the .codingignore file
  */
-export async function loadIgnoreFile(projectRoot: string): Promise<IgnoreParseResult> {
+export async function loadIgnoreFile(
+  projectRoot: string,
+): Promise<IgnoreParseResult> {
   const ignorePath = path.join(projectRoot, IGNORE_FILE_NAME);
 
   if (!existsSync(ignorePath)) {
@@ -141,7 +143,7 @@ export function patternToRegex(pattern: string): RegExp {
     regexStr = '^' + regexStr;
   } else if (startsWithGlobstar) {
     // **/ at start means "any directory depth including root"
-    regexStr = '^(.*/)?'  + regexStr;
+    regexStr = '^(.*/)?' + regexStr;
   } else {
     // Can match anywhere in path
     regexStr = '(^|/)' + regexStr;
@@ -160,7 +162,10 @@ export function patternToRegex(pattern: string): RegExp {
 /**
  * Check if a path should be ignored based on patterns
  */
-export function shouldIgnore(relativePath: string, patterns: string[]): boolean {
+export function shouldIgnore(
+  relativePath: string,
+  patterns: string[],
+): boolean {
   // Normalize path separators
   const normalizedPath = relativePath.replace(/\\/g, '/');
 
@@ -183,7 +188,7 @@ export function shouldIgnore(relativePath: string, patterns: string[]): boolean 
  * Filter a list of paths based on ignore patterns
  */
 export function filterIgnored(paths: string[], patterns: string[]): string[] {
-  return paths.filter((p) => !shouldIgnore(p, patterns));
+  return paths.filter(p => !shouldIgnore(p, patterns));
 }
 
 /**

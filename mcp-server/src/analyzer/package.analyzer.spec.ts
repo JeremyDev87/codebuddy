@@ -5,7 +5,6 @@ import {
   analyzePackage,
   FRAMEWORK_DEFINITIONS,
 } from './package.analyzer';
-import type { PackageInfo } from './analyzer.types';
 
 describe('package.analyzer', () => {
   describe('parsePackageJson', () => {
@@ -140,7 +139,7 @@ describe('package.analyzer', () => {
 
   describe('FRAMEWORK_DEFINITIONS', () => {
     it('should have definitions for major frameworks', () => {
-      const names = FRAMEWORK_DEFINITIONS.map((f) => f.name);
+      const names = FRAMEWORK_DEFINITIONS.map(f => f.name);
 
       expect(names).toContain('React');
       expect(names).toContain('Next.js');

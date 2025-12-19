@@ -1,5 +1,9 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { ConfigGenerator, parseJsonResponse, extractJsonFromResponse } from './config.generator';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import {
+  ConfigGenerator,
+  parseJsonResponse,
+  extractJsonFromResponse,
+} from './config.generator';
 import type { ProjectAnalysis } from '../../analyzer';
 
 // Mock function for messages.create
@@ -22,7 +26,9 @@ describe('config.generator', () => {
       dependencies: { react: '^18.0.0' },
       devDependencies: { typescript: '^5.0.0' },
       scripts: { dev: 'next dev' },
-      detectedFrameworks: [{ name: 'React', category: 'frontend', version: '^18.0.0' }],
+      detectedFrameworks: [
+        { name: 'React', category: 'frontend', version: '^18.0.0' },
+      ],
     },
     directoryStructure: {
       rootDirs: ['src', 'components'],
@@ -57,7 +63,8 @@ describe('config.generator', () => {
     });
 
     it('should extract JSON from response with surrounding text', () => {
-      const response = 'Here is the config:\n```json\n{"projectName": "test"}\n```\nEnjoy!';
+      const response =
+        'Here is the config:\n```json\n{"projectName": "test"}\n```\nEnjoy!';
 
       const result = extractJsonFromResponse(response);
 
@@ -200,7 +207,9 @@ describe('config.generator', () => {
     it('should throw on API error', async () => {
       mockCreate.mockRejectedValue(new Error('API Error'));
 
-      await expect(generator.generate(mockAnalysis)).rejects.toThrow('API Error');
+      await expect(generator.generate(mockAnalysis)).rejects.toThrow(
+        'API Error',
+      );
     });
 
     it('should throw on empty response', async () => {

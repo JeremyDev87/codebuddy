@@ -64,7 +64,12 @@ describe('context.loader', () => {
   describe('formatContextForAI', () => {
     it('should format context files correctly', () => {
       const files: ContextFile[] = [
-        { path: 'context/arch.md', content: 'Architecture docs', type: 'context', extension: '.md' },
+        {
+          path: 'context/arch.md',
+          content: 'Architecture docs',
+          type: 'context',
+          extension: '.md',
+        },
       ];
 
       const result = formatContextForAI(files);
@@ -76,10 +81,30 @@ describe('context.loader', () => {
 
     it('should group files by type', () => {
       const files: ContextFile[] = [
-        { path: 'context/arch.md', content: 'arch', type: 'context', extension: '.md' },
-        { path: 'prompts/review.md', content: 'review', type: 'prompt', extension: '.md' },
-        { path: 'agents/dev.json', content: '{}', type: 'agent', extension: '.json' },
-        { path: 'readme.md', content: 'readme', type: 'other', extension: '.md' },
+        {
+          path: 'context/arch.md',
+          content: 'arch',
+          type: 'context',
+          extension: '.md',
+        },
+        {
+          path: 'prompts/review.md',
+          content: 'review',
+          type: 'prompt',
+          extension: '.md',
+        },
+        {
+          path: 'agents/dev.json',
+          content: '{}',
+          type: 'agent',
+          extension: '.json',
+        },
+        {
+          path: 'readme.md',
+          content: 'readme',
+          type: 'other',
+          extension: '.md',
+        },
       ];
 
       const result = formatContextForAI(files);
@@ -97,7 +122,12 @@ describe('context.loader', () => {
 
     it('should only include sections with files', () => {
       const files: ContextFile[] = [
-        { path: 'context/arch.md', content: 'arch', type: 'context', extension: '.md' },
+        {
+          path: 'context/arch.md',
+          content: 'arch',
+          type: 'context',
+          extension: '.md',
+        },
       ];
 
       const result = formatContextForAI(files);

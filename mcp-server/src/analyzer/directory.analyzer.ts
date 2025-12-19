@@ -1,7 +1,10 @@
 import { existsSync } from 'fs';
 import * as path from 'path';
 import type { DirectoryAnalysis, ArchitecturePattern } from './analyzer.types';
-import { shouldIgnore, getDefaultIgnorePatterns } from '../config/ignore.parser';
+import {
+  shouldIgnore,
+  getDefaultIgnorePatterns,
+} from '../config/ignore.parser';
 import { safeReadDirWithTypes } from '../shared/file.utils';
 
 /**
@@ -37,7 +40,13 @@ export const ARCHITECTURE_PATTERNS: PatternDefinition[] = [
   },
   {
     name: 'Feature-Sliced Design',
-    indicators: ['src/features', 'src/entities', 'src/shared', 'src/widgets', 'src/app'],
+    indicators: [
+      'src/features',
+      'src/entities',
+      'src/shared',
+      'src/widgets',
+      'src/app',
+    ],
     minIndicators: 3,
   },
   {
@@ -52,7 +61,12 @@ export const ARCHITECTURE_PATTERNS: PatternDefinition[] = [
   },
   {
     name: 'Clean Architecture',
-    indicators: ['src/domain', 'src/application', 'src/infrastructure', 'src/presentation'],
+    indicators: [
+      'src/domain',
+      'src/application',
+      'src/infrastructure',
+      'src/presentation',
+    ],
     minIndicators: 3,
   },
 ];
@@ -81,7 +95,9 @@ export function categorizeDirectory(dirName: string): DirectoryCategory {
   }
 
   // Test directories
-  if (['test', 'tests', '__tests__', 'spec', 'specs', '__mocks__'].includes(lower)) {
+  if (
+    ['test', 'tests', '__tests__', 'spec', 'specs', '__mocks__'].includes(lower)
+  ) {
     return 'test';
   }
 
@@ -91,7 +107,11 @@ export function categorizeDirectory(dirName: string): DirectoryCategory {
   }
 
   // Build output directories
-  if (['dist', 'build', 'out', '.next', '.nuxt', 'coverage', '.output'].includes(lower)) {
+  if (
+    ['dist', 'build', 'out', '.next', '.nuxt', 'coverage', '.output'].includes(
+      lower,
+    )
+  ) {
     return 'build';
   }
 
@@ -111,12 +131,14 @@ export function categorizeDirectory(dirName: string): DirectoryCategory {
 /**
  * Detect architecture patterns from directory list
  */
-export function detectArchitecturePatterns(directories: string[]): ArchitecturePattern[] {
+export function detectArchitecturePatterns(
+  directories: string[],
+): ArchitecturePattern[] {
   const detected: ArchitecturePattern[] = [];
-  const normalizedDirs = new Set(directories.map((d) => d.toLowerCase()));
+  const normalizedDirs = new Set(directories.map(d => d.toLowerCase()));
 
   for (const pattern of ARCHITECTURE_PATTERNS) {
-    const matchingIndicators = pattern.indicators.filter((indicator) =>
+    const matchingIndicators = pattern.indicators.filter(indicator =>
       normalizedDirs.has(indicator.toLowerCase()),
     );
 
@@ -146,7 +168,9 @@ async function scanDirectory(
   const files: string[] = [];
   const dirs: string[] = [];
 
-  const currentPath = relativePath ? path.join(rootPath, relativePath) : rootPath;
+  const currentPath = relativePath
+    ? path.join(rootPath, relativePath)
+    : rootPath;
 
   if (!existsSync(currentPath)) {
     return { files, dirs };
@@ -168,7 +192,11 @@ async function scanDirectory(
       dirs.push(entryRelativePath);
 
       // Recursively scan subdirectories
-      const subResult = await scanDirectory(rootPath, ignorePatterns, entryRelativePath);
+      const subResult = await scanDirectory(
+        rootPath,
+        ignorePatterns,
+        entryRelativePath,
+      );
       files.push(...subResult.files);
       dirs.push(...subResult.dirs);
     } else if (entry.isFile()) {
@@ -190,7 +218,10 @@ export async function analyzeDirectory(
   projectRoot: string,
   customIgnorePatterns: string[] = [],
 ): Promise<DirectoryAnalysis> {
-  const ignorePatterns = [...getDefaultIgnorePatterns(), ...customIgnorePatterns];
+  const ignorePatterns = [
+    ...getDefaultIgnorePatterns(),
+    ...customIgnorePatterns,
+  ];
 
   // Scan all files and directories in one pass
   const { files, dirs } = await scanDirectory(projectRoot, ignorePatterns);
@@ -211,8 +242,8 @@ export async function analyzeDirectory(
   }
 
   // Extract root-level entries (no slashes in path)
-  const rootFiles = files.filter((f) => !f.includes('/'));
-  const rootDirs = dirs.filter((d) => !d.includes('/'));
+  const rootFiles = files.filter(f => !f.includes('/'));
+  const rootDirs = dirs.filter(d => !d.includes('/'));
 
   // Detect architecture patterns from all directories
   const patterns = detectArchitecturePatterns(dirs);

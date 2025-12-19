@@ -107,7 +107,9 @@ export function printVersion(): void {
 /**
  * Main CLI entry point
  */
-export async function main(args: string[] = process.argv.slice(2)): Promise<void> {
+export async function main(
+  args: string[] = process.argv.slice(2),
+): Promise<void> {
   const { command, options } = parseArgs(args);
 
   switch (command) {
@@ -131,7 +133,7 @@ export async function main(args: string[] = process.argv.slice(2)): Promise<void
 
 // Run if executed directly
 if (require.main === module) {
-  main().catch((error) => {
+  main().catch(error => {
     console.error('Fatal error:', error);
     process.exitCode = 1;
   });

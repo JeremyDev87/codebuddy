@@ -100,7 +100,11 @@ describe('CodingBuddyConfigSchema', () => {
         architecture: {
           pattern: 'layered',
           layers: [
-            { name: 'domain', path: 'src/domain', description: 'Business logic' },
+            {
+              name: 'domain',
+              path: 'src/domain',
+              description: 'Business logic',
+            },
             { name: 'infra', path: 'src/infra', dependencies: ['domain'] },
           ],
         },
@@ -186,14 +190,20 @@ describe('CodingBuddyConfigSchema', () => {
     it('should return true for valid config', () => {
       expect(isCodingBuddyConfig({})).toBe(true);
       expect(isCodingBuddyConfig({ language: 'ko' })).toBe(true);
-      expect(isCodingBuddyConfig({ techStack: { frontend: ['React'] } })).toBe(true);
+      expect(isCodingBuddyConfig({ techStack: { frontend: ['React'] } })).toBe(
+        true,
+      );
     });
 
     it('should return false for invalid config', () => {
       expect(isCodingBuddyConfig(null)).toBe(false);
       expect(isCodingBuddyConfig('string')).toBe(false);
-      expect(isCodingBuddyConfig({ testStrategy: { coverage: 200 } })).toBe(false);
-      expect(isCodingBuddyConfig({ conventions: { naming: { files: 'invalid' } } })).toBe(false);
+      expect(isCodingBuddyConfig({ testStrategy: { coverage: 200 } })).toBe(
+        false,
+      );
+      expect(
+        isCodingBuddyConfig({ conventions: { naming: { files: 'invalid' } } }),
+      ).toBe(false);
     });
 
     it('should reject invalid repository URL', () => {

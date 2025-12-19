@@ -28,11 +28,12 @@ describe('config.analyzer', () => {
 
       const result = parseTsConfig(content, 'tsconfig.json');
 
-      expect(result.path).toBe('tsconfig.json');
-      expect(result.strict).toBe(true);
-      expect(result.target).toBe('ES2020');
-      expect(result.module).toBe('ESNext');
-      expect(result.hasPathAliases).toBe(false);
+      expect(result).not.toBeNull();
+      expect(result!.path).toBe('tsconfig.json');
+      expect(result!.strict).toBe(true);
+      expect(result!.target).toBe('ES2020');
+      expect(result!.module).toBe('ESNext');
+      expect(result!.hasPathAliases).toBe(false);
     });
 
     it('should detect path aliases', () => {
@@ -46,7 +47,8 @@ describe('config.analyzer', () => {
 
       const result = parseTsConfig(content, 'tsconfig.json');
 
-      expect(result.hasPathAliases).toBe(true);
+      expect(result).not.toBeNull();
+      expect(result!.hasPathAliases).toBe(true);
     });
 
     it('should handle missing compilerOptions', () => {
@@ -54,8 +56,9 @@ describe('config.analyzer', () => {
 
       const result = parseTsConfig(content, 'tsconfig.json');
 
-      expect(result.strict).toBeUndefined();
-      expect(result.hasPathAliases).toBe(false);
+      expect(result).not.toBeNull();
+      expect(result!.strict).toBeUndefined();
+      expect(result!.hasPathAliases).toBe(false);
     });
 
     it('should return null for invalid JSON', () => {
@@ -68,16 +71,20 @@ describe('config.analyzer', () => {
   describe('parseEslintConfig', () => {
     it('should parse legacy eslintrc format', () => {
       const content = JSON.stringify({
-        extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended'],
+        extends: [
+          'eslint:recommended',
+          'plugin:@typescript-eslint/recommended',
+        ],
         plugins: ['@typescript-eslint'],
       });
 
       const result = parseEslintConfig(content, '.eslintrc.json', 'legacy');
 
-      expect(result.path).toBe('.eslintrc.json');
-      expect(result.format).toBe('legacy');
-      expect(result.extends).toContain('eslint:recommended');
-      expect(result.plugins).toContain('@typescript-eslint');
+      expect(result).not.toBeNull();
+      expect(result!.path).toBe('.eslintrc.json');
+      expect(result!.format).toBe('legacy');
+      expect(result!.extends).toContain('eslint:recommended');
+      expect(result!.plugins).toContain('@typescript-eslint');
     });
 
     it('should handle eslint config without extends or plugins', () => {
@@ -89,8 +96,9 @@ describe('config.analyzer', () => {
 
       const result = parseEslintConfig(content, '.eslintrc.json', 'legacy');
 
-      expect(result.extends).toBeUndefined();
-      expect(result.plugins).toBeUndefined();
+      expect(result).not.toBeNull();
+      expect(result!.extends).toBeUndefined();
+      expect(result!.plugins).toBeUndefined();
     });
 
     it('should return null for invalid JSON', () => {
@@ -111,11 +119,12 @@ describe('config.analyzer', () => {
 
       const result = parsePrettierConfig(content, '.prettierrc');
 
-      expect(result.path).toBe('.prettierrc');
-      expect(result.tabWidth).toBe(2);
-      expect(result.semi).toBe(true);
-      expect(result.singleQuote).toBe(true);
-      expect(result.trailingComma).toBe('all');
+      expect(result).not.toBeNull();
+      expect(result!.path).toBe('.prettierrc');
+      expect(result!.tabWidth).toBe(2);
+      expect(result!.semi).toBe(true);
+      expect(result!.singleQuote).toBe(true);
+      expect(result!.trailingComma).toBe('all');
     });
 
     it('should handle partial config', () => {
@@ -125,9 +134,10 @@ describe('config.analyzer', () => {
 
       const result = parsePrettierConfig(content, '.prettierrc');
 
-      expect(result.semi).toBe(false);
-      expect(result.tabWidth).toBeUndefined();
-      expect(result.singleQuote).toBeUndefined();
+      expect(result).not.toBeNull();
+      expect(result!.semi).toBe(false);
+      expect(result!.tabWidth).toBeUndefined();
+      expect(result!.singleQuote).toBeUndefined();
     });
 
     it('should return null for invalid JSON', () => {

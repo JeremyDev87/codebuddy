@@ -77,7 +77,12 @@ export const FRAMEWORK_DEFINITIONS: FrameworkDefinition[] = [
     category: 'linting',
     devOnly: true,
   },
-  { name: 'Biome', packageName: '@biomejs/biome', category: 'linting', devOnly: true },
+  {
+    name: 'Biome',
+    packageName: '@biomejs/biome',
+    category: 'linting',
+    devOnly: true,
+  },
 
   // Styling
   {
@@ -117,7 +122,9 @@ interface RawPackageJson {
 /**
  * Parse package.json content into PackageInfo (without framework detection)
  */
-export function parsePackageJson(content: string): Omit<PackageInfo, 'detectedFrameworks'> {
+export function parsePackageJson(
+  content: string,
+): Omit<PackageInfo, 'detectedFrameworks'> {
   const raw: RawPackageJson = JSON.parse(content);
 
   return {
@@ -164,7 +171,9 @@ export function detectFrameworks(
  * @param projectRoot - Project root directory
  * @returns PackageInfo or null if package.json not found
  */
-export async function analyzePackage(projectRoot: string): Promise<PackageInfo | null> {
+export async function analyzePackage(
+  projectRoot: string,
+): Promise<PackageInfo | null> {
   const packagePath = path.join(projectRoot, 'package.json');
 
   if (!existsSync(packagePath)) {
@@ -179,7 +188,10 @@ export async function analyzePackage(projectRoot: string): Promise<PackageInfo |
 
   try {
     const parsed = parsePackageJson(content);
-    const frameworks = detectFrameworks(parsed.dependencies, parsed.devDependencies);
+    const frameworks = detectFrameworks(
+      parsed.dependencies,
+      parsed.devDependencies,
+    );
 
     return {
       ...parsed,

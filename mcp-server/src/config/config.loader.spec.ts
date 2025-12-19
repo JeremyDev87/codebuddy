@@ -29,7 +29,11 @@ describe('config.loader', () => {
 
     it('should include cause when provided', () => {
       const cause = new Error('Original error');
-      const error = new ConfigLoadError('Wrapped error', '/path/to/config.js', cause);
+      const error = new ConfigLoadError(
+        'Wrapped error',
+        '/path/to/config.js',
+        cause,
+      );
 
       expect(error.cause).toBe(cause);
     });
@@ -72,7 +76,9 @@ describe('config.loader', () => {
         },
       };
 
-      expect(() => validateAndTransform(raw, '/path/config.json')).toThrow(ConfigLoadError);
+      expect(() => validateAndTransform(raw, '/path/config.json')).toThrow(
+        ConfigLoadError,
+      );
     });
 
     it('should include field path in error message', () => {
@@ -98,7 +104,9 @@ describe('config.loader', () => {
         repository: 'not-a-valid-url',
       };
 
-      expect(() => validateAndTransform(raw, '/path/config.json')).toThrow(ConfigLoadError);
+      expect(() => validateAndTransform(raw, '/path/config.json')).toThrow(
+        ConfigLoadError,
+      );
     });
   });
 });

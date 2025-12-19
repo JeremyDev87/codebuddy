@@ -11,7 +11,10 @@ import type { CodingBuddyConfig } from '../../config';
 /**
  * Supported config file names
  */
-export const CONFIG_FILE_NAMES = ['codingbuddy.config.js', 'codingbuddy.config.json'] as const;
+export const CONFIG_FILE_NAMES = [
+  'codingbuddy.config.js',
+  'codingbuddy.config.json',
+] as const;
 
 /**
  * Config file format
@@ -49,7 +52,9 @@ export function formatConfigAsJson(config: CodingBuddyConfig): string {
  *
  * @returns Path to existing config file, or null if none exists
  */
-export async function findExistingConfig(projectRoot: string): Promise<string | null> {
+export async function findExistingConfig(
+  projectRoot: string,
+): Promise<string | null> {
   for (const fileName of CONFIG_FILE_NAMES) {
     const filePath = path.join(projectRoot, fileName);
     try {
@@ -77,9 +82,11 @@ export async function writeConfig(
 ): Promise<string> {
   const format = options.format ?? 'js';
 
-  const fileName = format === 'json' ? 'codingbuddy.config.json' : 'codingbuddy.config.js';
+  const fileName =
+    format === 'json' ? 'codingbuddy.config.json' : 'codingbuddy.config.js';
 
-  const content = format === 'json' ? formatConfigAsJson(config) : formatConfigAsJs(config);
+  const content =
+    format === 'json' ? formatConfigAsJson(config) : formatConfigAsJs(config);
 
   const filePath = path.join(projectRoot, fileName);
 

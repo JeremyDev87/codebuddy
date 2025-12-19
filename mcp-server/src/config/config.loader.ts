@@ -109,10 +109,7 @@ export async function loadConfigFromFile(filePath: string): Promise<unknown> {
     return loadJsConfig(filePath);
   }
 
-  throw new ConfigLoadError(
-    `Unsupported config file format: ${ext}`,
-    filePath,
-  );
+  throw new ConfigLoadError(`Unsupported config file format: ${ext}`, filePath);
 }
 
 /**
@@ -125,8 +122,8 @@ export function validateAndTransform(
   const result = validateConfig(raw);
 
   if (!result.success) {
-    const errorMessages = result.errors!
-      .map((e) => `  - ${e.path}: ${e.message}`)
+    const errorMessages = result
+      .errors!.map(e => `  - ${e.path}: ${e.message}`)
       .join('\n');
 
     throw new ConfigLoadError(
@@ -147,7 +144,9 @@ export function validateAndTransform(
  * @param projectRoot - Project root directory (defaults to process.cwd())
  * @returns Loaded configuration with metadata
  */
-export async function loadConfig(projectRoot?: string): Promise<ConfigLoadResult> {
+export async function loadConfig(
+  projectRoot?: string,
+): Promise<ConfigLoadResult> {
   const root = projectRoot ?? process.cwd();
   const configPath = findConfigFile(root);
 

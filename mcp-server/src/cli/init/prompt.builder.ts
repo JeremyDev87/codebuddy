@@ -126,13 +126,15 @@ export function buildAnalysisPrompt(analysis: ProjectAnalysis): string {
   // Detected Patterns
   sections.push('\n## Detected Patterns\n');
   if (analysis.detectedPatterns.length > 0) {
-    sections.push(analysis.detectedPatterns.map((p) => `- ${p}`).join('\n'));
+    sections.push(analysis.detectedPatterns.map(p => `- ${p}`).join('\n'));
   } else {
     sections.push('No specific patterns detected.');
   }
 
   sections.push('\n\n---\n');
-  sections.push('Based on this analysis, generate a CodingBuddyConfig JSON object.');
+  sections.push(
+    'Based on this analysis, generate a CodingBuddyConfig JSON object.',
+  );
 
   return sections.join('');
 }
@@ -175,7 +177,12 @@ export function formatPackageInfo(info: PackageInfo): string {
   const deps = Object.keys(info.dependencies);
   if (deps.length > 0) {
     lines.push('\n### Key Dependencies');
-    lines.push(deps.slice(0, 10).map((d) => `\`${d}\``).join(', '));
+    lines.push(
+      deps
+        .slice(0, 10)
+        .map(d => `\`${d}\``)
+        .join(', '),
+    );
   }
 
   return lines.join('\n');
@@ -192,7 +199,7 @@ export function formatDirectoryStructure(dir: DirectoryAnalysis): string {
 
   // Root directories
   lines.push('\n### Root Directories');
-  lines.push(dir.rootDirs.map((d) => `\`${d}\``).join(', '));
+  lines.push(dir.rootDirs.map(d => `\`${d}\``).join(', '));
 
   // Architecture patterns
   if (dir.patterns.length > 0) {
@@ -219,7 +226,9 @@ export function formatConfigFiles(config: ConfigFilesSummary): string {
     lines.push('### TypeScript Configuration');
     lines.push(`- Path: \`${config.typescript.path}\``);
     if (config.typescript.strict !== undefined) {
-      lines.push(`- Strict mode: ${config.typescript.strict ? 'enabled' : 'disabled'}`);
+      lines.push(
+        `- Strict mode: ${config.typescript.strict ? 'enabled' : 'disabled'}`,
+      );
     }
     if (config.typescript.target) {
       lines.push(`- Target: ${config.typescript.target}`);
@@ -256,7 +265,9 @@ export function formatConfigFiles(config: ConfigFilesSummary): string {
       lines.push(`- Semicolons: ${config.prettier.semi ? 'yes' : 'no'}`);
     }
     if (config.prettier.singleQuote !== undefined) {
-      lines.push(`- Quotes: ${config.prettier.singleQuote ? 'single' : 'double'}`);
+      lines.push(
+        `- Quotes: ${config.prettier.singleQuote ? 'single' : 'double'}`,
+      );
     }
     if (config.prettier.trailingComma) {
       lines.push(`- Trailing comma: ${config.prettier.trailingComma}`);

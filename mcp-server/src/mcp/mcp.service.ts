@@ -214,7 +214,10 @@ export class McpService implements OnModuleInit {
         case 'get_project_config':
           return this.handleGetProjectConfig();
         default:
-          throw new McpError(ErrorCode.MethodNotFound, `Tool not found: ${name}`);
+          throw new McpError(
+            ErrorCode.MethodNotFound,
+            `Tool not found: ${name}`,
+          );
       }
     });
   }
@@ -281,7 +284,9 @@ export class McpService implements OnModuleInit {
     return this.jsonResponse(results);
   }
 
-  private async handleGetAgentDetails(args: Record<string, unknown> | undefined) {
+  private async handleGetAgentDetails(
+    args: Record<string, unknown> | undefined,
+  ) {
     const agentName = String(args?.agentName);
     try {
       const agent = await this.rulesService.getAgent(agentName);
