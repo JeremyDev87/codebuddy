@@ -5,78 +5,31 @@ import { pathContainsSegment } from '../shared/path.utils';
 
 /**
  * Language detection by file extension
+ * Focused on web development languages commonly analyzed by this tool
  */
 export const LANGUAGE_EXTENSIONS: Record<string, string> = {
   // TypeScript
   '.ts': 'typescript',
   '.tsx': 'typescript',
-  '.mts': 'typescript',
-  '.cts': 'typescript',
 
   // JavaScript
   '.js': 'javascript',
   '.jsx': 'javascript',
-  '.mjs': 'javascript',
-  '.cjs': 'javascript',
 
   // Python
   '.py': 'python',
-  '.pyw': 'python',
 
-  // Java/Kotlin
+  // Java
   '.java': 'java',
-  '.kt': 'kotlin',
-  '.kts': 'kotlin',
-
-  // Go
-  '.go': 'go',
-
-  // Rust
-  '.rs': 'rust',
-
-  // C/C++
-  '.c': 'c',
-  '.h': 'c',
-  '.cpp': 'cpp',
-  '.hpp': 'cpp',
-  '.cc': 'cpp',
-
-  // C#
-  '.cs': 'csharp',
-
-  // Ruby
-  '.rb': 'ruby',
-
-  // PHP
-  '.php': 'php',
-
-  // Swift
-  '.swift': 'swift',
 
   // Styles
   '.css': 'css',
   '.scss': 'scss',
-  '.sass': 'sass',
-  '.less': 'less',
 
   // Data/Config
   '.json': 'json',
   '.yaml': 'yaml',
   '.yml': 'yaml',
-  '.toml': 'toml',
-  '.xml': 'xml',
-
-  // Shell
-  '.sh': 'shell',
-  '.bash': 'shell',
-  '.zsh': 'shell',
-
-  // SQL
-  '.sql': 'sql',
-
-  // GraphQL
-  '.graphql': 'graphql',
-  '.gql': 'graphql',
 
   // Framework-specific
   '.vue': 'vue',
@@ -85,25 +38,15 @@ export const LANGUAGE_EXTENSIONS: Record<string, string> = {
 
 /**
  * Extensions considered as code (for sampling)
+ * Matches LANGUAGE_EXTENSIONS for consistency
  */
 const CODE_EXTENSIONS = new Set([
   '.ts',
   '.tsx',
   '.js',
   '.jsx',
-  '.mjs',
-  '.cjs',
   '.py',
   '.java',
-  '.kt',
-  '.go',
-  '.rs',
-  '.c',
-  '.cpp',
-  '.cs',
-  '.rb',
-  '.php',
-  '.swift',
   '.css',
   '.scss',
   '.vue',

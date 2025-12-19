@@ -51,11 +51,6 @@ export const ARCHITECTURE_PATTERNS: PatternDefinition[] = [
     minIndicators: 1,
   },
   {
-    name: 'MVC',
-    indicators: ['src/models', 'src/views', 'src/controllers'],
-    minIndicators: 2,
-  },
-  {
     name: 'Clean Architecture',
     indicators: ['src/domain', 'src/application', 'src/infrastructure', 'src/presentation'],
     minIndicators: 3,

@@ -5,8 +5,8 @@ import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 
 @Controller()
 export class McpController {
-  // Note: This simple implementation assumes a single client connection for simplicity.
-  // For production with multiple clients, we would need session management.
+  // Single-client SSE implementation. New connections replace existing ones.
+  // For multi-client support, implement session-based transport management.
   private transport: SSEServerTransport | null = null;
 
   constructor(private mcpService: McpService) {}
