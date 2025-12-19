@@ -62,12 +62,12 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
     }
 
     // Step 1: Analyze project
-    console.spinner.start('Analyzing project...');
+    console.log.step('🔍', 'Analyzing project...');
 
     const analyzer = new AnalyzerService();
     const analysis = await analyzer.analyzeProject(options.projectRoot);
 
-    console.spinner.succeed('Project analysis complete');
+    console.log.success('Project analysis complete');
 
     // Log analysis summary
     if (analysis.packageInfo) {
@@ -79,21 +79,21 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
     console.log.step('📁', `Files: ${analysis.directoryStructure.totalFiles}`);
 
     // Step 2: Generate config with AI
-    console.spinner.start('AI is generating configuration...');
+    console.log.step('🤖', 'AI is generating configuration...');
 
     const generator = new ConfigGenerator({ apiKey });
     const config = await generator.generate(analysis);
 
-    console.spinner.succeed('Configuration generated');
+    console.log.success('Configuration generated');
 
     // Step 3: Write config file
-    console.spinner.start('Writing configuration file...');
+    console.log.step('💾', 'Writing configuration file...');
 
     const configPath = await writeConfig(options.projectRoot, config, {
       format: options.format,
     });
 
-    console.spinner.succeed(`Configuration saved to ${configPath}`);
+    console.log.success(`Configuration saved to ${configPath}`);
 
     // Success message
     console.log.success('');
@@ -107,7 +107,7 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.spinner.fail(`Error: ${message}`);
+    console.log.error(message);
 
     return {
       success: false,
