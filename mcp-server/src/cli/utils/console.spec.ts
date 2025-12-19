@@ -7,8 +7,12 @@ describe('console utils', () => {
   let stderrWrite: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
-    stdoutWrite = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
-    stderrWrite = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+    stdoutWrite = vi
+      .spyOn(process.stdout, 'write')
+      .mockImplementation(() => true);
+    stderrWrite = vi
+      .spyOn(process.stderr, 'write')
+      .mockImplementation(() => true);
     consoleUtils = createConsoleUtils();
   });
 
@@ -61,5 +65,4 @@ describe('console utils', () => {
       expect(output).toContain('Analyzing project...');
     });
   });
-
 });

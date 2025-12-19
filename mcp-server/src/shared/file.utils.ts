@@ -4,9 +4,7 @@ import { promises as fs, type Dirent } from 'fs';
  * Safely reads a file, returning null if the file doesn't exist.
  * Throws on permission errors or other issues.
  */
-export async function safeReadFile(
-  filePath: string,
-): Promise<string | null> {
+export async function safeReadFile(filePath: string): Promise<string | null> {
   try {
     return await fs.readFile(filePath, 'utf-8');
   } catch (error) {
@@ -35,9 +33,7 @@ export async function tryReadFile(
  * Safely reads directory with file types, returning an empty array if the directory doesn't exist.
  * Throws on permission errors or other issues.
  */
-export async function safeReadDirWithTypes(
-  dirPath: string,
-): Promise<Dirent[]> {
+export async function safeReadDirWithTypes(dirPath: string): Promise<Dirent[]> {
   try {
     return await fs.readdir(dirPath, { withFileTypes: true });
   } catch (error) {

@@ -206,7 +206,9 @@ describe('KeywordService', () => {
       });
 
       it('handles newlines in prompt', async () => {
-        const result = await service.parseMode('PLAN design feature\nwith auth');
+        const result = await service.parseMode(
+          'PLAN design feature\nwith auth',
+        );
 
         expect(result.mode).toBe('PLAN');
         expect(result.originalPrompt).toBe('design feature\nwith auth');
@@ -242,7 +244,9 @@ describe('KeywordService', () => {
     });
 
     it('uses default config with warning for invalid JSON', async () => {
-      mockLoadConfig = vi.fn().mockRejectedValue(new SyntaxError('Invalid JSON'));
+      mockLoadConfig = vi
+        .fn()
+        .mockRejectedValue(new SyntaxError('Invalid JSON'));
       service = new KeywordService(mockLoadConfig, mockLoadRule);
 
       const config = await service.loadModeConfig();

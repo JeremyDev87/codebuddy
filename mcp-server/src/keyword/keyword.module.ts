@@ -13,7 +13,8 @@ export const KEYWORD_SERVICE = 'KEYWORD_SERVICE';
       provide: KEYWORD_SERVICE,
       useFactory: (rulesService: RulesService) => {
         const loadConfig = async (): Promise<KeywordModesConfig> => {
-          const content = await rulesService.getRuleContent('keyword-modes.json');
+          const content =
+            await rulesService.getRuleContent('keyword-modes.json');
           return JSON.parse(content) as KeywordModesConfig;
         };
 

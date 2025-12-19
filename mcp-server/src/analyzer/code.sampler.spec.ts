@@ -138,7 +138,7 @@ describe('code.sampler', () => {
       const result = selectSampleFiles(files, 3);
 
       // Should have samples from different categories
-      const categories = result.map((f) => categorizeFile(f));
+      const categories = result.map(f => categorizeFile(f));
       expect(new Set(categories).size).toBeGreaterThan(1);
     });
 
@@ -187,7 +187,7 @@ describe('code.sampler', () => {
       ];
 
       const result = selectSampleFiles(files, 3);
-      const categories = result.map((f) => categorizeFile(f));
+      const categories = result.map(f => categorizeFile(f));
 
       // Should have files from at least 2 different categories
       expect(new Set(categories).size).toBeGreaterThanOrEqual(2);

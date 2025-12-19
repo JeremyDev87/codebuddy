@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import {
@@ -135,7 +135,9 @@ describe('config.writer', () => {
     it('should write JSON config when format is json', async () => {
       vi.mocked(fs.writeFile).mockResolvedValue(undefined);
 
-      const result = await writeConfig('/project', mockConfig, { format: 'json' });
+      const result = await writeConfig('/project', mockConfig, {
+        format: 'json',
+      });
 
       expect(result).toContain('codingbuddy.config.json');
       expect(fs.writeFile).toHaveBeenCalledWith(
@@ -156,7 +158,9 @@ describe('config.writer', () => {
     it('should throw on write error', async () => {
       vi.mocked(fs.writeFile).mockRejectedValue(new Error('Permission denied'));
 
-      await expect(writeConfig('/project', mockConfig)).rejects.toThrow('Permission denied');
+      await expect(writeConfig('/project', mockConfig)).rejects.toThrow(
+        'Permission denied',
+      );
     });
   });
 });

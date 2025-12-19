@@ -1,5 +1,9 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { loadConfig, type ConfigLoadResult, ConfigLoadError } from './config.loader';
+import {
+  loadConfig,
+  type ConfigLoadResult,
+  ConfigLoadError,
+} from './config.loader';
 import {
   loadIgnoreFile,
   getDefaultIgnorePatterns,
@@ -87,7 +91,9 @@ export class ConfigService implements OnModuleInit {
     }
 
     // Load ignore patterns
-    const ignoreResult: IgnoreParseResult = await loadIgnoreFile(this.projectRoot);
+    const ignoreResult: IgnoreParseResult = await loadIgnoreFile(
+      this.projectRoot,
+    );
     const allIgnorePatterns = [
       ...getDefaultIgnorePatterns(),
       ...ignoreResult.patterns,
@@ -97,14 +103,18 @@ export class ConfigService implements OnModuleInit {
     }
 
     // Load context files
-    const contextResult: ContextLoadResult = await loadContextFiles(this.projectRoot);
+    const contextResult: ContextLoadResult = await loadContextFiles(
+      this.projectRoot,
+    );
     if (contextResult.source) {
       this.logger.log(
         `Loaded ${contextResult.files.length} context files from: ${contextResult.source}`,
       );
     }
     if (contextResult.errors.length > 0) {
-      this.logger.warn(`Context loading errors: ${contextResult.errors.join(', ')}`);
+      this.logger.warn(
+        `Context loading errors: ${contextResult.errors.join(', ')}`,
+      );
     }
 
     this.projectConfig = {

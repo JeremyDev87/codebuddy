@@ -48,10 +48,17 @@ export class AnalyzerService {
     ]);
 
     // Config analysis depends on directory analysis for root files
-    const configFiles = await analyzeConfigs(projectRoot, dirAnalysis.rootFiles);
+    const configFiles = await analyzeConfigs(
+      projectRoot,
+      dirAnalysis.rootFiles,
+    );
 
     // Sample code files using all scanned files
-    const codeSamples = await sampleCode(projectRoot, dirAnalysis.allFiles, opts.maxCodeSamples);
+    const codeSamples = await sampleCode(
+      projectRoot,
+      dirAnalysis.allFiles,
+      opts.maxCodeSamples,
+    );
 
     // Infer patterns from all collected data
     const detectedPatterns = this.inferPatterns(packageInfo, dirAnalysis);
@@ -84,7 +91,10 @@ export class AnalyzerService {
     // Add framework patterns from package.json
     if (packageInfo) {
       for (const framework of packageInfo.detectedFrameworks) {
-        if (framework.category === 'frontend' || framework.category === 'fullstack') {
+        if (
+          framework.category === 'frontend' ||
+          framework.category === 'fullstack'
+        ) {
           patterns.push(`${framework.name} Project`);
         }
         if (framework.category === 'backend') {

@@ -4,14 +4,17 @@ import type { ProjectAnalysis } from '../../analyzer';
 import type { CodingBuddyConfig } from '../../config';
 
 // Use vi.hoisted to ensure mock functions are available before vi.mock hoisting
-const { mockAnalyzeProject, mockGenerate, mockFindExistingConfig, mockWriteConfig } = vi.hoisted(
-  () => ({
-    mockAnalyzeProject: vi.fn(),
-    mockGenerate: vi.fn(),
-    mockFindExistingConfig: vi.fn(),
-    mockWriteConfig: vi.fn(),
-  }),
-);
+const {
+  mockAnalyzeProject,
+  mockGenerate,
+  mockFindExistingConfig,
+  mockWriteConfig,
+} = vi.hoisted(() => ({
+  mockAnalyzeProject: vi.fn(),
+  mockGenerate: vi.fn(),
+  mockFindExistingConfig: vi.fn(),
+  mockWriteConfig: vi.fn(),
+}));
 
 // Mock all modules
 vi.mock('../../analyzer', () => ({
@@ -167,7 +170,9 @@ describe('init.command', () => {
     });
 
     it('should fail if config exists and force is false', async () => {
-      mockFindExistingConfig.mockResolvedValue('/project/codingbuddy.config.js');
+      mockFindExistingConfig.mockResolvedValue(
+        '/project/codingbuddy.config.js',
+      );
 
       const options: InitOptions = {
         projectRoot: '/project',
@@ -183,7 +188,9 @@ describe('init.command', () => {
     });
 
     it('should overwrite if config exists and force is true', async () => {
-      mockFindExistingConfig.mockResolvedValue('/project/codingbuddy.config.js');
+      mockFindExistingConfig.mockResolvedValue(
+        '/project/codingbuddy.config.js',
+      );
 
       const options: InitOptions = {
         projectRoot: '/project',
@@ -234,7 +241,9 @@ describe('init.command', () => {
 
       await runInit(options);
 
-      expect(mockWriteConfig).toHaveBeenCalledWith('/project', mockConfig, { format: 'js' });
+      expect(mockWriteConfig).toHaveBeenCalledWith('/project', mockConfig, {
+        format: 'js',
+      });
     });
 
     it('should handle analyzer error', async () => {

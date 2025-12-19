@@ -4,9 +4,12 @@ import { KeywordService } from '../keyword/keyword.service';
 import { ConfigService, ProjectConfig } from '../config/config.service';
 import type { CodingBuddyConfig } from '../config/config.schema';
 
+// Handler function type for MCP request handlers
+type McpHandler = (request: unknown) => Promise<unknown>;
+
 // Hoist the handlers map so it's available during vi.mock
 const { handlers } = vi.hoisted(() => ({
-  handlers: new Map<string, Function>(),
+  handlers: new Map<string, McpHandler>(),
 }));
 
 // Mock the MCP SDK Server
@@ -15,9 +18,11 @@ vi.mock('@modelcontextprotocol/sdk/server/index.js', () => ({
     constructor() {
       // Clear handlers on new instance
     }
-    setRequestHandler(schema: unknown, handler: Function) {
+    setRequestHandler(schema: unknown, handler: McpHandler) {
       // Extract method name from Zod schema
-      const s = schema as { shape?: { method?: { _def?: { value?: string } } } };
+      const s = schema as {
+        shape?: { method?: { _def?: { value?: string } } };
+      };
       const method = s?.shape?.method?._def?.value;
       if (method) {
         handlers.set(method, handler);
@@ -35,7 +40,9 @@ vi.mock('@modelcontextprotocol/sdk/server/stdio.js', () => ({
 
 // Mock dependencies
 const createMockRulesService = (): Partial<RulesService> => ({
-  listAgents: vi.fn().mockResolvedValue(['frontend-developer', 'code-reviewer']),
+  listAgents: vi
+    .fn()
+    .mockResolvedValue(['frontend-developer', 'code-reviewer']),
   getRuleContent: vi.fn().mockResolvedValue('# Core Rules\nSome content...'),
   getAgent: vi.fn().mockResolvedValue({
     id: 'frontend-developer',
@@ -57,7 +64,9 @@ const createMockKeywordService = (): Partial<KeywordService> => ({
   }),
 });
 
-const createMockConfigService = (config: CodingBuddyConfig = {}): Partial<ConfigService> => ({
+const createMockConfigService = (
+  config: CodingBuddyConfig = {},
+): Partial<ConfigService> => ({
   getProjectConfig: vi.fn().mockResolvedValue({
     settings: config,
     ignorePatterns: ['node_modules', '.git'],
@@ -111,8 +120,12 @@ describe('McpService', () => {
       const handler = handlers.get('resources/list');
       expect(handler).toBeDefined();
 
-      const result = (await handler!({})) as { resources: { uri: string; name: string }[] };
-      const configResource = result.resources.find(r => r.uri === 'config://project');
+      const result = (await handler!({})) as {
+        resources: { uri: string; name: string }[];
+      };
+      const configResource = result.resources.find(
+        r => r.uri === 'config://project',
+      );
 
       expect(configResource).toBeDefined();
       expect(configResource!.name).toBe('Project Configuration');
@@ -153,8 +166,12 @@ describe('McpService', () => {
       const handler = handlers.get('tools/list');
       expect(handler).toBeDefined();
 
-      const result = (await handler!({})) as { tools: { name: string; description: string }[] };
-      const configTool = result.tools.find(t => t.name === 'get_project_config');
+      const result = (await handler!({})) as {
+        tools: { name: string; description: string }[];
+      };
+      const configTool = result.tools.find(
+        t => t.name === 'get_project_config',
+      );
 
       expect(configTool).toBeDefined();
       expect(configTool!.description).toContain('project configuration');
@@ -194,7 +211,10 @@ describe('McpService', () => {
       expect(handler).toBeDefined();
 
       const result = (await handler!({
-        params: { name: 'get_agent_details', arguments: { agentName: 'frontend-developer' } },
+        params: {
+          name: 'get_agent_details',
+          arguments: { agentName: 'frontend-developer' },
+        },
       })) as { content: { type: string; text: string }[] };
 
       expect(result.content).toHaveLength(1);

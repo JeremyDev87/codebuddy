@@ -39,10 +39,13 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
     const apiKey = getApiKey(options);
     if (!apiKey) {
       console.log.error('No API key provided.');
-      console.log.info('Set ANTHROPIC_API_KEY environment variable or use --api-key option.');
+      console.log.info(
+        'Set ANTHROPIC_API_KEY environment variable or use --api-key option.',
+      );
       return {
         success: false,
-        error: 'No API key provided. Set ANTHROPIC_API_KEY environment variable.',
+        error:
+          'No API key provided. Set ANTHROPIC_API_KEY environment variable.',
       };
     }
 
@@ -74,7 +77,10 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
       console.log.step('📦', `Package: ${analysis.packageInfo.name}`);
     }
     if (analysis.detectedPatterns.length > 0) {
-      console.log.step('🏗️', `Patterns: ${analysis.detectedPatterns.join(', ')}`);
+      console.log.step(
+        '🏗️',
+        `Patterns: ${analysis.detectedPatterns.join(', ')}`,
+      );
     }
     console.log.step('📁', `Files: ${analysis.directoryStructure.totalFiles}`);
 

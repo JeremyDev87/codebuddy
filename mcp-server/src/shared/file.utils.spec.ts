@@ -90,12 +90,16 @@ describe('file.utils', () => {
         { name: 'file.txt', isFile: () => true, isDirectory: () => false },
         { name: 'subdir', isFile: () => false, isDirectory: () => true },
       ];
-      vi.mocked(fs.readdir).mockResolvedValue(mockEntries as unknown as Awaited<ReturnType<typeof fs.readdir>>);
+      vi.mocked(fs.readdir).mockResolvedValue(
+        mockEntries as unknown as Awaited<ReturnType<typeof fs.readdir>>,
+      );
 
       const result = await safeReadDirWithTypes('/path/to/dir');
 
       expect(result).toEqual(mockEntries);
-      expect(fs.readdir).toHaveBeenCalledWith('/path/to/dir', { withFileTypes: true });
+      expect(fs.readdir).toHaveBeenCalledWith('/path/to/dir', {
+        withFileTypes: true,
+      });
     });
 
     it('should return empty array when directory does not exist (ENOENT)', async () => {

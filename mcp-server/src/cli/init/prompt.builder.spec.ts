@@ -40,7 +40,11 @@ describe('prompt.builder', () => {
       rootFiles: ['package.json', 'tsconfig.json', 'next.config.js'],
       allFiles: ['app/page.tsx', 'components/Button.tsx'],
       patterns: [
-        { name: 'Next.js App Router', confidence: 1.0, indicators: ['app', 'components', 'lib', 'public'] },
+        {
+          name: 'Next.js App Router',
+          confidence: 1.0,
+          indicators: ['app', 'components', 'lib', 'public'],
+        },
       ],
       totalFiles: 50,
       totalDirs: 10,
@@ -73,14 +77,16 @@ describe('prompt.builder', () => {
         path: 'app/page.tsx',
         language: 'typescript',
         category: 'page',
-        preview: 'export default function Home() {\n  return <div>Hello</div>;\n}',
+        preview:
+          'export default function Home() {\n  return <div>Hello</div>;\n}',
         lineCount: 10,
       },
       {
         path: 'components/Button.tsx',
         language: 'typescript',
         category: 'component',
-        preview: 'export function Button({ children }) {\n  return <button>{children}</button>;\n}',
+        preview:
+          'export function Button({ children }) {\n  return <button>{children}</button>;\n}',
         lineCount: 5,
       },
     ],
