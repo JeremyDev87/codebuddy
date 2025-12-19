@@ -170,9 +170,9 @@ export async function loadContextFiles(projectRoot: string): Promise<ContextLoad
 }
 
 /**
- * Get context files by type
+ * Get context files by type (internal helper)
  */
-export function getFilesByType(files: ContextFile[], type: ContextFileType): ContextFile[] {
+function getFilesByType(files: ContextFile[], type: ContextFileType): ContextFile[] {
   return files.filter((f) => f.type === type);
 }
 

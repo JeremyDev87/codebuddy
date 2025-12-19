@@ -2,8 +2,6 @@ import { describe, it, expect } from 'vitest';
 import {
   validateConfig,
   parseConfig,
-  getDefaultConfig,
-  mergeWithDefaults,
   isCodingBuddyConfig,
   CodingBuddyConfigSchema,
 } from './config.schema';
@@ -200,59 +198,6 @@ describe('CodingBuddyConfigSchema', () => {
 
     it('should reject invalid repository URL', () => {
       expect(isCodingBuddyConfig({ repository: 'not-a-url' })).toBe(false);
-    });
-  });
-
-  describe('getDefaultConfig', () => {
-    it('should return empty object as default', () => {
-      const defaults = getDefaultConfig();
-      expect(defaults).toEqual({});
-    });
-  });
-
-  describe('mergeWithDefaults', () => {
-    it('should merge user config with defaults', () => {
-      const userConfig: CodingBuddyConfig = {
-        language: 'ko',
-        projectName: 'my-app',
-      };
-
-      const result = mergeWithDefaults(userConfig);
-      expect(result.language).toBe('ko');
-      expect(result.projectName).toBe('my-app');
-    });
-
-    it('should preserve user config values', () => {
-      const userConfig: CodingBuddyConfig = {
-        techStack: {
-          frontend: ['React'],
-        },
-      };
-
-      const result = mergeWithDefaults(userConfig);
-      expect(result.techStack?.frontend).toEqual(['React']);
-    });
-
-    it('should deep merge nested objects', () => {
-      // Since defaults are empty, this mainly tests that nested objects are preserved
-      const userConfig: CodingBuddyConfig = {
-        techStack: {
-          frontend: ['React'],
-          backend: ['NestJS'],
-        },
-        conventions: {
-          style: 'airbnb',
-          naming: {
-            files: 'kebab-case',
-          },
-        },
-      };
-
-      const result = mergeWithDefaults(userConfig);
-      expect(result.techStack?.frontend).toEqual(['React']);
-      expect(result.techStack?.backend).toEqual(['NestJS']);
-      expect(result.conventions?.style).toBe('airbnb');
-      expect(result.conventions?.naming?.files).toBe('kebab-case');
     });
   });
 
