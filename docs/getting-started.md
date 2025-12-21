@@ -1,3 +1,11 @@
+<p align="center">
+  <a href="getting-started.md">English</a> |
+  <a href="ko/getting-started.md">한국어</a> |
+  <a href="zh-CN/getting-started.md">中文</a> |
+  <a href="ja/getting-started.md">日本語</a> |
+  <a href="es/getting-started.md">Español</a>
+</p>
+
 # Getting Started
 
 Get up and running with Codingbuddy in minutes.

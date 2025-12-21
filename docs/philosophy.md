@@ -1,3 +1,11 @@
+<p align="center">
+  <a href="philosophy.md">English</a> |
+  <a href="ko/philosophy.md">한국어</a> |
+  <a href="zh-CN/philosophy.md">中文</a> |
+  <a href="ja/philosophy.md">日本語</a> |
+  <a href="es/philosophy.md">Español</a>
+</p>
+
 # Philosophy
 
 This document explains the vision, core beliefs, and design principles behind Codingbuddy.
