@@ -6,7 +6,7 @@ import { z } from 'zod';
 
 export const TechDetailSchema = z.object({
   version: z.string().optional(),
-  config: z.record(z.unknown()).optional(),
+  config: z.record(z.string(), z.unknown()).optional(),
   notes: z.string().optional(),
 });
 
@@ -40,7 +40,7 @@ export const TechStackConfigSchema = z.object({
   database: z.array(z.string()).optional(),
   infrastructure: z.array(z.string()).optional(),
   tools: z.array(z.string()).optional(),
-  details: z.record(TechDetailSchema).optional(),
+  details: z.record(z.string(), TechDetailSchema).optional(),
 });
 
 export const ArchitectureConfigSchema = z.object({
@@ -57,7 +57,7 @@ export const ConventionsConfigSchema = z.object({
   maxLineLength: z.number().int().positive().optional(),
   semicolons: z.boolean().optional(),
   quotes: z.enum(['single', 'double']).optional(),
-  rules: z.record(z.unknown()).optional(),
+  rules: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const TestStrategyConfigSchema = z.object({
@@ -89,7 +89,7 @@ export const CodingBuddyConfigSchema = z.object({
   // Additional Context
   keyFiles: z.array(z.string()).optional(),
   avoid: z.array(z.string()).optional(),
-  custom: z.record(z.unknown()).optional(),
+  custom: z.record(z.string(), z.unknown()).optional(),
 });
 
 // ============================================================================
