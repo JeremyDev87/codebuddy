@@ -8,6 +8,7 @@ To improve usability, introducing a keyword-based auto-invocation system.
 ## Feature Details
 
 ### Supported Keywords and Modes
+
 | Keyword | Mode | Description |
 |---------|------|-------------|
 | `PLAN` | Planning Mode | Task planning and design phase |

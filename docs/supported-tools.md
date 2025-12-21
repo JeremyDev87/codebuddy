@@ -1,3 +1,11 @@
+<p align="center">
+  <a href="supported-tools.md">English</a> |
+  <a href="ko/supported-tools.md">한국어</a> |
+  <a href="zh-CN/supported-tools.md">中文</a> |
+  <a href="ja/supported-tools.md">日本語</a> |
+  <a href="es/supported-tools.md">Español</a>
+</p>
+
 # Supported AI Tools
 
 Codingbuddy works with multiple AI coding assistants through a unified rules system.
