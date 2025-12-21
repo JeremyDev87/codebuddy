@@ -19,11 +19,11 @@ vi.mock('@modelcontextprotocol/sdk/server/index.js', () => ({
       // Clear handlers on new instance
     }
     setRequestHandler(schema: unknown, handler: McpHandler) {
-      // Extract method name from Zod schema
+      // Extract method name from Zod schema (MCP SDK v1.25.1+ structure)
       const s = schema as {
-        shape?: { method?: { _def?: { value?: string } } };
+        def?: { shape?: { method?: { def?: { values?: string[] } } } };
       };
-      const method = s?.shape?.method?._def?.value;
+      const method = s?.def?.shape?.method?.def?.values?.[0];
       if (method) {
         handlers.set(method, handler);
       }
