@@ -116,6 +116,16 @@ const createMockConfigService = (
   getSettings: vi.fn().mockResolvedValue(config),
   getLanguage: vi.fn().mockResolvedValue(config.language),
   getFormattedContext: vi.fn().mockResolvedValue(''),
+  reload: vi.fn().mockResolvedValue({
+    settings: config,
+    ignorePatterns: ['node_modules', '.git'],
+    contextFiles: [],
+    sources: {
+      config: '/test/codingbuddy.config.js',
+      ignore: null,
+      context: null,
+    },
+  } as ProjectConfig),
 });
 
 const createMockConfigDiffService = (): Partial<ConfigDiffService> => ({
@@ -302,6 +312,9 @@ describe('McpService', () => {
       const parsedContent = JSON.parse(result.content[0].text);
       expect(parsedContent).toHaveProperty('isUpToDate');
       expect(parsedContent).toHaveProperty('suggestions');
+
+      // Verify reload is called to get fresh config
+      expect(mockConfigService.reload).toHaveBeenCalledTimes(1);
     });
 
     it('should include language setting in parse_mode response', async () => {
