@@ -20,6 +20,7 @@ npx codingbuddy init
 | Command | Description |
 |---------|-------------|
 | `codingbuddy init` | Analyze project and generate configuration |
+| `codingbuddy mcp` | Start MCP server (stdio mode by default) |
 | `codingbuddy --help` | Show help |
 | `codingbuddy --version` | Show version |
 
@@ -63,15 +64,13 @@ Add the following configuration to your Claude Desktop config:
 ```json
 {
   "mcpServers": {
-    "codingbuddy-rules": {
+    "codingbuddy": {
       "command": "npx",
-      "args": ["codingbuddy-mcp"]
+      "args": ["-y", "codingbuddy", "mcp"]
     }
   }
 }
 ```
-
-> **Note**: Use `codingbuddy-mcp` for the MCP server. The `codingbuddy` command is for CLI operations like `init`.
 
 ### Option 2: Global Installation
 
@@ -84,8 +83,9 @@ Then configure Claude Desktop:
 ```json
 {
   "mcpServers": {
-    "codingbuddy-rules": {
-      "command": "codingbuddy-mcp"
+    "codingbuddy": {
+      "command": "codingbuddy",
+      "args": ["mcp"]
     }
   }
 }
@@ -94,7 +94,7 @@ Then configure Claude Desktop:
 ### Option 3: Local Development (Stdio Mode)
 
 ```bash
-cd mcp-server
+cd apps/mcp-server
 yarn install
 yarn build
 ```
@@ -102,9 +102,9 @@ yarn build
 ```json
 {
   "mcpServers": {
-    "codingbuddy-rules": {
+    "codingbuddy": {
       "command": "node",
-      "args": ["/ABSOLUTE/PATH/TO/codingbuddy/mcp-server/dist/src/main.js"]
+      "args": ["/ABSOLUTE/PATH/TO/codingbuddy/apps/mcp-server/dist/src/cli/cli.js", "mcp"]
     }
   }
 }
@@ -118,7 +118,7 @@ Build the Docker image from the **repository root**:
 
 ```bash
 # Run from codingbuddy root
-docker build -f mcp-server/Dockerfile -t codingbuddy-rules-mcp .
+docker build -f apps/mcp-server/Dockerfile -t codingbuddy-mcp .
 ```
 
 Run the container:
@@ -127,7 +127,7 @@ Run the container:
 docker run -p 3000:3000 \
   -e MCP_TRANSPORT=sse \
   -e PORT=3000 \
-  codingbuddy-rules-mcp
+  codingbuddy-mcp
 ```
 
 The server will start in SSE mode, exposing:
