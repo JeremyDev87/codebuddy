@@ -4,7 +4,7 @@ import { AppModule } from './app.module';
 import { McpService } from './mcp/mcp.service';
 import { Logger } from '@nestjs/common';
 
-async function bootstrap() {
+export async function bootstrap(): Promise<void> {
   const logger = new Logger('Bootstrap');
   const transportMode = process.env.MCP_TRANSPORT || 'stdio';
 
@@ -22,4 +22,8 @@ async function bootstrap() {
     logger.log('MCP Server running in Stdio mode');
   }
 }
-bootstrap();
+
+// Run if executed directly
+if (require.main === module) {
+  bootstrap();
+}

@@ -6,6 +6,7 @@
  */
 
 import { runInit } from './init';
+import { bootstrap } from '../main';
 import type { InitOptions } from './cli.types';
 
 // Package version (injected at build time or read from package.json)
@@ -15,7 +16,7 @@ const VERSION = '1.0.0';
  * Parsed command line arguments
  */
 export interface ParsedArgs {
-  command: 'init' | 'help' | 'version';
+  command: 'init' | 'mcp' | 'help' | 'version';
   options: Partial<InitOptions>;
 }
 
@@ -40,6 +41,10 @@ export function parseArgs(args: string[]): ParsedArgs {
 
   // Get command
   const command = args[0];
+
+  if (command === 'mcp') {
+    return { command: 'mcp', options };
+  }
 
   if (command !== 'init') {
     return { command: 'help', options };
@@ -76,6 +81,7 @@ CodingBuddy CLI - AI-powered project configuration generator
 
 Usage:
   codingbuddy init [path] [options]    Initialize configuration
+  codingbuddy mcp                      Start MCP server (stdio mode)
   codingbuddy --help                   Show this help
   codingbuddy --version                Show version
 
@@ -89,9 +95,12 @@ Examples:
   codingbuddy init ./my-project        Initialize in specific directory
   codingbuddy init --format json       Generate JSON config
   codingbuddy init --force             Overwrite existing config
+  codingbuddy mcp                      Start MCP server for AI assistants
 
 Environment:
   ANTHROPIC_API_KEY    API key for AI generation
+  MCP_TRANSPORT        MCP transport mode: stdio (default) or sse
+  PORT                 HTTP port for SSE mode (default: 3000)
 `;
 
   process.stdout.write(usage + '\n');
@@ -119,6 +128,10 @@ export async function main(
 
     case 'version':
       printVersion();
+      break;
+
+    case 'mcp':
+      await bootstrap();
       break;
 
     case 'init': {
