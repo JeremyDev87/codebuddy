@@ -20,10 +20,7 @@
 ### 1단계: 프로젝트 초기화
 
 ```bash
-# Anthropic API 키 설정 (프로젝트 분석에 필요)
-export ANTHROPIC_API_KEY=sk-ant-...
-
-# 프로젝트에서 Codingbuddy 초기화
+# 프로젝트에서 Codingbuddy 초기화 (API 키 불필요)
 npx codingbuddy init
 ```
 
@@ -33,6 +30,20 @@ npx codingbuddy init
 - 아키텍처 패턴
 - 코딩 컨벤션
 - 테스트 전략
+
+#### AI 기반 초기화 (선택 사항)
+
+AI를 활용한 더 상세한 분석을 원하면 `--ai` 플래그를 사용하세요:
+
+```bash
+# Anthropic API 키 설정
+export ANTHROPIC_API_KEY=sk-ant-...
+
+# AI 기반 초기화 실행
+npx codingbuddy init --ai
+```
+
+AI 기반 모드는 더 깊은 프로젝트 분석과 맞춤형 설정을 제공합니다.
 
 ### 2단계: AI 도구 설정
 

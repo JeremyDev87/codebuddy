@@ -20,10 +20,7 @@
 ### ステップ1：プロジェクトの初期化
 
 ```bash
-# Anthropic APIキーを設定（プロジェクト分析に必要）
-export ANTHROPIC_API_KEY=sk-ant-...
-
-# プロジェクトでCodingbuddyを初期化
+# プロジェクトでCodingbuddyを初期化（APIキー不要）
 npx codingbuddy init
 ```
 
@@ -33,6 +30,20 @@ npx codingbuddy init
 - アーキテクチャパターン
 - コーディング規約
 - テスト戦略
+
+#### AI駆動の初期化（オプション）
+
+AIを使用したより詳細な分析には、`--ai`フラグを使用します：
+
+```bash
+# Anthropic APIキーを設定
+export ANTHROPIC_API_KEY=sk-ant-...
+
+# AI駆動の初期化を実行
+npx codingbuddy init --ai
+```
+
+AI駆動モードはより深いプロジェクト分析とカスタマイズされた設定を提供します。
 
 ### ステップ2：AIツールの設定
 

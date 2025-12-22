@@ -15,6 +15,8 @@ import { RulesService } from '../rules/rules.service';
 import { KeywordService } from '../keyword/keyword.service';
 import { KEYWORD_SERVICE } from '../keyword/keyword.module';
 import { ConfigService } from '../config/config.service';
+import { ConfigDiffService } from '../config/config-diff.service';
+import { AnalyzerService } from '../analyzer/analyzer.service';
 import type { CodingBuddyConfig } from '../config/config.schema';
 
 @Injectable()
@@ -26,6 +28,8 @@ export class McpService implements OnModuleInit {
     private rulesService: RulesService,
     @Inject(KEYWORD_SERVICE) private keywordService: KeywordService,
     private configService: ConfigService,
+    private configDiffService: ConfigDiffService,
+    private analyzerService: AnalyzerService,
   ) {
     this.server = new Server(
       {
@@ -197,6 +201,22 @@ export class McpService implements OnModuleInit {
               required: [],
             },
           },
+          {
+            name: 'suggest_config_updates',
+            description:
+              'Analyze the project and suggest config updates based on detected changes (new frameworks, dependencies, patterns)',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                projectRoot: {
+                  type: 'string',
+                  description:
+                    'Project root directory (defaults to current working directory)',
+                },
+              },
+              required: [],
+            },
+          },
         ],
       };
     });
@@ -213,6 +233,8 @@ export class McpService implements OnModuleInit {
           return this.handleParseMode(args);
         case 'get_project_config':
           return this.handleGetProjectConfig();
+        case 'suggest_config_updates':
+          return this.handleSuggestConfigUpdates(args);
         default:
           throw new McpError(
             ErrorCode.MethodNotFound,
@@ -316,6 +338,32 @@ export class McpService implements OnModuleInit {
     } catch (error) {
       return this.errorResponse(
         `Failed to get project config: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+    }
+  }
+
+  private async handleSuggestConfigUpdates(
+    args: Record<string, unknown> | undefined,
+  ) {
+    try {
+      const projectRoot = String(args?.projectRoot ?? process.cwd());
+
+      // Analyze project
+      const analysis = await this.analyzerService.analyzeProject(projectRoot);
+
+      // Get current config
+      const currentConfig = await this.configService.getSettings();
+
+      // Compare and get suggestions
+      const result = this.configDiffService.compareConfig(
+        analysis,
+        currentConfig,
+      );
+
+      return this.jsonResponse(result);
+    } catch (error) {
+      return this.errorResponse(
+        `Failed to suggest config updates: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }

@@ -96,3 +96,15 @@ export type { ProjectConfig } from './config.service';
 
 export { ConfigService } from './config.service';
 export { CodingBuddyConfigModule } from './config.module';
+
+// ============================================================================
+// Config Diff Service
+// ============================================================================
+
+export type {
+  ConfigUpdateSuggestion,
+  ConfigDiffResult,
+  SuggestionPriority,
+} from './config-diff.service';
+
+export { ConfigDiffService } from './config-diff.service';

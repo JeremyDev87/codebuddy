@@ -9,11 +9,17 @@ const {
   mockGenerate,
   mockFindExistingConfig,
   mockWriteConfig,
+  mockSelectTemplate,
+  mockRenderConfigAsJs,
+  mockRenderConfigAsJson,
 } = vi.hoisted(() => ({
   mockAnalyzeProject: vi.fn(),
   mockGenerate: vi.fn(),
   mockFindExistingConfig: vi.fn(),
   mockWriteConfig: vi.fn(),
+  mockSelectTemplate: vi.fn(),
+  mockRenderConfigAsJs: vi.fn(),
+  mockRenderConfigAsJson: vi.fn(),
 }));
 
 // Mock all modules
@@ -32,6 +38,12 @@ vi.mock('./config.generator', () => ({
 vi.mock('./config.writer', () => ({
   findExistingConfig: mockFindExistingConfig,
   writeConfig: mockWriteConfig,
+}));
+
+vi.mock('./templates', () => ({
+  selectTemplate: mockSelectTemplate,
+  renderConfigAsJs: mockRenderConfigAsJs,
+  renderConfigAsJson: mockRenderConfigAsJson,
 }));
 
 vi.mock('../utils/console', () => ({
@@ -84,6 +96,21 @@ describe('init.command', () => {
     language: 'en',
   };
 
+  const mockTemplateResult = {
+    template: {
+      metadata: {
+        id: 'default',
+        name: 'Default',
+        description: 'Default template',
+        matchPatterns: [],
+      },
+      config: mockConfig,
+      comments: { header: '// header' },
+    },
+    reason: 'Default template selected',
+    detectedFrameworks: [],
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -92,6 +119,9 @@ describe('init.command', () => {
     mockGenerate.mockResolvedValue(mockConfig);
     mockFindExistingConfig.mockResolvedValue(null);
     mockWriteConfig.mockResolvedValue('/project/codingbuddy.config.js');
+    mockSelectTemplate.mockReturnValue(mockTemplateResult);
+    mockRenderConfigAsJs.mockReturnValue('// rendered config');
+    mockRenderConfigAsJson.mockReturnValue('{}');
   });
 
   describe('getApiKey', () => {
@@ -128,13 +158,12 @@ describe('init.command', () => {
     });
   });
 
-  describe('runInit', () => {
-    it('should complete successfully with valid options', async () => {
+  describe('runInit - Template mode (default)', () => {
+    it('should complete successfully without API key', async () => {
       const options: InitOptions = {
         projectRoot: '/project',
         format: 'js',
         force: false,
-        apiKey: 'test-key',
       };
 
       const result = await runInit(options);
@@ -143,11 +172,96 @@ describe('init.command', () => {
       expect(result.configPath).toBe('/project/codingbuddy.config.js');
     });
 
-    it('should fail without API key', async () => {
+    it('should call analyzer service', async () => {
       const options: InitOptions = {
         projectRoot: '/project',
         format: 'js',
         force: false,
+      };
+
+      await runInit(options);
+
+      expect(mockAnalyzeProject).toHaveBeenCalledWith('/project');
+    });
+
+    it('should select template based on analysis', async () => {
+      const options: InitOptions = {
+        projectRoot: '/project',
+        format: 'js',
+        force: false,
+      };
+
+      await runInit(options);
+
+      expect(mockSelectTemplate).toHaveBeenCalledWith(mockAnalysis);
+    });
+
+    it('should render config as JS by default', async () => {
+      const options: InitOptions = {
+        projectRoot: '/project',
+        format: 'js',
+        force: false,
+      };
+
+      await runInit(options);
+
+      expect(mockRenderConfigAsJs).toHaveBeenCalled();
+      expect(mockRenderConfigAsJson).not.toHaveBeenCalled();
+    });
+
+    it('should render config as JSON when format is json', async () => {
+      const options: InitOptions = {
+        projectRoot: '/project',
+        format: 'json',
+        force: false,
+      };
+
+      await runInit(options);
+
+      expect(mockRenderConfigAsJson).toHaveBeenCalled();
+      expect(mockRenderConfigAsJs).not.toHaveBeenCalled();
+    });
+
+    it('should write rendered config with raw option', async () => {
+      const options: InitOptions = {
+        projectRoot: '/project',
+        format: 'js',
+        force: false,
+      };
+
+      await runInit(options);
+
+      expect(mockWriteConfig).toHaveBeenCalledWith(
+        '/project',
+        '// rendered config',
+        { format: 'js', raw: true },
+      );
+    });
+
+    it('should pass language option to renderer', async () => {
+      const options: InitOptions = {
+        projectRoot: '/project',
+        format: 'js',
+        force: false,
+        language: 'en',
+      };
+
+      await runInit(options);
+
+      expect(mockRenderConfigAsJs).toHaveBeenCalledWith(
+        mockTemplateResult.template,
+        expect.objectContaining({ language: 'en' }),
+      );
+    });
+  });
+
+  describe('runInit - AI mode', () => {
+    it('should fail without API key when useAi is true', async () => {
+      const options: InitOptions = {
+        projectRoot: '/project',
+        format: 'js',
+        force: false,
+        useAi: true,
       };
 
       const result = await runInit(options);
@@ -156,12 +270,45 @@ describe('init.command', () => {
       expect(result.error).toContain('API key');
     });
 
+    it('should use AI generator when useAi is true with API key', async () => {
+      const options: InitOptions = {
+        projectRoot: '/project',
+        format: 'js',
+        force: false,
+        useAi: true,
+        apiKey: 'test-key',
+      };
+
+      const result = await runInit(options);
+
+      expect(result.success).toBe(true);
+      expect(mockGenerate).toHaveBeenCalledWith(mockAnalysis);
+      expect(mockSelectTemplate).not.toHaveBeenCalled();
+    });
+
+    it('should write config without raw option in AI mode', async () => {
+      const options: InitOptions = {
+        projectRoot: '/project',
+        format: 'js',
+        force: false,
+        useAi: true,
+        apiKey: 'test-key',
+      };
+
+      await runInit(options);
+
+      expect(mockWriteConfig).toHaveBeenCalledWith('/project', mockConfig, {
+        format: 'js',
+      });
+    });
+  });
+
+  describe('runInit - Common behavior', () => {
     it('should check for existing config', async () => {
       const options: InitOptions = {
         projectRoot: '/project',
         format: 'js',
         force: false,
-        apiKey: 'test-key',
       };
 
       await runInit(options);
@@ -178,7 +325,6 @@ describe('init.command', () => {
         projectRoot: '/project',
         format: 'js',
         force: false,
-        apiKey: 'test-key',
       };
 
       const result = await runInit(options);
@@ -196,54 +342,12 @@ describe('init.command', () => {
         projectRoot: '/project',
         format: 'js',
         force: true,
-        apiKey: 'test-key',
       };
 
       const result = await runInit(options);
 
       expect(result.success).toBe(true);
       expect(mockWriteConfig).toHaveBeenCalled();
-    });
-
-    it('should call analyzer service', async () => {
-      const options: InitOptions = {
-        projectRoot: '/project',
-        format: 'js',
-        force: false,
-        apiKey: 'test-key',
-      };
-
-      await runInit(options);
-
-      expect(mockAnalyzeProject).toHaveBeenCalledWith('/project');
-    });
-
-    it('should call config generator', async () => {
-      const options: InitOptions = {
-        projectRoot: '/project',
-        format: 'js',
-        force: false,
-        apiKey: 'test-key',
-      };
-
-      await runInit(options);
-
-      expect(mockGenerate).toHaveBeenCalledWith(mockAnalysis);
-    });
-
-    it('should write config file', async () => {
-      const options: InitOptions = {
-        projectRoot: '/project',
-        format: 'js',
-        force: false,
-        apiKey: 'test-key',
-      };
-
-      await runInit(options);
-
-      expect(mockWriteConfig).toHaveBeenCalledWith('/project', mockConfig, {
-        format: 'js',
-      });
     });
 
     it('should handle analyzer error', async () => {
@@ -253,7 +357,6 @@ describe('init.command', () => {
         projectRoot: '/project',
         format: 'js',
         force: false,
-        apiKey: 'test-key',
       };
 
       const result = await runInit(options);
@@ -262,13 +365,14 @@ describe('init.command', () => {
       expect(result.error).toContain('Analysis failed');
     });
 
-    it('should handle generator error', async () => {
+    it('should handle generator error in AI mode', async () => {
       mockGenerate.mockRejectedValue(new Error('Generation failed'));
 
       const options: InitOptions = {
         projectRoot: '/project',
         format: 'js',
         force: false,
+        useAi: true,
         apiKey: 'test-key',
       };
 
@@ -285,7 +389,6 @@ describe('init.command', () => {
         projectRoot: '/project',
         format: 'js',
         force: false,
-        apiKey: 'test-key',
       };
 
       const result = await runInit(options);

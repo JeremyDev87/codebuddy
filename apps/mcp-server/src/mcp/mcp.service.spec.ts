@@ -3,6 +3,12 @@ import { RulesService } from '../rules/rules.service';
 import { KeywordService } from '../keyword/keyword.service';
 import { ConfigService, ProjectConfig } from '../config/config.service';
 import type { CodingBuddyConfig } from '../config/config.schema';
+import type { ProjectAnalysis } from '../analyzer';
+import {
+  ConfigDiffService,
+  ConfigDiffResult,
+} from '../config/config-diff.service';
+import { AnalyzerService } from '../analyzer/analyzer.service';
 
 // Handler function type for MCP request handlers
 type McpHandler = (request: unknown) => Promise<unknown>;
@@ -37,6 +43,36 @@ vi.mock('@modelcontextprotocol/sdk/server/index.js', () => ({
 vi.mock('@modelcontextprotocol/sdk/server/stdio.js', () => ({
   StdioServerTransport: class MockTransport {},
 }));
+
+// Mock analysis data
+const mockAnalysis: ProjectAnalysis = {
+  packageInfo: {
+    name: 'test-app',
+    version: '1.0.0',
+    dependencies: { react: '^18.0.0' },
+    devDependencies: {},
+    scripts: {},
+    detectedFrameworks: [
+      { name: 'React', category: 'frontend', version: '^18.0.0' },
+    ],
+  },
+  directoryStructure: {
+    rootDirs: ['src'],
+    rootFiles: ['package.json'],
+    allFiles: [],
+    patterns: [],
+    totalFiles: 5,
+    totalDirs: 2,
+  },
+  configFiles: { detected: [] },
+  codeSamples: [],
+  detectedPatterns: [],
+};
+
+const mockDiffResult: ConfigDiffResult = {
+  isUpToDate: true,
+  suggestions: [],
+};
 
 // Mock dependencies
 const createMockRulesService = (): Partial<RulesService> => ({
@@ -82,6 +118,15 @@ const createMockConfigService = (
   getFormattedContext: vi.fn().mockResolvedValue(''),
 });
 
+const createMockConfigDiffService = (): Partial<ConfigDiffService> => ({
+  compareConfig: vi.fn().mockReturnValue(mockDiffResult),
+  formatSuggestionsAsText: vi.fn().mockReturnValue(''),
+});
+
+const createMockAnalyzerService = (): Partial<AnalyzerService> => ({
+  analyzeProject: vi.fn().mockResolvedValue(mockAnalysis),
+});
+
 // Import after mocks
 import { McpService } from './mcp.service';
 
@@ -89,6 +134,8 @@ describe('McpService', () => {
   let mockRulesService: Partial<RulesService>;
   let mockKeywordService: Partial<KeywordService>;
   let mockConfigService: Partial<ConfigService>;
+  let mockConfigDiffService: Partial<ConfigDiffService>;
+  let mockAnalyzerService: Partial<AnalyzerService>;
 
   const testConfig: CodingBuddyConfig = {
     language: 'ko',
@@ -106,11 +153,15 @@ describe('McpService', () => {
     mockRulesService = createMockRulesService();
     mockKeywordService = createMockKeywordService();
     mockConfigService = createMockConfigService(testConfig);
+    mockConfigDiffService = createMockConfigDiffService();
+    mockAnalyzerService = createMockAnalyzerService();
 
     const mcpService = new McpService(
       mockRulesService as RulesService,
       mockKeywordService as KeywordService,
       mockConfigService as ConfigService,
+      mockConfigDiffService as ConfigDiffService,
+      mockAnalyzerService as AnalyzerService,
     );
     mcpService.onModuleInit();
   });
@@ -222,6 +273,37 @@ describe('McpService', () => {
       expect(parsed.name).toBe('Frontend Developer');
     });
 
+    it('should list suggest_config_updates tool', async () => {
+      const handler = handlers.get('tools/list');
+      expect(handler).toBeDefined();
+
+      const result = (await handler!({})) as {
+        tools: { name: string; description: string }[];
+      };
+      const suggestTool = result.tools.find(
+        t => t.name === 'suggest_config_updates',
+      );
+
+      expect(suggestTool).toBeDefined();
+      expect(suggestTool!.description).toContain('config');
+    });
+
+    it('should call suggest_config_updates tool', async () => {
+      const handler = handlers.get('tools/call');
+      expect(handler).toBeDefined();
+
+      const result = (await handler!({
+        params: { name: 'suggest_config_updates', arguments: {} },
+      })) as { content: { type: string; text: string }[] };
+
+      expect(result.content).toHaveLength(1);
+      expect(result.content[0].type).toBe('text');
+
+      const parsedContent = JSON.parse(result.content[0].text);
+      expect(parsedContent).toHaveProperty('isUpToDate');
+      expect(parsedContent).toHaveProperty('suggestions');
+    });
+
     it('should include language setting in parse_mode response', async () => {
       const handler = handlers.get('tools/call');
       expect(handler).toBeDefined();
@@ -285,6 +367,8 @@ describe('McpService', () => {
         mockRulesService as RulesService,
         mockKeywordService as KeywordService,
         emptyConfigService as ConfigService,
+        mockConfigDiffService as ConfigDiffService,
+        mockAnalyzerService as AnalyzerService,
       );
       serviceWithEmptyConfig.onModuleInit();
 
@@ -331,6 +415,8 @@ describe('McpService', () => {
         mockRulesService as RulesService,
         mockKeywordService as KeywordService,
         fullConfigService as ConfigService,
+        mockConfigDiffService as ConfigDiffService,
+        mockAnalyzerService as AnalyzerService,
       );
       service.onModuleInit();
 
@@ -392,6 +478,8 @@ describe('McpService', () => {
           mockRulesService as RulesService,
           mockKeywordService as KeywordService,
           failingConfigService as ConfigService,
+          mockConfigDiffService as ConfigDiffService,
+          mockAnalyzerService as AnalyzerService,
         );
         service.onModuleInit();
 
@@ -460,6 +548,8 @@ describe('McpService', () => {
           mockRulesService as RulesService,
           mockKeywordService as KeywordService,
           failingConfigService as ConfigService,
+          mockConfigDiffService as ConfigDiffService,
+          mockAnalyzerService as AnalyzerService,
         );
         service.onModuleInit();
 
@@ -513,6 +603,8 @@ describe('McpService', () => {
         mockRulesService as RulesService,
         mockKeywordService as KeywordService,
         mockConfigService as ConfigService,
+        mockConfigDiffService as ConfigDiffService,
+        mockAnalyzerService as AnalyzerService,
       );
 
       // Should not throw
@@ -526,6 +618,8 @@ describe('McpService', () => {
         mockRulesService as RulesService,
         mockKeywordService as KeywordService,
         mockConfigService as ConfigService,
+        mockConfigDiffService as ConfigDiffService,
+        mockAnalyzerService as AnalyzerService,
       );
 
       const server = service.getServer();

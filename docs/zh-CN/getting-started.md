@@ -20,10 +20,7 @@
 ### 步骤 1：初始化项目
 
 ```bash
-# 设置 Anthropic API 密钥（项目分析所需）
-export ANTHROPIC_API_KEY=sk-ant-...
-
-# 在项目中初始化 Codingbuddy
+# 在项目中初始化 Codingbuddy（无需 API 密钥）
 npx codingbuddy init
 ```
 
@@ -33,6 +30,20 @@ npx codingbuddy init
 - 架构模式
 - 编码规范
 - 测试策略
+
+#### AI 驱动初始化（可选）
+
+如需使用 AI 进行更详细的分析，请使用 `--ai` 标志：
+
+```bash
+# 设置 Anthropic API 密钥
+export ANTHROPIC_API_KEY=sk-ant-...
+
+# 运行 AI 驱动初始化
+npx codingbuddy init --ai
+```
+
+AI 驱动模式提供更深入的项目分析和更个性化的配置。
 
 ### 步骤 2：配置 AI 工具
 
