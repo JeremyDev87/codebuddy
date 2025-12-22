@@ -351,6 +351,9 @@ export class McpService implements OnModuleInit {
       // Analyze project
       const analysis = await this.analyzerService.analyzeProject(projectRoot);
 
+      // Reload config from disk to get latest changes
+      await this.configService.reload();
+
       // Get current config
       const currentConfig = await this.configService.getSettings();
 
