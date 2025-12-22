@@ -469,7 +469,7 @@ For specialist agents, use the `modes` structure:
 4. **Test**:
    ```bash
    # Verify MCP server works
-   npx @modelcontextprotocol/inspector npx codingbuddy-mcp
+   npx @modelcontextprotocol/inspector npx codingbuddy mcp
    ```
 
 ### Upgrade Checklist

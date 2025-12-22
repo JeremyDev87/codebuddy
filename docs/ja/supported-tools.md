@@ -40,7 +40,7 @@ Claude CodeはMCPを通じて接続し、プロジェクト設定、ルール、
      "mcpServers": {
        "codingbuddy": {
          "command": "npx",
-         "args": ["codingbuddy-mcp"]
+         "args": ["codingbuddy", "mcp"]
        }
      }
    }

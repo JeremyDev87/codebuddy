@@ -45,7 +45,7 @@ Add Codingbuddy to your AI assistant. Here's an example for Claude Desktop:
   "mcpServers": {
     "codingbuddy": {
       "command": "npx",
-      "args": ["codingbuddy-mcp"]
+      "args": ["codingbuddy", "mcp"]
     }
   }
 }

@@ -45,7 +45,7 @@ Añade Codingbuddy a tu asistente de IA. Aquí tienes un ejemplo para Claude Des
   "mcpServers": {
     "codingbuddy": {
       "command": "npx",
-      "args": ["codingbuddy-mcp"]
+      "args": ["codingbuddy", "mcp"]
     }
   }
 }

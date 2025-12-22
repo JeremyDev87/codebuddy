@@ -40,7 +40,7 @@ Claude Code connects via MCP, providing full access to project configuration, ru
      "mcpServers": {
        "codingbuddy": {
          "command": "npx",
-         "args": ["codingbuddy-mcp"]
+         "args": ["codingbuddy", "mcp"]
        }
      }
    }
