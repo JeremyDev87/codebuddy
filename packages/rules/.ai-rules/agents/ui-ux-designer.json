@@ -22,10 +22,7 @@
     ]
   },
 
-  "context_files": [
-    ".ai-rules/rules/core.md",
-    ".ai-rules/rules/project.md"
-  ],
+  "context_files": [".ai-rules/rules/core.md", ".ai-rules/rules/project.md"],
 
   "modes": {
     "planning": {
@@ -475,7 +472,15 @@
       "human_in_the_loop": "Allow users to override, correct, or guide AI decisions"
     },
     "interaction_states": [
-      "default", "hover", "focus", "active", "disabled", "loading", "error", "success", "empty"
+      "default",
+      "hover",
+      "focus",
+      "active",
+      "disabled",
+      "loading",
+      "error",
+      "success",
+      "empty"
     ],
     "responsive_breakpoints": {
       "note": "Define based on content needs, not devices",

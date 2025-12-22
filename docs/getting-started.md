@@ -20,10 +20,7 @@ Get up and running with Codingbuddy in minutes.
 ### Step 1: Initialize Your Project
 
 ```bash
-# Set your Anthropic API key (required for project analysis)
-export ANTHROPIC_API_KEY=sk-ant-...
-
-# Initialize Codingbuddy in your project
+# Initialize Codingbuddy in your project (no API key required)
 npx codingbuddy init
 ```
 
@@ -33,6 +30,20 @@ This command analyzes your project and creates a `codingbuddy.config.js` file wi
 - Architecture patterns
 - Coding conventions
 - Testing strategy
+
+#### AI-Powered Initialization (Optional)
+
+For more detailed analysis using AI, use the `--ai` flag:
+
+```bash
+# Set your Anthropic API key
+export ANTHROPIC_API_KEY=sk-ant-...
+
+# Run AI-powered initialization
+npx codingbuddy init --ai
+```
+
+The AI-powered mode provides deeper project analysis and more tailored configurations.
 
 ### Step 2: Configure Your AI Tool
 

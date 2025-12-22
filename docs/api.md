@@ -363,6 +363,69 @@ Get project configuration including tech stack, architecture, conventions, and l
 
 ---
 
+### suggest_config_updates
+
+Analyze the project and suggest config updates based on detected changes (new frameworks, dependencies, patterns).
+
+**Input Schema**:
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "projectRoot": {
+      "type": "string",
+      "description": "Project root directory (defaults to current working directory)"
+    }
+  },
+  "required": []
+}
+```
+
+**Request Example**:
+
+```json
+{
+  "name": "suggest_config_updates",
+  "arguments": {
+    "projectRoot": "/path/to/project"
+  }
+}
+```
+
+**Response Example**:
+
+```json
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\"isUpToDate\": false, \"suggestions\": [{\"field\": \"techStack.frontend\", \"reason\": \"Detected new frontend framework(s)\", \"currentValue\": [\"React\"], \"suggestedValue\": [\"React\", \"Next.js\"], \"priority\": \"high\"}]}"
+    }
+  ]
+}
+```
+
+**Suggestion Fields**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `field` | string | Config path (e.g., `techStack.frontend`) |
+| `reason` | string | Why the update is suggested |
+| `currentValue` | any | Current value in config |
+| `suggestedValue` | any | Recommended new value |
+| `priority` | string | `high`, `medium`, or `low` |
+
+**Priority Levels**:
+
+| Priority | Description |
+|----------|-------------|
+| `high` | New frameworks detected (frontend, backend) |
+| `medium` | Database tools, languages, project name changes |
+| `low` | Optional enhancements |
+
+---
+
 ## Prompts
 
 Prompts provide pre-defined message templates for common workflows.
@@ -439,7 +502,7 @@ Activate a specific specialist agent with project context.
 | `Invalid URI scheme` | URI doesn't start with `rules://` or `config://` | Use correct URI scheme |
 | `Resource not found: {uri}` | Requested rule file doesn't exist | Check file path in `packages/rules/.ai-rules/` |
 | `Agent '{name}' not found` | Invalid agent name | Use valid agent name from list |
-| `Tool not found: {name}` | Invalid tool name | Use one of: `search_rules`, `get_agent_details`, `parse_mode`, `get_project_config` |
+| `Tool not found: {name}` | Invalid tool name | Use one of: `search_rules`, `get_agent_details`, `parse_mode`, `get_project_config`, `suggest_config_updates` |
 | `Failed to load project configuration` | Missing or invalid `codingbuddy.config.js` | Run `npx codingbuddy init` |
 
 ---

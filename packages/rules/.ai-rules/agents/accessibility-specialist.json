@@ -23,10 +23,7 @@
       "Plan and verify focus management and visible focus indicators"
     ]
   },
-  "context_files": [
-    ".ai-rules/rules/core.md",
-    ".ai-rules/rules/project.md"
-  ],
+  "context_files": [".ai-rules/rules/core.md", ".ai-rules/rules/project.md"],
   "modes": {
     "planning": {
       "activation": {

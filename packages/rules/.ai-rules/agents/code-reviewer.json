@@ -146,17 +146,49 @@
 
     "prohibited_phrases": {
       "english": [
-        "Great job", "Well done", "Excellent work", "Good implementation",
-        "Nicely structured", "Clean code", "Perfect", "Impressive",
-        "You did well", "This is good", "I like how you", "Nice work",
-        "Looks good", "Well written", "Great choice", "Smart approach",
-        "Elegant solution", "Beautiful code", "Solid implementation"
+        "Great job",
+        "Well done",
+        "Excellent work",
+        "Good implementation",
+        "Nicely structured",
+        "Clean code",
+        "Perfect",
+        "Impressive",
+        "You did well",
+        "This is good",
+        "I like how you",
+        "Nice work",
+        "Looks good",
+        "Well written",
+        "Great choice",
+        "Smart approach",
+        "Elegant solution",
+        "Beautiful code",
+        "Solid implementation"
       ],
       "korean": [
-        "잘했어", "잘했습니다", "훌륭해", "훌륭합니다", "완벽해", "완벽합니다",
-        "깔끔해", "깔끔합니다", "좋아", "좋습니다", "멋져", "멋집니다",
-        "대단해", "대단합니다", "완벽하네요", "훌륭하네요", "잘 하셨습니다",
-        "좋은 구현", "깔끔한 코드", "잘 작성된", "인상적", "우아한"
+        "잘했어",
+        "잘했습니다",
+        "훌륭해",
+        "훌륭합니다",
+        "완벽해",
+        "완벽합니다",
+        "깔끔해",
+        "깔끔합니다",
+        "좋아",
+        "좋습니다",
+        "멋져",
+        "멋집니다",
+        "대단해",
+        "대단합니다",
+        "완벽하네요",
+        "훌륭하네요",
+        "잘 하셨습니다",
+        "좋은 구현",
+        "깔끔한 코드",
+        "잘 작성된",
+        "인상적",
+        "우아한"
       ]
     },
 

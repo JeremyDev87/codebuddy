@@ -27,6 +27,8 @@ export type ConfigFormat = 'js' | 'json';
 export interface WriteConfigOptions {
   /** Output format (default: 'js') */
   format?: ConfigFormat;
+  /** Write raw content without formatting (for pre-rendered templates) */
+  raw?: boolean;
 }
 
 /**
@@ -71,13 +73,13 @@ export async function findExistingConfig(
  * Write configuration file to project root
  *
  * @param projectRoot - Project root directory
- * @param config - Configuration to write
+ * @param config - Configuration object or pre-rendered string (when raw: true)
  * @param options - Write options
  * @returns Path to written file
  */
 export async function writeConfig(
   projectRoot: string,
-  config: CodingBuddyConfig,
+  config: CodingBuddyConfig | string,
   options: WriteConfigOptions = {},
 ): Promise<string> {
   const format = options.format ?? 'js';
@@ -85,8 +87,20 @@ export async function writeConfig(
   const fileName =
     format === 'json' ? 'codingbuddy.config.json' : 'codingbuddy.config.js';
 
-  const content =
-    format === 'json' ? formatConfigAsJson(config) : formatConfigAsJs(config);
+  let content: string;
+
+  if (options.raw && typeof config === 'string') {
+    // Use pre-rendered content as-is
+    content = config;
+  } else if (typeof config === 'object') {
+    // Format the config object
+    content =
+      format === 'json' ? formatConfigAsJson(config) : formatConfigAsJs(config);
+  } else {
+    throw new Error(
+      'Invalid config: expected object or string with raw option',
+    );
+  }
 
   const filePath = path.join(projectRoot, fileName);
 

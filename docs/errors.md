@@ -53,6 +53,7 @@ config://project
 - `get_agent_details`
 - `parse_mode`
 - `get_project_config`
+- `suggest_config_updates`
 
 **Valid Prompts**:
 - `activate_agent`
@@ -228,20 +229,23 @@ module.exports = {
 
 **Error**:
 ```
-ANTHROPIC_API_KEY is required for codingbuddy init
+ANTHROPIC_API_KEY is required for AI-powered initialization
 ```
 
-**Cause**: API key not provided for AI-powered initialization.
+**Cause**: API key not provided when using `--ai` flag for AI-powered initialization.
 
 **Resolution**:
 
 ```bash
-# Set environment variable
-export ANTHROPIC_API_KEY=sk-ant-...
+# Option 1: Use template-based init (no API key required)
+npx codingbuddy init
 
-# Or pass directly
-npx codingbuddy init --api-key sk-ant-...
+# Option 2: Use AI-powered init with API key
+export ANTHROPIC_API_KEY=sk-ant-...
+npx codingbuddy init --ai
 ```
+
+**Note**: The default `init` command uses template-based configuration and does not require an API key. The `--ai` flag enables AI-powered analysis which requires an Anthropic API key.
 
 ---
 

@@ -26,8 +26,11 @@ Codingbuddy provides a unified rules system that works with Cursor, Claude Code,
 ## Quick Start
 
 ```bash
-# Initialize your project (analyzes codebase and creates config)
+# Initialize your project (no API key required)
 npx codingbuddy init
+
+# Optional: AI-powered initialization for deeper analysis
+# npx codingbuddy init --ai  # Requires ANTHROPIC_API_KEY
 
 # Add to your AI tool (example: Claude Desktop)
 # See docs/supported-tools.md for other AI tools

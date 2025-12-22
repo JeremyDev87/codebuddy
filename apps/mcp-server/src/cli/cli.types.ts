@@ -28,8 +28,12 @@ export interface InitOptions {
   format: 'js' | 'json';
   /** Force overwrite existing config */
   force: boolean;
-  /** Anthropic API key */
+  /** Use AI to generate config (requires API key) */
+  useAi?: boolean;
+  /** Anthropic API key (only used with --ai flag) */
   apiKey?: string;
+  /** Response language for AI and comments */
+  language?: string;
 }
 
 /**
