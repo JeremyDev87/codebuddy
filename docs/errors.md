@@ -294,7 +294,7 @@ ls -la packages/rules/.ai-rules/agents/
      "mcpServers": {
        "codingbuddy-rules": {
          "command": "npx",
-         "args": ["codingbuddy-mcp"]
+         "args": ["codingbuddy", "mcp"]
        }
      }
    }

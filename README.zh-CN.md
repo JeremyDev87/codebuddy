@@ -40,7 +40,7 @@ npx codingbuddy init
   "mcpServers": {
     "codingbuddy": {
       "command": "npx",
-      "args": ["codingbuddy-mcp"]
+      "args": ["codingbuddy", "mcp"]
     }
   }
 }

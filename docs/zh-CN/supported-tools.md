@@ -40,7 +40,7 @@ Claude Code 通过 MCP 连接，提供对项目配置、规则和专家代理的
      "mcpServers": {
        "codingbuddy": {
          "command": "npx",
-         "args": ["codingbuddy-mcp"]
+         "args": ["codingbuddy", "mcp"]
        }
      }
    }

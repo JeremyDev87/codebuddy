@@ -40,7 +40,7 @@ Añade a la configuración de Claude Desktop (`~/Library/Application Support/Cla
   "mcpServers": {
     "codingbuddy": {
       "command": "npx",
-      "args": ["codingbuddy-mcp"]
+      "args": ["codingbuddy", "mcp"]
     }
   }
 }
