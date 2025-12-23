@@ -1,7 +1,35 @@
 {
   "name": "codingbuddy",
   "version": "1.0.0",
-  "description": "Multi-AI Rules MCP Server",
+  "description": "Multi-AI Rules MCP Server - One source of truth for AI coding rules across all AI assistants",
+  "author": "JeremyDev87",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JeremyDev87/codingbuddy.git",
+    "directory": "apps/mcp-server"
+  },
+  "bugs": {
+    "url": "https://github.com/JeremyDev87/codingbuddy/issues"
+  },
+  "homepage": "https://github.com/JeremyDev87/codingbuddy#readme",
+  "keywords": [
+    "ai",
+    "mcp",
+    "model-context-protocol",
+    "coding-assistant",
+    "cursor",
+    "claude",
+    "claude-code",
+    "copilot",
+    "antigravity",
+    "amazon-q",
+    "kiro",
+    "coding-rules",
+    "ai-rules",
+    "developer-tools",
+    "nestjs"
+  ],
   "main": "dist/src/main.js",
   "bin": "./dist/src/cli/cli.js",
   "files": [
