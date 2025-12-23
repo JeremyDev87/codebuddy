@@ -8,7 +8,7 @@
 
 # Codingbuddy
 
-[![CI](https://github.com/Codingbuddydev/codingbuddy/actions/workflows/dev.yml/badge.svg)](https://github.com/Codingbuddydev/codingbuddy/actions/workflows/dev.yml)
+[![CI](https://github.com/JeremyDev87/codingbuddy/codingbuddy/actions/workflows/dev.yml/badge.svg)](https://github.com/JeremyDev87/codingbuddy/codingbuddy/actions/workflows/dev.yml)
 [![npm version](https://img.shields.io/npm/v/codingbuddy.svg)](https://www.npmjs.com/package/codingbuddy)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -94,4 +94,4 @@ packages/rules/.ai-rules/  ← 共享规则（单一数据源）
 
 ## 许可证
 
-MIT © [Codingbuddy](https://github.com/Codingbuddydev)
+MIT © [Codingbuddy](https://github.com/JeremyDev87/codingbuddy)
