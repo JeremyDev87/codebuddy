@@ -355,7 +355,7 @@ yarn workspace codingbuddy build
 
 If you encounter an error not listed here:
 
-1. Check [GitHub Issues](https://github.com/Codingbuddydev/codingbuddy/issues)
+1. Check [GitHub Issues](https://github.com/JeremyDev87/codingbuddy/issues)
 2. Open a new issue with:
    - Error message
    - Steps to reproduce

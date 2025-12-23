@@ -35,7 +35,7 @@ corepack enable
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/Codingbuddydev/codingbuddy.git
+git clone https://github.com/JeremyDev87/codingbuddy.git
 cd codingbuddy
 ```
 

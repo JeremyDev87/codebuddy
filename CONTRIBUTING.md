@@ -27,7 +27,7 @@ Be respectful and inclusive. We welcome contributors of all backgrounds and expe
 
 ```bash
 # Clone the repository
-git clone https://github.com/Codingbuddydev/codingbuddy.git
+git clone https://github.com/JeremyDev87/codingbuddy.git
 cd codingbuddy
 
 # Install dependencies
@@ -64,7 +64,7 @@ codingbuddy/
 
 ### 1. Find or Create an Issue
 
-- Check [existing issues](https://github.com/Codingbuddydev/codingbuddy/issues)
+- Check [existing issues](https://github.com/JeremyDev87/codingbuddy/issues)
 - For new features, create an issue first to discuss the approach
 - For bug fixes, you can proceed directly with a PR
 
@@ -260,7 +260,7 @@ Include:
 
 ## Questions?
 
-- Open a [GitHub Discussion](https://github.com/Codingbuddydev/codingbuddy/discussions)
+- Open a [GitHub Discussion](https://github.com/JeremyDev87/codingbuddy/discussions)
 - Check existing issues and documentation
 
 ---
