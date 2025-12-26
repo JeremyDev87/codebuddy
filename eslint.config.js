@@ -11,11 +11,12 @@ module.exports = [
     languageOptions: {
       parser: tsParser,
       parserOptions: {
-        project: './mcp-server/tsconfig.json',
+        project: './apps/mcp-server/tsconfig.json',
         sourceType: 'module',
       },
       globals: {
         ...globals.node,
+        NodeJS: 'readonly',
       },
     },
     plugins: {
@@ -43,6 +44,7 @@ module.exports = [
       '.pnp.*',
       '**/*.md',
       '**/*.mdc',
+      '**/vitest.config.ts',
     ],
   },
 ];

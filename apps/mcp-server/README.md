@@ -134,6 +134,43 @@ The server will start in SSE mode, exposing:
 - `GET /sse`: SSE Endpoint
 - `POST /messages`: Message Endpoint
 
+### Option 5: Vercel Deployment
+
+The MCP server can be deployed to Vercel as a serverless function:
+
+#### Deploy
+
+```bash
+cd apps/mcp-server
+npx vercel deploy
+```
+
+#### Endpoint
+
+- **URL**: `https://your-project.vercel.app/api/mcp`
+- **Method**: POST
+- **Content-Type**: application/json
+
+#### Example Request
+
+```bash
+curl -X POST https://your-project.vercel.app/api/mcp \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "method": "tools/list",
+    "id": 1
+  }'
+```
+
+### Transport Modes
+
+| Mode | Use Case | Command |
+|------|----------|---------|
+| Stdio | CLI integration | `yarn start` |
+| SSE | Self-hosted HTTP | `MCP_TRANSPORT=sse yarn start` |
+| Vercel | Serverless HTTPS | `npx vercel deploy` |
+
 ## Environment Variables
 
 | Variable | Description | Default |
