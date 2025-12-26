@@ -1,0 +1,21 @@
+# Dependencies (installed during build)
+node_modules
+
+# Source maps
+*.map
+
+# Tests
+**/*.spec.ts
+**/*.test.ts
+__tests__
+
+# Development files
+.env.local
+.env.*.local
+
+# IDE
+.idea
+.vscode
+
+# Build cache
+.turbo
