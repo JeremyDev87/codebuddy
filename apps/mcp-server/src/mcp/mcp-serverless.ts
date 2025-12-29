@@ -14,6 +14,12 @@ import { KEYWORDS } from '../keyword/keyword.types';
 import { loadConfig } from '../config/config.loader';
 import type { CodingBuddyConfig } from '../config/config.schema';
 import { isPathSafe } from '../shared/security.utils';
+import { parseAgentProfile, AgentSchemaError } from '../rules/agent.schema';
+import {
+  validateQuery,
+  validatePrompt,
+  validateAgentName,
+} from '../shared/validation.constants';
 
 // ============================================================================
 // Types
@@ -231,6 +237,12 @@ export class McpServerlessService {
   // ============================================================================
 
   private async handleSearchRules(query: string): Promise<ToolResponse> {
+    // Validate input
+    const validation = validateQuery(query);
+    if (!validation.valid) {
+      return this.errorResponse(validation.error ?? 'Invalid query');
+    }
+
     try {
       const results = await this.searchRules(query);
       return this.jsonResponse(results);
@@ -244,6 +256,12 @@ export class McpServerlessService {
   private async handleGetAgentDetails(
     agentName: string,
   ): Promise<ToolResponse> {
+    // Validate input
+    const validation = validateAgentName(agentName);
+    if (!validation.valid) {
+      return this.errorResponse(validation.error ?? 'Invalid agent name');
+    }
+
     try {
       const agent = await this.getAgent(agentName);
       return this.jsonResponse(agent);
@@ -253,6 +271,12 @@ export class McpServerlessService {
   }
 
   private async handleParseMode(prompt: string): Promise<ToolResponse> {
+    // Validate input
+    const validation = validatePrompt(prompt);
+    if (!validation.valid) {
+      return this.errorResponse(validation.error ?? 'Invalid prompt');
+    }
+
     try {
       const result = await this.parseMode(prompt);
       const settings = await this.loadProjectSettings();
@@ -392,7 +416,17 @@ export class McpServerlessService {
 
   private async getAgent(name: string): Promise<AgentProfile> {
     const content = await this.getRuleContent(`agents/${name}.json`);
-    return JSON.parse(content) as AgentProfile;
+    try {
+      const parsed = JSON.parse(content);
+      // Validate against schema and check for prototype pollution
+      const validated = parseAgentProfile(parsed);
+      return validated as unknown as AgentProfile;
+    } catch (error) {
+      if (error instanceof AgentSchemaError) {
+        throw new Error(`Invalid agent profile: ${name}`);
+      }
+      throw error;
+    }
   }
 
   private async searchRules(query: string): Promise<SearchResult[]> {

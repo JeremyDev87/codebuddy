@@ -4,6 +4,7 @@ import { existsSync } from 'fs';
 import * as path from 'path';
 import { AgentProfile, SearchResult } from './rules.types';
 import { isPathSafe } from '../shared/security.utils';
+import { parseAgentProfile, AgentSchemaError } from './agent.schema';
 
 @Injectable()
 export class RulesService {
@@ -97,7 +98,18 @@ export class RulesService {
 
   async getAgent(name: string): Promise<AgentProfile> {
     const content = await this.getRuleContent(`agents/${name}.json`);
-    return JSON.parse(content) as AgentProfile;
+    try {
+      const parsed = JSON.parse(content);
+      // Validate against schema and check for prototype pollution
+      const validated = parseAgentProfile(parsed);
+      return validated as unknown as AgentProfile;
+    } catch (error) {
+      if (error instanceof AgentSchemaError) {
+        this.logger.warn(`Invalid agent profile: ${name}`, error.message);
+        throw new Error(`Invalid agent profile: ${name}`);
+      }
+      throw error;
+    }
   }
 
   async searchRules(query: string): Promise<SearchResult[]> {

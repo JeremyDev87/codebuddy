@@ -199,7 +199,11 @@ describe('RulesService', () => {
     it('should return parsed AgentProfile', async () => {
       const mockAgent = {
         name: 'Frontend Developer',
-        role: 'Frontend development specialist',
+        description: 'Frontend development specialist',
+        role: {
+          title: 'Senior Frontend Developer',
+          expertise: ['React', 'TypeScript'],
+        },
         goals: ['Write clean code'],
         workflow: ['Analyze requirements'],
       };
@@ -207,10 +211,33 @@ describe('RulesService', () => {
 
       const result = await service.getAgent('frontend-developer');
 
-      expect(result).toEqual(mockAgent);
+      expect(result.name).toBe('Frontend Developer');
+      expect(result.description).toBe('Frontend development specialist');
       expect(fs.readFile).toHaveBeenCalledWith(
         '/test/rules/agents/frontend-developer.json',
         'utf-8',
+      );
+    });
+
+    it('should reject agent with missing required fields', async () => {
+      const invalidAgent = {
+        name: 'Invalid Agent',
+        // missing description and role
+      };
+      vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(invalidAgent));
+
+      await expect(service.getAgent('invalid')).rejects.toThrow(
+        'Invalid agent profile',
+      );
+    });
+
+    it('should reject agent with prototype pollution attempt', async () => {
+      const maliciousJson =
+        '{"name":"Agent","description":"Desc","role":{"title":"Title","expertise":[]},"__proto__":{"isAdmin":true}}';
+      vi.mocked(fs.readFile).mockResolvedValue(maliciousJson);
+
+      await expect(service.getAgent('malicious')).rejects.toThrow(
+        'Invalid agent profile',
       );
     });
 
