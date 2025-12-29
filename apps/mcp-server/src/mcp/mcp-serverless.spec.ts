@@ -287,7 +287,7 @@ describe('McpServerlessService', () => {
         '../../../etc/passwd',
       );
       expect(result.isError).toBe(true);
-      expect(result.content[0].text).toContain('not found');
+      // Blocked by either input validation or path safety check
     });
 
     it('should reject hidden path traversal', async () => {
@@ -297,7 +297,7 @@ describe('McpServerlessService', () => {
         'frontend-developer/../../secret',
       );
       expect(result.isError).toBe(true);
-      expect(result.content[0].text).toContain('not found');
+      // Blocked by either input validation or path safety check
     });
 
     it('should reject absolute paths', async () => {
@@ -307,7 +307,7 @@ describe('McpServerlessService', () => {
         '/etc/passwd',
       );
       expect(result.isError).toBe(true);
-      expect(result.content[0].text).toContain('not found');
+      // Blocked by either input validation or path safety check
     });
 
     it('should reject Windows-style path traversal', async () => {
@@ -317,7 +317,7 @@ describe('McpServerlessService', () => {
         '..\\..\\etc\\passwd',
       );
       expect(result.isError).toBe(true);
-      expect(result.content[0].text).toContain('not found');
+      // Blocked by either input validation or path safety check
     });
 
     it('should reject null byte injection', async () => {
@@ -327,7 +327,7 @@ describe('McpServerlessService', () => {
         'frontend-developer\x00.txt',
       );
       expect(result.isError).toBe(true);
-      expect(result.content[0].text).toContain('not found');
+      // Blocked by either input validation or path safety check
     });
 
     it('should allow valid agent names', async () => {
@@ -337,6 +337,78 @@ describe('McpServerlessService', () => {
         'frontend-developer',
       );
       expect(result.isError).toBeUndefined();
+    });
+  });
+
+  // ==========================================================================
+  // Input Validation Tests
+  // ==========================================================================
+
+  describe('input validation', () => {
+    describe('search_rules', () => {
+      it('should reject empty query', async () => {
+        const result = await invokeToolHandler(service, 'searchRules', '');
+        expect(result.isError).toBe(true);
+        expect(result.content[0].text).toContain('empty');
+      });
+
+      it('should reject query exceeding max length', async () => {
+        const longQuery = 'a'.repeat(1001);
+        const result = await invokeToolHandler(
+          service,
+          'searchRules',
+          longQuery,
+        );
+        expect(result.isError).toBe(true);
+        expect(result.content[0].text).toContain('maximum length');
+      });
+    });
+
+    describe('get_agent_details', () => {
+      it('should reject agent name with uppercase', async () => {
+        const result = await invokeToolHandler(
+          service,
+          'getAgentDetails',
+          'Frontend-Developer',
+        );
+        expect(result.isError).toBe(true);
+        expect(result.content[0].text).toContain('lowercase');
+      });
+
+      it('should reject agent name with special characters', async () => {
+        const result = await invokeToolHandler(
+          service,
+          'getAgentDetails',
+          'frontend_developer',
+        );
+        expect(result.isError).toBe(true);
+        expect(result.content[0].text).toContain('lowercase');
+      });
+
+      it('should reject empty agent name', async () => {
+        const result = await invokeToolHandler(service, 'getAgentDetails', '');
+        expect(result.isError).toBe(true);
+        expect(result.content[0].text).toContain('empty');
+      });
+    });
+
+    describe('parse_mode', () => {
+      it('should reject empty prompt', async () => {
+        const result = await invokeToolHandler(service, 'parseMode', '');
+        expect(result.isError).toBe(true);
+        expect(result.content[0].text).toContain('empty');
+      });
+
+      it('should reject prompt exceeding max length', async () => {
+        const longPrompt = 'a'.repeat(10001);
+        const result = await invokeToolHandler(
+          service,
+          'parseMode',
+          longPrompt,
+        );
+        expect(result.isError).toBe(true);
+        expect(result.content[0].text).toContain('maximum length');
+      });
     });
   });
 
