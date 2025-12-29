@@ -8,53 +8,7 @@
  */
 
 import * as z from 'zod';
-
-// ============================================================================
-// Dangerous Keys (Prototype Pollution Prevention)
-// ============================================================================
-
-const DANGEROUS_KEYS = ['__proto__', 'constructor', 'prototype'] as const;
-
-/**
- * Recursively check for dangerous keys in an object
- * Uses Object.getOwnPropertyNames to also check non-enumerable properties
- */
-function containsDangerousKeys(obj: unknown, path = ''): string | null {
-  if (obj === null || typeof obj !== 'object') {
-    return null;
-  }
-
-  if (Array.isArray(obj)) {
-    for (let i = 0; i < obj.length; i++) {
-      const result = containsDangerousKeys(obj[i], `${path}[${i}]`);
-      if (result) return result;
-    }
-    return null;
-  }
-
-  // Use Object.getOwnPropertyNames to catch all properties including non-enumerable
-  // Also check with hasOwnProperty for keys like __proto__ that might be special
-  const keys = Object.getOwnPropertyNames(obj);
-
-  for (const key of keys) {
-    if (DANGEROUS_KEYS.includes(key as (typeof DANGEROUS_KEYS)[number])) {
-      return path ? `${path}.${key}` : key;
-    }
-  }
-
-  // Recursively check nested objects
-  for (const key of keys) {
-    if (!DANGEROUS_KEYS.includes(key as (typeof DANGEROUS_KEYS)[number])) {
-      const result = containsDangerousKeys(
-        (obj as Record<string, unknown>)[key],
-        path ? `${path}.${key}` : key,
-      );
-      if (result) return result;
-    }
-  }
-
-  return null;
-}
+import { containsDangerousKeys } from '../shared/security.utils';
 
 // ============================================================================
 // Custom Error

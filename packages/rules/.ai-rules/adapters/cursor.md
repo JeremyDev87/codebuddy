@@ -126,3 +126,26 @@ When updating rules:
 1. Update `.ai-rules/rules/*.md` for changes affecting all AI tools
 2. Update `.cursor/rules/*.mdc` only for Cursor-specific changes
 3. Keep both in sync for best experience
+
+## Skills
+
+### Using Skills in Cursor
+
+Reference skills in your prompts using file inclusion:
+
+```
+@.ai-rules/skills/test-driven-development/SKILL.md
+```
+
+Or manually include skill content in `.cursorrules`.
+
+### Available Skills
+
+- `.ai-rules/skills/brainstorming/SKILL.md`
+- `.ai-rules/skills/test-driven-development/SKILL.md`
+- `.ai-rules/skills/systematic-debugging/SKILL.md`
+- `.ai-rules/skills/writing-plans/SKILL.md`
+- `.ai-rules/skills/executing-plans/SKILL.md`
+- `.ai-rules/skills/subagent-driven-development/SKILL.md`
+- `.ai-rules/skills/dispatching-parallel-agents/SKILL.md`
+- `.ai-rules/skills/frontend-design/SKILL.md`

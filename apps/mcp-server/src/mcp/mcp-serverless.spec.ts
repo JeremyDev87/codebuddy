@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as path from 'path';
+import * as fs from 'fs/promises';
 import { McpServerlessService } from './mcp-serverless';
 
 // ============================================================================
@@ -505,6 +506,121 @@ describe('McpServerlessService', () => {
       }
     });
   });
+
+  // ==========================================================================
+  // Skills Tests
+  // ==========================================================================
+
+  describe('listSkills', () => {
+    const testSkillsDir = path.join(TEST_RULES_DIR, 'skills', 'test-skill');
+
+    afterEach(async () => {
+      // Cleanup test skill directory
+      try {
+        await fs.rm(testSkillsDir, { recursive: true, force: true });
+      } catch {
+        // Ignore cleanup errors
+      }
+    });
+
+    it('should return all skills with name and description', async () => {
+      // Create test skill
+      await fs.mkdir(testSkillsDir, { recursive: true });
+      await fs.writeFile(
+        path.join(testSkillsDir, 'SKILL.md'),
+        `---
+name: test-skill
+description: A test skill for testing
+---
+
+# Test Skill Content
+
+This is test content.
+`,
+      );
+
+      const result = await invokeToolHandler(service, 'listSkills');
+      const data = JSON.parse(result.content[0].text);
+
+      expect(Array.isArray(data)).toBe(true);
+      const testSkill = data.find(
+        (s: { name: string }) => s.name === 'test-skill',
+      );
+      expect(testSkill).toBeDefined();
+      expect(testSkill.description).toBe('A test skill for testing');
+    });
+
+    it('should return empty array when no skills exist', async () => {
+      // Use a service with empty skills directory
+      const emptyService = new McpServerlessService(
+        '/nonexistent/rules',
+        TEST_PROJECT_ROOT,
+      );
+
+      const result = await invokeToolHandler(emptyService, 'listSkills');
+      const data = JSON.parse(result.content[0].text);
+
+      expect(Array.isArray(data)).toBe(true);
+      expect(data.length).toBe(0);
+    });
+  });
+
+  describe('getSkill', () => {
+    const testSkillsDir = path.join(TEST_RULES_DIR, 'skills', 'my-skill');
+
+    afterEach(async () => {
+      // Cleanup test skill directory
+      try {
+        await fs.rm(testSkillsDir, { recursive: true, force: true });
+      } catch {
+        // Ignore cleanup errors
+      }
+    });
+
+    it('should return skill content by name', async () => {
+      // Create test skill
+      await fs.mkdir(testSkillsDir, { recursive: true });
+      await fs.writeFile(
+        path.join(testSkillsDir, 'SKILL.md'),
+        `---
+name: my-skill
+description: My skill description
+---
+
+# My Skill
+
+Detailed content here.
+`,
+      );
+
+      const result = await invokeToolHandler(service, 'getSkill', 'my-skill');
+      expect(result.isError).toBeUndefined();
+
+      const skill = JSON.parse(result.content[0].text);
+      expect(skill.name).toBe('my-skill');
+      expect(skill.description).toBe('My skill description');
+      expect(skill.content).toContain('# My Skill');
+    });
+
+    it('should throw for non-existent skill', async () => {
+      const result = await invokeToolHandler(
+        service,
+        'getSkill',
+        'non-existent-skill',
+      );
+      expect(result.isError).toBe(true);
+      expect(result.content[0].text).toContain('not found');
+    });
+
+    it('should validate skill name format', async () => {
+      const result = await invokeToolHandler(
+        service,
+        'getSkill',
+        'Invalid Name!',
+      );
+      expect(result.isError).toBe(true);
+    });
+  });
 });
 
 // ============================================================================
@@ -534,6 +650,8 @@ async function invokeToolHandler(
     parseMode: 'handleParseMode',
     getProjectConfig: 'handleGetProjectConfig',
     suggestConfigUpdates: 'handleSuggestConfigUpdates',
+    listSkills: 'handleListSkills',
+    getSkill: 'handleGetSkill',
   };
 
   const methodName = methodMap[handlerName];

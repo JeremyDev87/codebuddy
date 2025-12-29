@@ -15,6 +15,8 @@ import { loadConfig } from '../config/config.loader';
 import type { CodingBuddyConfig } from '../config/config.schema';
 import { isPathSafe } from '../shared/security.utils';
 import { parseAgentProfile, AgentSchemaError } from '../rules/agent.schema';
+import { parseSkill, SkillSchemaError } from '../rules/skill.schema';
+import type { Skill } from '../rules/skill.schema';
 import {
   validateQuery,
   validatePrompt,
@@ -34,6 +36,11 @@ interface ToolResponse {
 
 interface ParseModeResponse extends ParseModeResult {
   language?: string;
+}
+
+interface SkillSummary {
+  name: string;
+  description: string;
 }
 
 // ============================================================================
@@ -226,6 +233,34 @@ export class McpServerlessService {
         return this.handleSuggestConfigUpdates(projectRoot);
       },
     );
+
+    // list_skills tool
+    this.server.registerTool(
+      'list_skills',
+      {
+        title: 'List Skills',
+        description: 'List all available skills with descriptions',
+        inputSchema: {},
+      },
+      async (): Promise<ToolResponse> => {
+        return this.handleListSkills();
+      },
+    );
+
+    // get_skill tool
+    this.server.registerTool(
+      'get_skill',
+      {
+        title: 'Get Skill',
+        description: 'Get skill content by name',
+        inputSchema: {
+          skillName: z.string().describe('Name of the skill'),
+        },
+      },
+      async ({ skillName }): Promise<ToolResponse> => {
+        return this.handleGetSkill(skillName);
+      },
+    );
   }
 
   private registerResources(): void {
@@ -301,6 +336,31 @@ export class McpServerlessService {
       return this.errorResponse(
         `Failed to get project config: ${sanitizeError(error)}`,
       );
+    }
+  }
+
+  private async handleListSkills(): Promise<ToolResponse> {
+    try {
+      const skills = await this.listSkills();
+      return this.jsonResponse(skills);
+    } catch (error) {
+      return this.errorResponse(
+        `Failed to list skills: ${sanitizeError(error)}`,
+      );
+    }
+  }
+
+  private async handleGetSkill(skillName: string): Promise<ToolResponse> {
+    // Validate skill name
+    if (!skillName || !/^[a-z0-9-]+$/.test(skillName)) {
+      return this.errorResponse('Invalid skill name format');
+    }
+
+    try {
+      const skill = await this.getSkill(skillName);
+      return this.jsonResponse(skill);
+    } catch {
+      return this.errorResponse(`Skill '${skillName}' not found.`);
     }
   }
 
@@ -465,6 +525,65 @@ export class McpServerlessService {
     }
 
     return results.sort((a, b) => b.score - a.score);
+  }
+
+  // ============================================================================
+  // Skills Operations
+  // ============================================================================
+
+  async listSkills(): Promise<SkillSummary[]> {
+    const skillsDir = path.join(this.rulesDir, 'skills');
+    const summaries: SkillSummary[] = [];
+
+    try {
+      const entries = await fs.readdir(skillsDir, { withFileTypes: true });
+
+      for (const entry of entries) {
+        if (entry.isDirectory()) {
+          const skillPath = path.join(skillsDir, entry.name, 'SKILL.md');
+          try {
+            const content = await fs.readFile(skillPath, 'utf-8');
+            const skill = parseSkill(content, `skills/${entry.name}/SKILL.md`);
+            summaries.push({
+              name: skill.name,
+              description: skill.description,
+            });
+          } catch {
+            // Skip invalid skills
+          }
+        }
+      }
+    } catch {
+      // Skills directory doesn't exist
+    }
+
+    return summaries;
+  }
+
+  async getSkill(name: string): Promise<Skill> {
+    // Validate name format
+    if (!/^[a-z0-9-]+$/.test(name)) {
+      throw new Error(`Invalid skill name format: ${name}`);
+    }
+
+    const skillPath = `skills/${name}/SKILL.md`;
+
+    // Security check
+    if (!isPathSafe(this.rulesDir, skillPath)) {
+      throw new Error('Access denied: Invalid path');
+    }
+
+    const fullPath = path.join(this.rulesDir, skillPath);
+
+    try {
+      const content = await fs.readFile(fullPath, 'utf-8');
+      return parseSkill(content, skillPath);
+    } catch (error) {
+      if (error instanceof SkillSchemaError) {
+        throw new Error(`Invalid skill: ${name}`);
+      }
+      throw new Error(`Skill not found: ${name}`);
+    }
   }
 
   // ============================================================================
