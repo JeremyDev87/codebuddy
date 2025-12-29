@@ -122,3 +122,28 @@ When using Copilot Workspace:
 1. Update `.ai-rules/rules/*.md` for universal rule changes
 2. Keep `.github/copilot-instructions.md` concise (Copilot's context limit)
 3. Link to detailed rules in `.ai-rules/` rather than duplicating
+
+## Skills
+
+### Using Skills in Codex
+
+Skills are located in `.ai-rules/skills/`. To use a skill:
+
+1. Read the skill file:
+
+   ```bash
+   cat .ai-rules/skills/<skill-name>/SKILL.md
+   ```
+
+2. Follow the skill's checklist and process.
+
+### Available Skills
+
+- `brainstorming` - Explore requirements before implementation
+- `test-driven-development` - TDD workflow
+- `systematic-debugging` - Debug methodically
+- `writing-plans` - Create implementation plans
+- `executing-plans` - Execute plans with checkpoints
+- `subagent-driven-development` - In-session plan execution
+- `dispatching-parallel-agents` - Handle parallel tasks
+- `frontend-design` - Build production-grade UI

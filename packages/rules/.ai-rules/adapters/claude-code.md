@@ -115,3 +115,33 @@ Claude can directly read and reference:
 1. Update `.ai-rules/rules/*.md` for universal changes
 2. Update `.claude/rules/custom-instructions.md` for Claude-specific features
 3. Sync Claude Project instructions when rules change significantly
+
+## Skills
+
+CodingBuddy skills are accessible via MCP tools:
+
+### List Available Skills
+
+Use `list_skills` MCP tool to see all available skills.
+
+### Use a Skill
+
+Use `get_skill` MCP tool with skill name:
+
+- `get_skill("brainstorming")` - Explore requirements before implementation
+- `get_skill("test-driven-development")` - TDD workflow
+- `get_skill("systematic-debugging")` - Debug methodically
+- `get_skill("writing-plans")` - Create implementation plans
+- `get_skill("executing-plans")` - Execute plans with checkpoints
+- `get_skill("subagent-driven-development")` - In-session plan execution
+- `get_skill("dispatching-parallel-agents")` - Handle parallel tasks
+- `get_skill("frontend-design")` - Build production-grade UI
+
+### When to Use Skills
+
+- **brainstorming**: Before any creative work or new features
+- **test-driven-development**: Before implementing features or bugfixes
+- **systematic-debugging**: When encountering bugs or test failures
+- **writing-plans**: For multi-step tasks with specs
+- **executing-plans**: Following written implementation plans
+- **frontend-design**: Building web components or pages
