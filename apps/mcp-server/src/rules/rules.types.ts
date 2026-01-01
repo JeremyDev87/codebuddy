@@ -1,3 +1,5 @@
+export type RuleSource = 'custom' | 'default';
+
 export interface AgentProfile {
   name: string;
   description: string;
@@ -7,6 +9,7 @@ export interface AgentProfile {
     tech_stack_reference?: string;
     responsibilities?: string[];
   };
+  source?: RuleSource;
   [key: string]: unknown; // Allow additional fields (passthrough)
 }
 
@@ -14,4 +17,5 @@ export interface SearchResult {
   file: string;
   matches: string[];
   score: number;
+  source?: RuleSource;
 }

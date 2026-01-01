@@ -5,13 +5,14 @@ import * as path from 'path';
 import { AgentProfile, SearchResult } from './rules.types';
 import { isPathSafe } from '../shared/security.utils';
 import { parseAgentProfile, AgentSchemaError } from './agent.schema';
+import { CustomService } from '../custom';
 
 @Injectable()
 export class RulesService {
   private readonly logger = new Logger(RulesService.name);
   private readonly rulesDir: string;
 
-  constructor() {
+  constructor(private readonly customService: CustomService) {
     // 경로 탐색 전략:
     // 1. 환경변수로 직접 지정된 경우 우선 사용
     // 2. codingbuddy-rules 패키지에서 경로 가져오기
@@ -102,7 +103,8 @@ export class RulesService {
       const parsed = JSON.parse(content);
       // Validate against schema and check for prototype pollution
       const validated = parseAgentProfile(parsed);
-      return validated as unknown as AgentProfile;
+      // Add source field for default agents
+      return { ...(validated as unknown as AgentProfile), source: 'default' };
     } catch (error) {
       if (error instanceof AgentSchemaError) {
         this.logger.warn(`Invalid agent profile: ${name}`, error.message);
@@ -116,6 +118,33 @@ export class RulesService {
     const results: SearchResult[] = [];
     const queryLower = query.toLowerCase();
 
+    // Get custom rules first (they appear first in results)
+    const projectRoot = process.cwd();
+    const customRules = await this.customService.listCustomRules(projectRoot);
+
+    for (const customRule of customRules) {
+      const lines = customRule.content.split('\n');
+      const matches: string[] = [];
+      let score = 0;
+
+      lines.forEach((line, index) => {
+        if (line.toLowerCase().includes(queryLower)) {
+          matches.push(`Line ${index + 1}: ${line.trim()}`);
+          score++;
+        }
+      });
+
+      if (score > 0) {
+        results.push({
+          file: customRule.name,
+          matches,
+          score,
+          source: 'custom',
+        });
+      }
+    }
+
+    // Then search default rules
     const agents = await this.listAgents();
     const filesToSearch = [
       'rules/core.md',
@@ -139,7 +168,7 @@ export class RulesService {
         });
 
         if (score > 0) {
-          results.push({ file, matches, score });
+          results.push({ file, matches, score, source: 'default' });
         }
       } catch {
         // Ignore errors

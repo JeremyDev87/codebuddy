@@ -331,6 +331,88 @@ describe('McpService', () => {
       expect(parsed.name).toBe('Frontend Developer');
     });
 
+    describe('source field in tool responses', () => {
+      it('should include source field in search_rules results', async () => {
+        vi.mocked(mockRulesService.searchRules!).mockResolvedValue([
+          {
+            file: 'rules/core.md',
+            matches: ['Line 1: test content'],
+            score: 1,
+            source: 'default',
+          },
+          {
+            file: 'custom-rules.md',
+            matches: ['Line 5: custom test'],
+            score: 1,
+            source: 'custom',
+          },
+        ]);
+
+        const handler = handlers.get('tools/call');
+        expect(handler).toBeDefined();
+
+        const result = (await handler!({
+          params: { name: 'search_rules', arguments: { query: 'test' } },
+        })) as { content: { type: string; text: string }[] };
+
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed).toHaveLength(2);
+        expect(parsed[0]).toHaveProperty('source', 'default');
+        expect(parsed[1]).toHaveProperty('source', 'custom');
+      });
+
+      it('should include source field in get_agent_details result', async () => {
+        vi.mocked(mockRulesService.getAgent!).mockResolvedValue({
+          name: 'Frontend Developer',
+          description: 'Frontend development specialist',
+          role: {
+            title: 'Senior Frontend Developer',
+            expertise: ['React', 'TypeScript'],
+            responsibilities: ['Write clean code', 'Follow best practices'],
+          },
+          source: 'default',
+        });
+
+        const handler = handlers.get('tools/call');
+        expect(handler).toBeDefined();
+
+        const result = (await handler!({
+          params: {
+            name: 'get_agent_details',
+            arguments: { agentName: 'frontend-developer' },
+          },
+        })) as { content: { type: string; text: string }[] };
+
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed).toHaveProperty('source', 'default');
+      });
+
+      it('should return source: custom for custom agents', async () => {
+        vi.mocked(mockRulesService.getAgent!).mockResolvedValue({
+          name: 'Custom Agent',
+          description: 'Project-specific agent',
+          role: {
+            title: 'Custom Role',
+            expertise: ['Project Knowledge'],
+          },
+          source: 'custom',
+        });
+
+        const handler = handlers.get('tools/call');
+        expect(handler).toBeDefined();
+
+        const result = (await handler!({
+          params: {
+            name: 'get_agent_details',
+            arguments: { agentName: 'custom-agent' },
+          },
+        })) as { content: { type: string; text: string }[] };
+
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed).toHaveProperty('source', 'custom');
+      });
+    });
+
     it('should list suggest_config_updates tool', async () => {
       const handler = handlers.get('tools/list');
       expect(handler).toBeDefined();
