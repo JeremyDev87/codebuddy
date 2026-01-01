@@ -14,6 +14,17 @@ vi.mock('fs', () => ({
 
 // Import after mocks
 import { RulesService } from './rules.service';
+import { CustomService } from '../custom';
+import { CustomRule } from '../custom/custom.types';
+
+// Create a mock CustomService
+const createMockCustomService = (): CustomService =>
+  ({
+    findCustomPath: vi.fn().mockResolvedValue(null),
+    listCustomRules: vi.fn().mockResolvedValue([]),
+    listCustomAgents: vi.fn().mockResolvedValue([]),
+    listCustomSkills: vi.fn().mockResolvedValue([]),
+  }) as unknown as CustomService;
 
 describe('RulesService', () => {
   beforeEach(() => {
@@ -26,7 +37,7 @@ describe('RulesService', () => {
     it('should use CODINGBUDDY_RULES_DIR env variable when set', () => {
       process.env.CODINGBUDDY_RULES_DIR = '/custom/rules/path';
 
-      const service = new RulesService();
+      const service = new RulesService(createMockCustomService());
 
       // Access private property via any cast for testing
       expect((service as unknown as { rulesDir: string }).rulesDir).toBe(
@@ -35,7 +46,7 @@ describe('RulesService', () => {
     });
 
     it('should use codingbuddy-rules package or dev fallback', () => {
-      const service = new RulesService();
+      const service = new RulesService(createMockCustomService());
       const rulesDir = (service as unknown as { rulesDir: string }).rulesDir;
 
       // Should resolve to .ai-rules path (either from package or dev fallback)
@@ -43,7 +54,7 @@ describe('RulesService', () => {
     });
 
     it('should find rules directory successfully', () => {
-      const service = new RulesService();
+      const service = new RulesService(createMockCustomService());
       const rulesDir = (service as unknown as { rulesDir: string }).rulesDir;
 
       // Verify the path contains the expected structure
@@ -57,7 +68,7 @@ describe('RulesService', () => {
 
     beforeEach(() => {
       process.env.CODINGBUDDY_RULES_DIR = '/test/rules';
-      service = new RulesService();
+      service = new RulesService(createMockCustomService());
     });
 
     it('should return file content when file exists', async () => {
@@ -137,7 +148,7 @@ describe('RulesService', () => {
 
     beforeEach(() => {
       process.env.CODINGBUDDY_RULES_DIR = '/test/rules';
-      service = new RulesService();
+      service = new RulesService(createMockCustomService());
     });
 
     it('should return agent names from directory', async () => {
@@ -193,7 +204,7 @@ describe('RulesService', () => {
 
     beforeEach(() => {
       process.env.CODINGBUDDY_RULES_DIR = '/test/rules';
-      service = new RulesService();
+      service = new RulesService(createMockCustomService());
     });
 
     it('should return parsed AgentProfile', async () => {
@@ -217,6 +228,22 @@ describe('RulesService', () => {
         '/test/rules/agents/frontend-developer.json',
         'utf-8',
       );
+    });
+
+    it('should include source: default in returned AgentProfile', async () => {
+      const mockAgent = {
+        name: 'Frontend Developer',
+        description: 'Frontend development specialist',
+        role: {
+          title: 'Senior Frontend Developer',
+          expertise: ['React', 'TypeScript'],
+        },
+      };
+      vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(mockAgent));
+
+      const result = await service.getAgent('frontend-developer');
+
+      expect(result.source).toBe('default');
     });
 
     it('should reject agent with missing required fields', async () => {
@@ -258,10 +285,12 @@ describe('RulesService', () => {
 
   describe('searchRules', () => {
     let service: RulesService;
+    let mockCustomService: CustomService;
 
     beforeEach(() => {
       process.env.CODINGBUDDY_RULES_DIR = '/test/rules';
-      service = new RulesService();
+      mockCustomService = createMockCustomService();
+      service = new RulesService(mockCustomService);
     });
 
     it('should find matches across files', async () => {
@@ -394,7 +423,7 @@ describe('RulesService', () => {
 
   describe('checkExists (private method behavior)', () => {
     it('should resolve rules directory path', () => {
-      const service = new RulesService();
+      const service = new RulesService(createMockCustomService());
       const rulesDir = (service as unknown as { rulesDir: string }).rulesDir;
 
       // Should have resolved to a valid .ai-rules path
@@ -407,7 +436,115 @@ describe('RulesService', () => {
       });
 
       // Should not throw - either package provides path or fallback handles error
-      expect(() => new RulesService()).not.toThrow();
+      expect(() => new RulesService(createMockCustomService())).not.toThrow();
+    });
+  });
+
+  describe('searchRules with custom rules', () => {
+    let service: RulesService;
+    let mockCustomService: CustomService;
+
+    beforeEach(() => {
+      process.env.CODINGBUDDY_RULES_DIR = '/test/rules';
+      mockCustomService = createMockCustomService();
+      service = new RulesService(mockCustomService);
+    });
+
+    it('includes custom rules in search results', async () => {
+      // Mock CustomService to return a custom rule
+      const customRule: CustomRule = {
+        type: 'rule',
+        name: 'api-conventions.md',
+        path: '/project/.codingbuddy/rules/api-conventions.md',
+        content: '# API Conventions\nUse REST patterns.',
+        source: 'custom',
+      };
+      vi.mocked(mockCustomService.listCustomRules).mockResolvedValue([
+        customRule,
+      ]);
+
+      // Mock default rules with no matches
+      vi.mocked(fs.readdir).mockResolvedValue(
+        [] as unknown as Awaited<ReturnType<typeof fs.readdir>>,
+      );
+      vi.mocked(fs.readFile).mockResolvedValue('No REST here');
+
+      const result = await service.searchRules('REST');
+
+      expect(result.some(r => r.source === 'custom')).toBe(true);
+      const customResult = result.find(r => r.source === 'custom');
+      expect(customResult).toBeDefined();
+      expect(customResult!.file).toBe('api-conventions.md');
+      expect(customResult!.score).toBe(1);
+    });
+
+    it('includes both custom and default rules in search results', async () => {
+      // Mock CustomService to return a custom rule
+      const customRule: CustomRule = {
+        type: 'rule',
+        name: 'custom-tdd.md',
+        path: '/project/.codingbuddy/rules/custom-tdd.md',
+        content: '# Custom TDD\nTDD is important.',
+        source: 'custom',
+      };
+      vi.mocked(mockCustomService.listCustomRules).mockResolvedValue([
+        customRule,
+      ]);
+
+      // Mock default rules with TDD matches
+      vi.mocked(fs.readdir).mockResolvedValue(
+        [] as unknown as Awaited<ReturnType<typeof fs.readdir>>,
+      );
+      vi.mocked(fs.readFile).mockImplementation(async (filePath: unknown) => {
+        const path = filePath as string;
+        if (path.includes('core.md')) {
+          return 'TDD cycle\nRed Green Refactor';
+        }
+        return 'No match here';
+      });
+
+      const result = await service.searchRules('TDD');
+
+      expect(result.some(r => r.source === 'custom')).toBe(true);
+      expect(result.some(r => r.source === 'default')).toBe(true);
+    });
+
+    it('returns empty array when no custom or default rules match', async () => {
+      vi.mocked(mockCustomService.listCustomRules).mockResolvedValue([]);
+      vi.mocked(fs.readdir).mockResolvedValue(
+        [] as unknown as Awaited<ReturnType<typeof fs.readdir>>,
+      );
+      vi.mocked(fs.readFile).mockResolvedValue('No match here');
+
+      const result = await service.searchRules('nonexistent-query-xyz');
+
+      expect(result).toEqual([]);
+    });
+
+    it('sorts results by score regardless of source', async () => {
+      // Custom rule with 3 matches
+      const customRule: CustomRule = {
+        type: 'rule',
+        name: 'high-match.md',
+        path: '/project/.codingbuddy/rules/high-match.md',
+        content: 'test\ntest\ntest',
+        source: 'custom',
+      };
+      vi.mocked(mockCustomService.listCustomRules).mockResolvedValue([
+        customRule,
+      ]);
+
+      // Default rule with 1 match
+      vi.mocked(fs.readdir).mockResolvedValue(
+        [] as unknown as Awaited<ReturnType<typeof fs.readdir>>,
+      );
+      vi.mocked(fs.readFile).mockResolvedValue('test'); // 1 match
+
+      const result = await service.searchRules('test');
+
+      // Custom rule should be first due to higher score
+      expect(result[0].source).toBe('custom');
+      expect(result[0].score).toBe(3);
     });
   });
 });
