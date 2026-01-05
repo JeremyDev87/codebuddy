@@ -182,11 +182,40 @@ Once connected, you can use:
 - `search_rules`: Query AI rules and guidelines
 - `get_agent_details`: Get specialist agent information
 - `recommend_skills`: Get skill recommendations based on prompt
-- `parse_mode`: Parse PLAN/ACT/EVAL workflow mode (now returns Mode Agent information)
+- `parse_mode`: Parse PLAN/ACT/EVAL workflow mode (includes dynamic language instructions)
+
+#### Dynamic Language Configuration
+
+OpenCode agents get language instructions dynamically from the MCP server:
+
+1. **Set language in codingbuddy.config.js:**
+   ```javascript
+   module.exports = {
+     language: 'ko',  // or 'en', 'ja', 'zh', 'es', etc.
+     // ... other config
+   };
+   ```
+
+2. **Call parse_mode to get dynamic language instruction:**
+   ```bash
+   # AI should call parse_mode when user starts with PLAN/ACT/EVAL
+   # Returns languageInstruction field automatically
+   ```
+
+3. **Remove hardcoded language from agent prompts:**
+   ```json
+   {
+     "agent": {
+       "plan-mode": {
+         "prompt": "{file:...plan-mode.json}\n\n[OpenCode Override]\nMode: PLAN only. Use languageInstruction from parse_mode response.",
+       }
+     }
+   }
+   ```
 
 #### Enhanced parse_mode Response
 
-The `parse_mode` tool now returns additional Mode Agent information:
+The `parse_mode` tool now returns additional Mode Agent information and dynamic language instructions:
 
 ```json
 {
@@ -194,6 +223,8 @@ The `parse_mode` tool now returns additional Mode Agent information:
   "originalPrompt": "새로운 사용자 등록 기능을 만들어줘",
   "instructions": "설계 우선 접근. TDD 관점에서...",
   "rules": [...],
+  "language": "ko",
+  "languageInstruction": "Always respond in Korean (한국어).",
   "agent": "plan-mode",
   "delegates_to": "frontend-developer", 
   "delegate_agent_info": {
@@ -205,6 +236,8 @@ The `parse_mode` tool now returns additional Mode Agent information:
 ```
 
 **New Fields:**
+- `language`: Language code from codingbuddy.config.js
+- `languageInstruction`: Formatted instruction text for AI assistants (🆕)
 - `agent`: Mode Agent name (plan-mode, act-mode, eval-mode)
 - `delegates_to`: Which specialist agent the Mode Agent delegates to
 - `delegate_agent_info`: Detailed information about the delegate agent (optional)

@@ -45,7 +45,7 @@ export class KeywordService {
   constructor(
     private readonly loadConfigFn: () => Promise<KeywordModesConfig>,
     private readonly loadRuleFn: (path: string) => Promise<string>,
-    private readonly loadAgentInfoFn?: (agentName: string) => Promise<any>,
+    private readonly loadAgentInfoFn?: (agentName: string) => Promise<unknown>,
   ) {}
 
   async parseMode(prompt: string): Promise<ParseModeResult> {
@@ -184,10 +184,19 @@ export class KeywordService {
     try {
       const agentData = await this.loadAgentInfoFn(agentName);
 
+      // Type guard for agent data
+      if (!agentData || typeof agentData !== 'object') {
+        return undefined;
+      }
+
+      const agent = agentData as Record<string, unknown>;
+      const role = agent.role as Record<string, unknown> | undefined;
+
       return {
-        name: agentData.name || agentName,
-        description: agentData.description || '',
-        expertise: agentData.role?.expertise || [],
+        name: typeof agent.name === 'string' ? agent.name : agentName,
+        description:
+          typeof agent.description === 'string' ? agent.description : '',
+        expertise: Array.isArray(role?.expertise) ? role.expertise : [],
       };
     } catch {
       return undefined;

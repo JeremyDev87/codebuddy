@@ -90,4 +90,4 @@ When working in this codebase, use these modes:
 
 ## Communication
 
-Always respond in Korean as specified in project rules.
+Follow the `language` setting in `codingbuddy.config.js` - use `get_project_config` MCP tool to retrieve current language setting. Default to Korean (한국어) if not specified.

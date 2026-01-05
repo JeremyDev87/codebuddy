@@ -22,7 +22,7 @@ export const KEYWORD_SERVICE = 'KEYWORD_SERVICE';
           return rulesService.getRuleContent(path);
         };
 
-        const loadAgent = async (agentName: string): Promise<any> => {
+        const loadAgent = async (agentName: string): Promise<unknown> => {
           return rulesService.getAgent(agentName);
         };
 

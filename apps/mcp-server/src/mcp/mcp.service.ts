@@ -20,6 +20,7 @@ import { AnalyzerService } from '../analyzer/analyzer.service';
 import { SkillRecommendationService } from '../skill/skill-recommendation.service';
 import type { ListSkillsOptions } from '../skill/skill-recommendation.types';
 import type { CodingBuddyConfig } from '../config/config.schema';
+import { LanguageService } from '../shared/language.service';
 
 @Injectable()
 export class McpService implements OnModuleInit {
@@ -33,6 +34,7 @@ export class McpService implements OnModuleInit {
     private configDiffService: ConfigDiffService,
     private analyzerService: AnalyzerService,
     private skillRecommendationService: SkillRecommendationService,
+    private languageService: LanguageService,
   ) {
     this.server = new Server(
       {
@@ -368,7 +370,14 @@ export class McpService implements OnModuleInit {
     try {
       const result = await this.keywordService.parseMode(prompt);
       const language = await this.configService.getLanguage();
-      return this.jsonResponse({ ...result, language });
+      const languageInstructionResult =
+        this.languageService.getLanguageInstruction(language || 'en');
+
+      return this.jsonResponse({
+        ...result,
+        language,
+        languageInstruction: languageInstructionResult.instruction,
+      });
     } catch (error) {
       return this.errorResponse(
         `Failed to parse mode: ${error instanceof Error ? error.message : 'Unknown error'}`,

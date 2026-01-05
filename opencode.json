@@ -75,7 +75,7 @@
     "plan-mode": {
       "description": "PLAN mode - Analysis and planning without changes",
       "mode": "primary",
-      "prompt": "{file:packages/rules/.ai-rules/agents/plan-mode.json}\n\n[OpenCode Override]\nMode: PLAN only. Always respond in Korean (한국어). Do NOT make any file changes. Focus on analysis and planning.",
+      "prompt": "{file:packages/rules/.ai-rules/agents/plan-mode.json}\n\n[OpenCode Override]\nMode: PLAN only. Do NOT make any file changes. Focus on analysis and planning. Use languageInstruction from parse_mode response.",
       "permission": {
         "edit": "deny",
         "bash": {
@@ -89,17 +89,17 @@
     "act-mode": {
       "description": "ACT mode - Full development with all tools",
       "mode": "primary",
-      "prompt": "{file:packages/rules/.ai-rules/agents/act-mode.json}\n\n[OpenCode Override]\nMode: ACT. Always respond in Korean (한국어). Follow TDD workflow and code quality standards."
+      "prompt": "{file:packages/rules/.ai-rules/agents/act-mode.json}\n\n[OpenCode Override]\nMode: ACT. Follow TDD workflow and code quality standards. Use languageInstruction from parse_mode response."
     },
     "backend": {
       "description": "Backend development specialist",
       "mode": "primary",
-      "prompt": "{file:packages/rules/.ai-rules/agents/backend-developer.json}\n\n[OpenCode Override]\nAlways respond in Korean (한국어). Follow backend development best practices."
+      "prompt": "{file:packages/rules/.ai-rules/agents/backend-developer.json}\n\n[OpenCode Override]\nFollow backend development best practices. Use languageInstruction from parse_mode response."
     },
     "eval-mode": {
       "description": "EVAL mode - Code quality evaluation",
       "mode": "subagent",
-      "prompt": "{file:packages/rules/.ai-rules/agents/eval-mode.json}\n\n[OpenCode Override]\nMode: EVAL. Always respond in Korean (한국어). Provide evidence-based evaluation.",
+      "prompt": "{file:packages/rules/.ai-rules/agents/eval-mode.json}\n\n[OpenCode Override]\nMode: EVAL. Provide evidence-based evaluation. Use languageInstruction from parse_mode response.",
       "tools": {
         "write": false,
         "edit": false
