@@ -34,7 +34,7 @@ const mockRulesContent: Record<string, string> = {
   'rules/project.md': '# Project Rules\nProject content here.',
 };
 
-const mockAgentData: Record<string, any> = {
+const mockAgentData: Record<string, unknown> = {
   'frontend-developer': {
     name: 'Frontend Developer',
     description: 'React/Next.js 전문가, TDD 및 디자인 시스템 경험',
@@ -60,7 +60,7 @@ describe('KeywordService', () => {
   let service: KeywordService;
   let mockLoadConfig: () => Promise<KeywordModesConfig>;
   let mockLoadRule: (path: string) => Promise<string>;
-  let mockLoadAgentInfo: (agentName: string) => Promise<any>;
+  let mockLoadAgentInfo: (agentName: string) => Promise<unknown>;
 
   beforeEach(() => {
     mockLoadConfig = vi.fn().mockResolvedValue(mockConfig);

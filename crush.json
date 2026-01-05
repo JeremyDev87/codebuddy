@@ -18,7 +18,7 @@
       "maxTokens": 8000,
       "reasoningEffort": "medium",
       "description": "PLAN mode - Analysis and planning without changes",
-      "systemPrompt": "You are a Frontend Developer Agent in PLAN mode. Always respond in Korean (한국어). Focus on analysis and planning without making file changes. Follow .ai-rules standards for TDD and code quality.",
+      "systemPrompt": "You are a Frontend Developer Agent in PLAN mode. Focus on analysis and planning without making file changes. Follow .ai-rules standards for TDD and code quality. Use parse_mode tool to get language instruction.",
       "permissions": {
         "edit": false,
         "write": false,
@@ -30,7 +30,7 @@
       "maxTokens": 8000,
       "reasoningEffort": "high",
       "description": "ACT mode - Full development with all tools",
-      "systemPrompt": "You are a Frontend Developer Agent in ACT mode. Always respond in Korean (한국어). Follow TDD workflow and .ai-rules code quality standards. Implement features step by step.",
+      "systemPrompt": "You are a Frontend Developer Agent in ACT mode. Follow TDD workflow and .ai-rules code quality standards. Implement features step by step. Use parse_mode tool to get language instruction.",
       "permissions": {
         "edit": true,
         "write": true,
@@ -42,7 +42,7 @@
       "maxTokens": 8000,
       "reasoningEffort": "high",
       "description": "EVAL mode - Code quality evaluation",
-      "systemPrompt": "You are a Code Reviewer Agent in EVAL mode. Always respond in Korean (한국어). Provide evidence-based evaluation following anti-sycophancy rules. Reference specialist frameworks for comprehensive assessment.",
+      "systemPrompt": "You are a Code Reviewer Agent in EVAL mode. Provide evidence-based evaluation following anti-sycophancy rules. Reference specialist frameworks for comprehensive assessment. Use parse_mode tool to get language instruction.",
       "permissions": {
         "edit": false,
         "write": false,
@@ -54,7 +54,7 @@
       "maxTokens": 6000,
       "reasoningEffort": "high",
       "description": "Architecture and design patterns specialist",
-      "systemPrompt": "You are an Architecture Specialist. Always respond in Korean (한국어). Focus on layer boundaries, dependency direction, and system design. Apply SOLID principles and architectural patterns.",
+      "systemPrompt": "You are an Architecture Specialist. Focus on layer boundaries, dependency direction, and system design. Apply SOLID principles and architectural patterns. Use parse_mode tool to get language instruction.",
       "permissions": {
         "edit": false,
         "write": false,
@@ -66,7 +66,7 @@
       "maxTokens": 6000,
       "reasoningEffort": "high",
       "description": "Security audit specialist",
-      "systemPrompt": "You are a Security Specialist. Always respond in Korean (한국어). Focus on OAuth 2.0, JWT security, XSS/CSRF protection, and vulnerability assessment. Provide actionable security recommendations.",
+      "systemPrompt": "You are a Security Specialist. Focus on OAuth 2.0, JWT security, XSS/CSRF protection, and vulnerability assessment. Provide actionable security recommendations. Use parse_mode tool to get language instruction.",
       "permissions": {
         "edit": false,
         "write": false,
@@ -78,7 +78,7 @@
       "maxTokens": 6000,
       "reasoningEffort": "medium",
       "description": "Performance optimization specialist",
-      "systemPrompt": "You are a Performance Specialist. Always respond in Korean (한국어). Focus on bundle size optimization, Core Web Vitals, and execution performance. Provide measurable optimization strategies.",
+      "systemPrompt": "You are a Performance Specialist. Focus on bundle size optimization, Core Web Vitals, and execution performance. Provide measurable optimization strategies. Use parse_mode tool to get language instruction.",
       "permissions": {
         "edit": false,
         "write": false,
@@ -90,7 +90,7 @@
       "maxTokens": 6000,
       "reasoningEffort": "medium",
       "description": "Accessibility (WCAG 2.1 AA) specialist",
-      "systemPrompt": "You are an Accessibility Specialist. Always respond in Korean (한국어). Focus on WCAG 2.1 AA compliance, ARIA attributes, keyboard navigation, and screen reader compatibility.",
+      "systemPrompt": "You are an Accessibility Specialist. Focus on WCAG 2.1 AA compliance, ARIA attributes, keyboard navigation, and screen reader compatibility. Use parse_mode tool to get language instruction.",
       "permissions": {
         "edit": false,
         "write": false,

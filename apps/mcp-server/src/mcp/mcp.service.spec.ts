@@ -14,6 +14,7 @@ import type {
   RecommendSkillsResult,
   ListSkillsResult,
 } from '../skill/skill-recommendation.types';
+import { LanguageService } from '../shared/language.service';
 
 // Handler function type for MCP request handlers
 type McpHandler = (request: unknown) => Promise<unknown>;
@@ -225,6 +226,26 @@ const createMockSkillRecommendationService =
     } as ListSkillsResult),
   });
 
+const createMockLanguageService = (): Partial<LanguageService> => ({
+  getLanguageInstruction: vi
+    .fn()
+    .mockImplementation((languageCode: string) => ({
+      language: languageCode || 'en',
+      instruction: 'Always respond in Korean (한국어).',
+      fallback: false,
+    })),
+  getSupportedLanguages: vi.fn().mockReturnValue([
+    {
+      code: 'ko',
+      name: 'Korean',
+      nativeName: '한국어',
+      instruction: 'Always respond in Korean (한국어).',
+    },
+    { code: 'en', name: 'English', instruction: 'Always respond in English.' },
+  ]),
+  isLanguageSupported: vi.fn().mockReturnValue(true),
+});
+
 // Import after mocks
 import { McpService } from './mcp.service';
 
@@ -235,6 +256,7 @@ describe('McpService', () => {
   let mockConfigDiffService: Partial<ConfigDiffService>;
   let mockAnalyzerService: Partial<AnalyzerService>;
   let mockSkillRecommendationService: Partial<SkillRecommendationService>;
+  let mockLanguageService: Partial<LanguageService>;
 
   const testConfig: CodingBuddyConfig = {
     language: 'ko',
@@ -255,6 +277,7 @@ describe('McpService', () => {
     mockConfigDiffService = createMockConfigDiffService();
     mockAnalyzerService = createMockAnalyzerService();
     mockSkillRecommendationService = createMockSkillRecommendationService();
+    mockLanguageService = createMockLanguageService();
 
     const mcpService = new McpService(
       mockRulesService as RulesService,
@@ -263,6 +286,7 @@ describe('McpService', () => {
       mockConfigDiffService as ConfigDiffService,
       mockAnalyzerService as AnalyzerService,
       mockSkillRecommendationService as SkillRecommendationService,
+      mockLanguageService as LanguageService,
     );
     mcpService.onModuleInit();
   });
@@ -504,6 +528,9 @@ describe('McpService', () => {
       expect(result.content).toHaveLength(1);
       const parsedContent = JSON.parse(result.content[0].text);
       expect(parsedContent.language).toBe('ko');
+      expect(parsedContent.languageInstruction).toBe(
+        'Always respond in Korean (한국어).',
+      );
       expect(parsedContent.mode).toBe('PLAN');
     });
 
@@ -689,6 +716,7 @@ describe('McpService', () => {
         mockConfigDiffService as ConfigDiffService,
         mockAnalyzerService as AnalyzerService,
         mockSkillRecommendationService as SkillRecommendationService,
+        mockLanguageService as LanguageService,
       );
       serviceWithEmptyConfig.onModuleInit();
 
@@ -738,6 +766,7 @@ describe('McpService', () => {
         mockConfigDiffService as ConfigDiffService,
         mockAnalyzerService as AnalyzerService,
         mockSkillRecommendationService as SkillRecommendationService,
+        mockLanguageService as LanguageService,
       );
       service.onModuleInit();
 
@@ -802,6 +831,7 @@ describe('McpService', () => {
           mockConfigDiffService as ConfigDiffService,
           mockAnalyzerService as AnalyzerService,
           mockSkillRecommendationService as SkillRecommendationService,
+          mockLanguageService as LanguageService,
         );
         service.onModuleInit();
 
@@ -873,6 +903,7 @@ describe('McpService', () => {
           mockConfigDiffService as ConfigDiffService,
           mockAnalyzerService as AnalyzerService,
           mockSkillRecommendationService as SkillRecommendationService,
+          mockLanguageService as LanguageService,
         );
         service.onModuleInit();
 
@@ -929,6 +960,7 @@ describe('McpService', () => {
         mockConfigDiffService as ConfigDiffService,
         mockAnalyzerService as AnalyzerService,
         mockSkillRecommendationService as SkillRecommendationService,
+        mockLanguageService as LanguageService,
       );
 
       // Should not throw
@@ -945,6 +977,7 @@ describe('McpService', () => {
         mockConfigDiffService as ConfigDiffService,
         mockAnalyzerService as AnalyzerService,
         mockSkillRecommendationService as SkillRecommendationService,
+        mockLanguageService as LanguageService,
       );
 
       const server = service.getServer();
