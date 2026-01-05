@@ -8,14 +8,18 @@
 .github/ @JeremyDev87
 
 # MCP Server source code
-mcp-server/ @JeremyDev87
+apps/mcp-server/ @JeremyDev87
 
-# AI Rules (included in npm package)
-.ai-rules/ @JeremyDev87
+# Rules package (included in npm package)
+packages/rules/ @JeremyDev87
+
+# AI Rules (single source of truth)
+packages/rules/.ai-rules/ @JeremyDev87
 
 # Build scripts
 scripts/ @JeremyDev87
 
 # Package configuration
 package.json @JeremyDev87
-mcp-server/package.json @JeremyDev87
+apps/mcp-server/package.json @JeremyDev87
+packages/rules/package.json @JeremyDev87

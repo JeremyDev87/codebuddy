@@ -113,7 +113,7 @@ interface ParseModeResult {
 packages/rules/.ai-rules/
 └── keyword-modes.json          # 모드별 규칙 매핑 설정
 
-mcp-server/src/
+apps/mcp-server/src/
 ├── keyword/
 │   ├── keyword.module.ts       # 키워드 모듈
 │   ├── keyword.service.ts      # 파싱 로직 (순수 함수)
@@ -123,7 +123,7 @@ mcp-server/src/
 ### 수정할 파일
 
 ```
-mcp-server/src/
+apps/mcp-server/src/
 ├── app.module.ts               # KeywordModule 임포트 추가
 ├── mcp/mcp.service.ts          # parse_mode 도구 등록
 
@@ -135,7 +135,7 @@ mcp-server/src/
 ### 테스트 파일
 
 ```
-mcp-server/src/keyword/
+apps/mcp-server/src/keyword/
 └── keyword.service.spec.ts     # 파싱 로직 단위 테스트
 ```
 
