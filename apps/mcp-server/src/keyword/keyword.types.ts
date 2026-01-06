@@ -7,6 +7,55 @@ export const MODE_AGENTS = ['plan-mode', 'act-mode', 'eval-mode'] as const;
 
 export type ModeAgent = (typeof MODE_AGENTS)[number];
 
+/** Primary Agents for PLAN mode - centralized definition */
+export const PLAN_PRIMARY_AGENTS = [
+  'solution-architect',
+  'technical-planner',
+] as const;
+
+/** Primary Agents for ACT mode - centralized definition */
+export const ACT_PRIMARY_AGENTS = [
+  'frontend-developer',
+  'backend-developer',
+  'devops-engineer',
+  'agent-architect',
+] as const;
+
+/** Primary Agent for EVAL mode - centralized definition */
+export const EVAL_PRIMARY_AGENT = 'code-reviewer' as const;
+
+/**
+ * Default Primary Agent for ACT mode when no other source determines it.
+ *
+ * This is intentionally a separate constant rather than ACT_PRIMARY_AGENTS[0] to:
+ * 1. Make the default explicit and discoverable
+ * 2. Allow changing array order without affecting default behavior
+ * 3. Provide clear documentation of the fallback agent
+ *
+ * @see ACT_PRIMARY_AGENTS for the full list of ACT mode agents
+ */
+export const DEFAULT_ACT_AGENT = 'frontend-developer' as const;
+
+/** All Primary Agents (Tier 1) - combined list */
+export const ALL_PRIMARY_AGENTS = [
+  ...PLAN_PRIMARY_AGENTS,
+  ...ACT_PRIMARY_AGENTS,
+  EVAL_PRIMARY_AGENT,
+] as const;
+
+export type PlanPrimaryAgent = (typeof PLAN_PRIMARY_AGENTS)[number];
+export type ActPrimaryAgent = (typeof ACT_PRIMARY_AGENTS)[number];
+export type PrimaryAgent = (typeof ALL_PRIMARY_AGENTS)[number];
+
+/**
+ * Mutable string[] versions of Primary Agent constants.
+ * Use these for runtime operations that require string[] type.
+ * The readonly versions above provide compile-time type safety.
+ */
+export const PLAN_PRIMARY_AGENTS_LIST: string[] = [...PLAN_PRIMARY_AGENTS];
+export const ACT_PRIMARY_AGENTS_LIST: string[] = [...ACT_PRIMARY_AGENTS];
+export const ALL_PRIMARY_AGENTS_LIST: string[] = [...ALL_PRIMARY_AGENTS];
+
 /** Localized keywords mapped to their English equivalents */
 export const LOCALIZED_KEYWORD_MAP: Record<string, Mode> = {
   // Korean (한국어)
@@ -68,6 +117,28 @@ export interface ResolutionContext {
   projectType?: string;
 }
 
+/** ACT mode agent recommendation from PLAN mode */
+export interface ActAgentRecommendation {
+  agentName: string;
+  reason: string;
+  confidence: number;
+}
+
+/** Agent/Skill activation record for transparency */
+export interface AgentActivation {
+  type: 'agent' | 'skill';
+  name: string;
+  tier: 'primary' | 'specialist';
+  activatedBy?: string; // Parent agent that invoked this
+  timestamp: string;
+}
+
+/** Activation message for user visibility */
+export interface ActivationMessage {
+  activations: AgentActivation[];
+  formatted: string; // Pre-formatted message for display
+}
+
 export interface ParseModeResult {
   mode: Mode;
   originalPrompt: string;
@@ -80,6 +151,12 @@ export interface ParseModeResult {
   /** Source of Primary Agent selection */
   primary_agent_source?: PrimaryAgentSource;
   parallelAgentsRecommendation?: ParallelAgentRecommendation;
+  /** ACT mode agent recommendation (only in PLAN mode response) */
+  recommended_act_agent?: ActAgentRecommendation;
+  /** Available ACT agents for selection (only in PLAN mode response) */
+  available_act_agents?: string[];
+  /** Activation message for user visibility */
+  activation_message?: ActivationMessage;
 }
 
 export interface ModeConfig {

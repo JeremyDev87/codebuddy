@@ -1,5 +1,10 @@
 import { Logger } from '@nestjs/common';
 import {
+  EVAL_PRIMARY_AGENT,
+  DEFAULT_ACT_AGENT,
+  ALL_PRIMARY_AGENTS_LIST,
+  PLAN_PRIMARY_AGENTS_LIST,
+  ACT_PRIMARY_AGENTS_LIST,
   type Mode,
   type PrimaryAgentResolutionResult,
   type PrimaryAgentSource,
@@ -27,17 +32,6 @@ type ListPrimaryAgentsFn = () => Promise<string[]>;
  */
 export class PrimaryAgentResolver {
   private readonly logger = new Logger(PrimaryAgentResolver.name);
-  private static readonly DEFAULT_AGENT = 'frontend-developer';
-  private static readonly EVAL_AGENT = 'code-reviewer';
-
-  /** Fallback agents when registry is unavailable */
-  private static readonly DEFAULT_FALLBACK_AGENTS = [
-    'frontend-developer',
-    'backend-developer',
-    'code-reviewer',
-    'solution-architect',
-    'technical-planner',
-  ];
 
   /** Patterns for explicit agent request in prompts */
   private static readonly EXPLICIT_PATTERNS = [
@@ -71,78 +65,6 @@ export class PrimaryAgentResolver {
     { pattern: /agents?.*\.json$/i, agent: 'agent-architect', confidence: 0.8 },
   ];
 
-  /** Intent patterns for automatic agent detection based on prompt content */
-  private static readonly INTENT_PATTERNS: Array<{
-    pattern: RegExp;
-    agent: string;
-    confidence: number;
-    category: 'architecture' | 'planning' | 'implementation';
-  }> = [
-    // Solution Architect triggers
-    {
-      pattern: /아키텍처|architecture|시스템\s*설계|system\s*design/i,
-      agent: 'solution-architect',
-      confidence: 0.85,
-      category: 'architecture',
-    },
-    {
-      pattern: /기술\s*선택|technology\s*selection|스택\s*선택/i,
-      agent: 'solution-architect',
-      confidence: 0.8,
-      category: 'architecture',
-    },
-    {
-      pattern: /전체\s*구조|overall\s*structure|설계\s*방향/i,
-      agent: 'solution-architect',
-      confidence: 0.85,
-      category: 'architecture',
-    },
-    {
-      pattern: /구조\s*설계|structural\s*design|API\s*설계|API\s*design/i,
-      agent: 'solution-architect',
-      confidence: 0.8,
-      category: 'architecture',
-    },
-    {
-      pattern:
-        /마이크로서비스|microservice|서비스\s*분리|service\s*decomposition/i,
-      agent: 'solution-architect',
-      confidence: 0.85,
-      category: 'architecture',
-    },
-    // Technical Planner triggers
-    {
-      pattern: /구현\s*계획|implementation\s*plan|작업\s*분해/i,
-      agent: 'technical-planner',
-      confidence: 0.85,
-      category: 'planning',
-    },
-    {
-      pattern: /태스크|task\s*breakdown|단계별|step.?by.?step/i,
-      agent: 'technical-planner',
-      confidence: 0.8,
-      category: 'planning',
-    },
-    {
-      pattern: /TDD\s*계획|TDD\s*plan|테스트\s*먼저|test.?first/i,
-      agent: 'technical-planner',
-      confidence: 0.85,
-      category: 'planning',
-    },
-    {
-      pattern: /실행\s*계획|execution\s*plan|개발\s*계획|development\s*plan/i,
-      agent: 'technical-planner',
-      confidence: 0.8,
-      category: 'planning',
-    },
-    {
-      pattern: /리팩토링\s*계획|refactoring\s*plan|work\s*breakdown/i,
-      agent: 'technical-planner',
-      confidence: 0.8,
-      category: 'planning',
-    },
-  ];
-
   constructor(
     private readonly getProjectConfig: GetProjectConfigFn,
     private readonly listPrimaryAgents: ListPrimaryAgentsFn,
@@ -150,19 +72,24 @@ export class PrimaryAgentResolver {
 
   /**
    * Resolve which Primary Agent to use.
-   * Priority: explicit > config > intent > context > default
    *
-   * Note: EVAL mode always returns code-reviewer regardless of other settings.
+   * Mode-specific behavior:
+   * - PLAN: Always uses solution-architect or technical-planner
+   * - ACT: Uses recommended agent if provided, otherwise AI analysis
+   * - EVAL: Always uses code-reviewer
+   *
+   * @param recommendedActAgent - ACT agent recommended by PLAN mode (only for ACT mode)
    */
   async resolve(
     mode: Mode,
     prompt: string,
     context?: ResolutionContext,
+    recommendedActAgent?: string,
   ): Promise<PrimaryAgentResolutionResult> {
     // EVAL mode is special - always use code-reviewer
     if (mode === 'EVAL') {
       return this.createResult(
-        PrimaryAgentResolver.EVAL_AGENT,
+        EVAL_PRIMARY_AGENT,
         'default',
         1.0,
         'EVAL mode always uses code-reviewer',
@@ -171,22 +98,152 @@ export class PrimaryAgentResolver {
 
     const availableAgents = await this.safeListPrimaryAgents();
 
-    // 1. Check explicit request in prompt
-    const explicit = this.parseExplicitRequest(prompt, availableAgents);
+    // PLAN mode - always use solution-architect or technical-planner
+    if (mode === 'PLAN') {
+      return this.resolvePlanAgent(prompt, availableAgents);
+    }
+
+    // ACT mode - use recommended agent or fallback to AI analysis
+    return this.resolveActAgent(
+      prompt,
+      availableAgents,
+      context,
+      recommendedActAgent,
+    );
+  }
+
+  /**
+   * Resolve PLAN mode agent (always solution-architect or technical-planner).
+   * Chooses based on prompt analysis.
+   */
+  private resolvePlanAgent(
+    prompt: string,
+    availableAgents: string[],
+  ): PrimaryAgentResolutionResult {
+    // Check for explicit PLAN agent request
+    const explicit = this.parseExplicitRequest(
+      prompt,
+      availableAgents,
+      PLAN_PRIMARY_AGENTS_LIST,
+    );
     if (explicit) {
       return explicit;
     }
 
-    // 2. Check project configuration
+    // Analyze prompt to choose between solution-architect and technical-planner
+    const planAgent = this.choosePlanAgent(prompt, availableAgents);
+    return planAgent;
+  }
+
+  /**
+   * Choose between solution-architect and technical-planner based on prompt.
+   *
+   * Priority order:
+   * 1. Architecture-only keywords → solution-architect (high-level design)
+   * 2. Planning-only keywords → technical-planner (implementation planning)
+   * 3. Both patterns match → solution-architect (architecture takes precedence)
+   * 4. Neither matches → solution-architect (default for PLAN mode)
+   */
+  private choosePlanAgent(
+    prompt: string,
+    availableAgents: string[],
+  ): PrimaryAgentResolutionResult {
+    // Architecture-focused keywords suggest solution-architect
+    const architecturePatterns =
+      /아키텍처|architecture|시스템\s*설계|system\s*design|구조|structure|API\s*설계|마이크로서비스|microservice|기술\s*선택|technology/i;
+
+    // Planning/task-focused keywords suggest technical-planner
+    const planningPatterns =
+      /계획|plan|단계|step|태스크|task|TDD|구현\s*순서|implementation\s*order|리팩토링|refactor/i;
+
+    const hasArchitectureIntent = architecturePatterns.test(prompt);
+    const hasPlanningIntent = planningPatterns.test(prompt);
+
+    // Priority 1: Architecture-only → solution-architect
+    if (hasArchitectureIntent && !hasPlanningIntent) {
+      if (availableAgents.includes('solution-architect')) {
+        return this.createResult(
+          'solution-architect',
+          'intent',
+          0.9,
+          'Architecture-focused task detected in PLAN mode',
+        );
+      }
+    }
+
+    // Priority 2: Planning-only → technical-planner
+    if (hasPlanningIntent && !hasArchitectureIntent) {
+      if (availableAgents.includes('technical-planner')) {
+        return this.createResult(
+          'technical-planner',
+          'intent',
+          0.9,
+          'Planning/implementation-focused task detected in PLAN mode',
+        );
+      }
+    }
+
+    // Priority 3: Both patterns match → solution-architect (architecture precedence)
+    if (hasArchitectureIntent && hasPlanningIntent) {
+      if (availableAgents.includes('solution-architect')) {
+        return this.createResult(
+          'solution-architect',
+          'intent',
+          0.85,
+          'Both architecture and planning detected; architecture takes precedence',
+        );
+      }
+    }
+
+    // Priority 4: Neither matches → default to solution-architect
+    const defaultPlanAgent = availableAgents.includes('solution-architect')
+      ? 'solution-architect'
+      : availableAgents.includes('technical-planner')
+        ? 'technical-planner'
+        : DEFAULT_ACT_AGENT;
+
+    return this.createResult(
+      defaultPlanAgent,
+      'default',
+      1.0,
+      'PLAN mode default: solution-architect for high-level design',
+    );
+  }
+
+  /**
+   * Resolve ACT mode agent.
+   * Priority: explicit > recommended > config > context > default
+   */
+  private async resolveActAgent(
+    prompt: string,
+    availableAgents: string[],
+    context?: ResolutionContext,
+    recommendedActAgent?: string,
+  ): Promise<PrimaryAgentResolutionResult> {
+    // 1. Check explicit request in prompt
+    const explicit = this.parseExplicitRequest(
+      prompt,
+      availableAgents,
+      ACT_PRIMARY_AGENTS_LIST,
+    );
+    if (explicit) {
+      return explicit;
+    }
+
+    // 2. Use recommended agent from PLAN mode if provided
+    if (recommendedActAgent && availableAgents.includes(recommendedActAgent)) {
+      return this.createResult(
+        recommendedActAgent,
+        'config', // Source is 'config' as it comes from PLAN recommendation
+        1.0,
+        `Using recommended agent from PLAN mode: ${recommendedActAgent}`,
+      );
+    }
+
+    // 3. Check project configuration
     const fromConfig = await this.getFromProjectConfig(availableAgents);
     if (fromConfig) {
       return fromConfig;
-    }
-
-    // 3. Check intent-based suggestion (analyze prompt content)
-    const fromIntent = this.analyzeIntent(prompt, availableAgents);
-    if (fromIntent && fromIntent.confidence >= 0.8) {
-      return fromIntent;
     }
 
     // 4. Check context-based suggestion
@@ -197,28 +254,36 @@ export class PrimaryAgentResolver {
       }
     }
 
-    // 5. Default fallback
+    // 5. Default fallback for ACT mode
     return this.createResult(
-      PrimaryAgentResolver.DEFAULT_AGENT,
+      DEFAULT_ACT_AGENT,
       'default',
       1.0,
-      'No explicit preference, using default frontend-developer',
+      'ACT mode default: frontend-developer',
     );
   }
 
   /**
    * Parse explicit agent request from prompt.
    * Returns null if no explicit request found or agent not in registry.
+   *
+   * @param prompt - User prompt to analyze
+   * @param availableAgents - All available agents from registry
+   * @param allowedAgents - Optional filter to only match specific agents (e.g., PLAN_AGENTS or ACT_AGENTS)
    */
   private parseExplicitRequest(
     prompt: string,
     availableAgents: string[],
+    allowedAgents?: string[],
   ): PrimaryAgentResolutionResult | null {
     for (const pattern of PrimaryAgentResolver.EXPLICIT_PATTERNS) {
       const match = prompt.match(pattern);
       if (match?.[1]) {
         const agentName = match[1].toLowerCase();
-        if (availableAgents.includes(agentName)) {
+        // Must be in available agents AND (if specified) in allowed agents
+        const isAvailable = availableAgents.includes(agentName);
+        const isAllowed = !allowedAgents || allowedAgents.includes(agentName);
+        if (isAvailable && isAllowed) {
           return this.createResult(
             agentName,
             'explicit',
@@ -307,50 +372,6 @@ export class PrimaryAgentResolver {
   }
 
   /**
-   * Analyze prompt intent to suggest appropriate agent.
-   * Returns highest confidence match from intent patterns.
-   */
-  private analyzeIntent(
-    prompt: string,
-    availableAgents: string[],
-  ): PrimaryAgentResolutionResult | null {
-    // Early return for empty or whitespace-only prompts
-    if (!prompt || !prompt.trim()) {
-      return null;
-    }
-
-    let bestMatch: {
-      agent: string;
-      confidence: number;
-      category: string;
-    } | null = null;
-
-    for (const {
-      pattern,
-      agent,
-      confidence,
-      category,
-    } of PrimaryAgentResolver.INTENT_PATTERNS) {
-      if (pattern.test(prompt) && availableAgents.includes(agent)) {
-        if (!bestMatch || confidence > bestMatch.confidence) {
-          bestMatch = { agent, confidence, category };
-        }
-      }
-    }
-
-    if (bestMatch && bestMatch.confidence >= 0.8) {
-      return this.createResult(
-        bestMatch.agent,
-        'intent',
-        bestMatch.confidence,
-        `Intent detected: ${bestMatch.category} task`,
-      );
-    }
-
-    return null;
-  }
-
-  /**
    * Safely list primary agents, returning default list on error.
    */
   private async safeListPrimaryAgents(): Promise<string[]> {
@@ -360,7 +381,7 @@ export class PrimaryAgentResolver {
         this.logger.debug(
           'No primary agents found in registry, using default fallback list',
         );
-        return [...PrimaryAgentResolver.DEFAULT_FALLBACK_AGENTS];
+        return [...ALL_PRIMARY_AGENTS_LIST];
       }
       return agents;
     } catch (error) {
@@ -368,7 +389,7 @@ export class PrimaryAgentResolver {
         `Failed to list primary agents: ${error instanceof Error ? error.message : 'Unknown error'}. ` +
           `Using fallback list.`,
       );
-      return [...PrimaryAgentResolver.DEFAULT_FALLBACK_AGENTS];
+      return [...ALL_PRIMARY_AGENTS_LIST];
     }
   }
 
