@@ -837,4 +837,198 @@ describe('KeywordService', () => {
       );
     });
   });
+
+  describe('recommended_act_agent (with PrimaryAgentResolver)', () => {
+    it('returns recommended_act_agent in PLAN mode when resolver is provided', async () => {
+      const mockResolver = {
+        resolve: vi.fn().mockResolvedValue({
+          agentName: 'backend-developer',
+          source: 'intent',
+          confidence: 0.9,
+          reason: 'API implementation detected',
+        }),
+      };
+      const serviceWithResolver = new KeywordService(
+        mockLoadConfig,
+        mockLoadRule,
+        mockLoadAgentInfo,
+        mockResolver as any,
+      );
+
+      const result = await serviceWithResolver.parseMode('PLAN design API');
+
+      expect(result.recommended_act_agent).toBeDefined();
+      expect(result.recommended_act_agent?.agentName).toBe('backend-developer');
+      expect(result.recommended_act_agent?.confidence).toBe(0.9);
+      expect(result.recommended_act_agent?.reason).toBe(
+        'API implementation detected',
+      );
+    });
+
+    it('returns available_act_agents in PLAN mode when resolver is provided', async () => {
+      const mockResolver = {
+        resolve: vi.fn().mockResolvedValue({
+          agentName: 'frontend-developer',
+          source: 'default',
+          confidence: 1.0,
+          reason: 'Default agent',
+        }),
+      };
+      const serviceWithResolver = new KeywordService(
+        mockLoadConfig,
+        mockLoadRule,
+        mockLoadAgentInfo,
+        mockResolver as any,
+      );
+
+      const result = await serviceWithResolver.parseMode('PLAN build UI');
+
+      expect(result.available_act_agents).toBeDefined();
+      expect(result.available_act_agents).toContain('frontend-developer');
+      expect(result.available_act_agents).toContain('backend-developer');
+      expect(result.available_act_agents).toContain('devops-engineer');
+      expect(result.available_act_agents).toContain('agent-architect');
+    });
+
+    it('does not return recommended_act_agent in ACT mode', async () => {
+      const mockResolver = {
+        resolve: vi.fn().mockResolvedValue({
+          agentName: 'frontend-developer',
+          source: 'default',
+          confidence: 1.0,
+          reason: 'Default',
+        }),
+      };
+      const serviceWithResolver = new KeywordService(
+        mockLoadConfig,
+        mockLoadRule,
+        mockLoadAgentInfo,
+        mockResolver as any,
+      );
+
+      const result = await serviceWithResolver.parseMode('ACT implement');
+
+      expect(result.recommended_act_agent).toBeUndefined();
+      expect(result.available_act_agents).toBeUndefined();
+    });
+
+    it('does not return recommended_act_agent in EVAL mode', async () => {
+      const mockResolver = {
+        resolve: vi.fn().mockResolvedValue({
+          agentName: 'code-reviewer',
+          source: 'default',
+          confidence: 1.0,
+          reason: 'EVAL mode',
+        }),
+      };
+      const serviceWithResolver = new KeywordService(
+        mockLoadConfig,
+        mockLoadRule,
+        mockLoadAgentInfo,
+        mockResolver as any,
+      );
+
+      const result = await serviceWithResolver.parseMode('EVAL review');
+
+      expect(result.recommended_act_agent).toBeUndefined();
+      expect(result.available_act_agents).toBeUndefined();
+    });
+
+    it('handles resolver error gracefully', async () => {
+      const mockResolver = {
+        resolve: vi
+          .fn()
+          // First call: for resolvePrimaryAgent() in PLAN mode - should succeed
+          .mockResolvedValueOnce({
+            agentName: 'solution-architect',
+            source: 'default',
+            confidence: 1.0,
+            reason: 'PLAN mode default',
+          })
+          // Second call: for getActAgentRecommendation() - should throw
+          .mockRejectedValueOnce(new Error('Resolver error')),
+      };
+      const serviceWithResolver = new KeywordService(
+        mockLoadConfig,
+        mockLoadRule,
+        mockLoadAgentInfo,
+        mockResolver as any,
+      );
+
+      const result = await serviceWithResolver.parseMode('PLAN design');
+
+      // Should still work, just without recommendation
+      expect(result.mode).toBe('PLAN');
+      expect(result.delegates_to).toBe('solution-architect');
+      expect(result.recommended_act_agent).toBeUndefined();
+    });
+  });
+
+  describe('activation_message', () => {
+    it('includes activation_message for PLAN mode', async () => {
+      const result = await service.parseMode('PLAN design auth feature');
+
+      expect(result.activation_message).toBeDefined();
+      expect(result.activation_message?.activations).toHaveLength(1);
+      expect(result.activation_message?.activations[0]).toMatchObject({
+        type: 'agent',
+        name: 'frontend-developer',
+        tier: 'primary',
+      });
+    });
+
+    it('includes activation_message for ACT mode', async () => {
+      const result = await service.parseMode('ACT implement login API');
+
+      expect(result.activation_message).toBeDefined();
+      expect(result.activation_message?.activations[0]).toMatchObject({
+        type: 'agent',
+        name: 'frontend-developer',
+        tier: 'primary',
+      });
+    });
+
+    it('includes activation_message for EVAL mode with code-reviewer', async () => {
+      const result = await service.parseMode('EVAL review security');
+
+      expect(result.activation_message).toBeDefined();
+      expect(result.activation_message?.activations[0]).toMatchObject({
+        type: 'agent',
+        name: 'code-reviewer',
+        tier: 'primary',
+      });
+    });
+
+    it('formats activation_message with robot icon for primary agent', async () => {
+      const result = await service.parseMode('PLAN design feature');
+
+      expect(result.activation_message?.formatted).toContain('🤖');
+      expect(result.activation_message?.formatted).toContain('[Primary Agent]');
+    });
+
+    it('includes timestamp in activation record', async () => {
+      const result = await service.parseMode('PLAN design feature');
+
+      expect(result.activation_message?.activations[0].timestamp).toBeDefined();
+      expect(
+        new Date(result.activation_message!.activations[0].timestamp).getTime(),
+      ).not.toBeNaN();
+    });
+
+    it('includes activation_message with Korean keywords', async () => {
+      const result = await service.parseMode('계획 인증 기능 설계');
+
+      expect(result.activation_message).toBeDefined();
+      expect(result.activation_message?.activations[0].name).toBe(
+        'frontend-developer',
+      );
+    });
+
+    it('includes activation_message even without keyword (default mode)', async () => {
+      const result = await service.parseMode('design auth feature');
+
+      expect(result.activation_message).toBeDefined();
+      expect(result.activation_message?.activations[0].tier).toBe('primary');
+    });
+  });
 });

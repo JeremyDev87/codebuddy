@@ -3,6 +3,9 @@ import {
   KEYWORDS,
   LOCALIZED_KEYWORD_MAP,
   MODE_AGENTS,
+  ALL_PRIMARY_AGENTS_LIST,
+  ACT_PRIMARY_AGENTS,
+  DEFAULT_ACT_AGENT,
   type Mode,
   type RuleContent,
   type ParseModeResult,
@@ -11,8 +14,10 @@ import {
   type ParallelAgentRecommendation,
   type ResolutionContext,
   type PrimaryAgentSource,
+  type ActAgentRecommendation,
 } from './keyword.types';
 import { PrimaryAgentResolver } from './primary-agent-resolver';
+import { ActivationMessageBuilder } from './activation-message.builder';
 
 const DEFAULT_CONFIG: KeywordModesConfig = {
   modes: {
@@ -213,7 +218,42 @@ export class KeywordService {
       result.parallelAgentsRecommendation = parallelAgentsRecommendation;
     }
 
+    // Add ACT agent recommendation for PLAN mode
+    if (mode === 'PLAN' && this.primaryAgentResolver) {
+      const actRecommendation =
+        await this.getActAgentRecommendation(originalPrompt);
+      if (actRecommendation) {
+        result.recommended_act_agent = actRecommendation;
+        result.available_act_agents = [...ACT_PRIMARY_AGENTS];
+      }
+    }
+
+    // Add activation message for transparency
+    if (resolvedAgent) {
+      const tier = this.getPrimaryAgentTier(resolvedAgent.agentName);
+      const activationMessage = ActivationMessageBuilder.forPrimaryAgent(
+        resolvedAgent.agentName,
+      );
+      // Adjust tier in activation if needed
+      if (tier === 'specialist') {
+        result.activation_message = ActivationMessageBuilder.forSpecialistAgent(
+          resolvedAgent.agentName,
+        );
+      } else {
+        result.activation_message = activationMessage;
+      }
+    }
+
     return result;
+  }
+
+  /**
+   * Determine if an agent is a primary or specialist tier.
+   */
+  private getPrimaryAgentTier(agentName: string): 'primary' | 'specialist' {
+    return ALL_PRIMARY_AGENTS_LIST.includes(agentName)
+      ? 'primary'
+      : 'specialist';
   }
 
   /**
@@ -234,6 +274,34 @@ export class KeywordService {
       specialists: [...specialists],
       hint: `Use Task tool with subagent_type="general-purpose" and run_in_background=true for each specialist. Call prepare_parallel_agents MCP tool to get ready-to-use prompts.`,
     };
+  }
+
+  /**
+   * Get recommended ACT agent based on prompt analysis.
+   * Called during PLAN mode to suggest which agent should handle ACT.
+   */
+  private async getActAgentRecommendation(
+    prompt: string,
+  ): Promise<ActAgentRecommendation | undefined> {
+    if (!this.primaryAgentResolver) {
+      return undefined;
+    }
+
+    try {
+      // Use resolver to analyze prompt as if it were ACT mode
+      const result = await this.primaryAgentResolver.resolve('ACT', prompt);
+
+      return {
+        agentName: result.agentName,
+        reason: result.reason,
+        confidence: result.confidence,
+      };
+    } catch (error) {
+      this.logger.debug(
+        `Failed to get ACT agent recommendation: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+      return undefined;
+    }
   }
 
   async loadModeConfig(): Promise<KeywordModesConfig> {
@@ -334,7 +402,7 @@ export class KeywordService {
 
     // Default fallback for PLAN/ACT modes (EVAL has static delegates_to)
     if (mode !== 'EVAL') {
-      return { agentName: 'frontend-developer', source: 'default' };
+      return { agentName: DEFAULT_ACT_AGENT, source: 'default' };
     }
 
     return null;

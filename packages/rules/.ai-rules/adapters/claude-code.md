@@ -165,3 +165,95 @@ recommend_skills({ prompt: "Build a dashboard component" })
 **Supported Languages:** English, Korean, Japanese, Chinese, Spanish
 
 The tool returns skill recommendations with confidence levels (high/medium) and matched patterns for transparency.
+
+## Agent Hierarchy
+
+CodingBuddy uses a layered agent hierarchy for different types of tasks:
+
+### Tier 1: Primary Agents (Mode-specific)
+
+| Mode | Agents | Description |
+|------|--------|-------------|
+| **PLAN** | solution-architect, technical-planner | Design and planning tasks |
+| **ACT** | frontend-developer, backend-developer, devops-engineer, agent-architect | Implementation tasks |
+| **EVAL** | code-reviewer | Code review and evaluation |
+
+### Tier 2: Specialist Agents
+
+Specialist agents can be invoked by any Primary Agent as needed:
+
+- security-specialist
+- accessibility-specialist
+- performance-specialist
+- test-strategy-specialist
+- documentation-specialist
+- architecture-specialist
+- code-quality-specialist
+- seo-specialist
+- design-system-specialist
+
+### Agent Resolution
+
+1. **PLAN mode**: Always uses `solution-architect` or `technical-planner` based on prompt analysis
+2. **ACT mode**: Uses recommended agent from PLAN, or falls back to AI analysis
+3. **EVAL mode**: Always uses `code-reviewer`
+
+## Activation Messages
+
+When agents or skills are activated, CodingBuddy displays activation messages for transparency:
+
+### Output Format
+
+```
+🤖 solution-architect [Primary Agent]
+👤 security-specialist [Specialist] (by solution-architect)
+⚡ brainstorming [Specialist] (by technical-planner)
+```
+
+### Icons
+
+| Icon | Meaning |
+|------|---------|
+| 🤖 | Primary Agent |
+| 👤 | Specialist Agent |
+| ⚡ | Skill |
+
+### ParseMode Response Fields
+
+The `parse_mode` MCP tool returns these agent-related fields:
+
+```json
+{
+  "mode": "PLAN",
+  "delegates_to": "solution-architect",
+  "primary_agent_source": "intent",
+  "activation_message": {
+    "formatted": "🤖 solution-architect [Primary Agent]",
+    "activations": [
+      {
+        "type": "agent",
+        "name": "solution-architect",
+        "tier": "primary",
+        "timestamp": "2024-01-06T12:00:00Z"
+      }
+    ]
+  },
+  "recommended_act_agent": {
+    "agentName": "backend-developer",
+    "reason": "API implementation task detected",
+    "confidence": 0.9
+  }
+}
+```
+
+### Displaying Activation Messages
+
+AI assistants should display the `activation_message.formatted` field at the start of their response:
+
+```
+🤖 solution-architect [Primary Agent]
+
+# Mode: PLAN
+
+...
+```
