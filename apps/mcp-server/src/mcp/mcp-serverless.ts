@@ -23,16 +23,15 @@ import {
   validateAgentName,
 } from '../shared/validation.constants';
 import { sanitizeError } from '../shared/error.utils';
+import {
+  createJsonResponse,
+  createErrorResponse,
+  type ToolResponse,
+} from './response.utils';
 
 // ============================================================================
 // Types
 // ============================================================================
-
-interface ToolResponse {
-  [key: string]: unknown;
-  content: Array<{ type: 'text'; text: string }>;
-  isError?: boolean;
-}
 
 interface ParseModeResponse extends ParseModeResult {
   language?: string;
@@ -276,14 +275,14 @@ export class McpServerlessService {
     // Validate input
     const validation = validateQuery(query);
     if (!validation.valid) {
-      return this.errorResponse(validation.error ?? 'Invalid query');
+      return createErrorResponse(validation.error ?? 'Invalid query');
     }
 
     try {
       const results = await this.searchRules(query);
-      return this.jsonResponse(results);
+      return createJsonResponse(results);
     } catch (error) {
-      return this.errorResponse(
+      return createErrorResponse(
         `Failed to search rules: ${sanitizeError(error)}`,
       );
     }
@@ -295,14 +294,14 @@ export class McpServerlessService {
     // Validate input
     const validation = validateAgentName(agentName);
     if (!validation.valid) {
-      return this.errorResponse(validation.error ?? 'Invalid agent name');
+      return createErrorResponse(validation.error ?? 'Invalid agent name');
     }
 
     try {
       const agent = await this.getAgent(agentName);
-      return this.jsonResponse(agent);
+      return createJsonResponse(agent);
     } catch {
-      return this.errorResponse(`Agent '${agentName}' not found.`);
+      return createErrorResponse(`Agent '${agentName}' not found.`);
     }
   }
 
@@ -310,7 +309,7 @@ export class McpServerlessService {
     // Validate input
     const validation = validatePrompt(prompt);
     if (!validation.valid) {
-      return this.errorResponse(validation.error ?? 'Invalid prompt');
+      return createErrorResponse(validation.error ?? 'Invalid prompt');
     }
 
     try {
@@ -320,9 +319,9 @@ export class McpServerlessService {
         ...result,
         language: settings.language,
       };
-      return this.jsonResponse(response);
+      return createJsonResponse(response);
     } catch (error) {
-      return this.errorResponse(
+      return createErrorResponse(
         `Failed to parse mode: ${sanitizeError(error)}`,
       );
     }
@@ -331,9 +330,9 @@ export class McpServerlessService {
   private async handleGetProjectConfig(): Promise<ToolResponse> {
     try {
       const settings = await this.loadProjectSettings();
-      return this.jsonResponse(settings);
+      return createJsonResponse(settings);
     } catch (error) {
-      return this.errorResponse(
+      return createErrorResponse(
         `Failed to get project config: ${sanitizeError(error)}`,
       );
     }
@@ -342,9 +341,9 @@ export class McpServerlessService {
   private async handleListSkills(): Promise<ToolResponse> {
     try {
       const skills = await this.listSkills();
-      return this.jsonResponse(skills);
+      return createJsonResponse(skills);
     } catch (error) {
-      return this.errorResponse(
+      return createErrorResponse(
         `Failed to list skills: ${sanitizeError(error)}`,
       );
     }
@@ -353,14 +352,14 @@ export class McpServerlessService {
   private async handleGetSkill(skillName: string): Promise<ToolResponse> {
     // Validate skill name
     if (!skillName || !/^[a-z0-9-]+$/.test(skillName)) {
-      return this.errorResponse('Invalid skill name format');
+      return createErrorResponse('Invalid skill name format');
     }
 
     try {
       const skill = await this.getSkill(skillName);
-      return this.jsonResponse(skill);
+      return createJsonResponse(skill);
     } catch {
-      return this.errorResponse(`Skill '${skillName}' not found.`);
+      return createErrorResponse(`Skill '${skillName}' not found.`);
     }
   }
 
@@ -432,14 +431,14 @@ export class McpServerlessService {
         );
       }
 
-      return this.jsonResponse({
+      return createJsonResponse({
         detectedStack,
         currentConfig,
         suggestions,
         needsUpdate: suggestions.length > 0,
       });
     } catch (error) {
-      return this.errorResponse(
+      return createErrorResponse(
         `Failed to suggest config updates: ${sanitizeError(error)}`,
       );
     }
@@ -667,22 +666,5 @@ export class McpServerlessService {
     } catch {
       return {};
     }
-  }
-
-  // ============================================================================
-  // Response Helpers
-  // ============================================================================
-
-  private jsonResponse(data: unknown): ToolResponse {
-    return {
-      content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
-    };
-  }
-
-  private errorResponse(message: string): ToolResponse {
-    return {
-      isError: true,
-      content: [{ type: 'text', text: message }],
-    };
   }
 }

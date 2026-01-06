@@ -23,6 +23,7 @@ import type { CodingBuddyConfig } from '../config/config.schema';
 import { LanguageService } from '../shared/language.service';
 import { AgentService } from '../agent/agent.service';
 import type { Mode } from '../keyword/keyword.types';
+import { createJsonResponse, createErrorResponse } from './response.utils';
 import { resolveModel, isModelConfig } from '../model';
 import type { ModelConfig } from '../model';
 
@@ -428,7 +429,7 @@ export class McpService implements OnModuleInit {
   private async handleSearchRules(args: Record<string, unknown> | undefined) {
     const query = String(args?.query);
     const results = await this.rulesService.searchRules(query);
-    return this.jsonResponse(results);
+    return createJsonResponse(results);
   }
 
   private async handleGetAgentDetails(
@@ -443,12 +444,12 @@ export class McpService implements OnModuleInit {
       const agentModel = agent.model as ModelConfig | undefined;
       const resolvedModel = resolveModel({ agentModel });
 
-      return this.jsonResponse({
+      return createJsonResponse({
         ...agent,
         resolvedModel,
       });
     } catch {
-      return this.errorResponse(`Agent '${agentName}' not found.`);
+      return createErrorResponse(`Agent '${agentName}' not found.`);
     }
   }
 
@@ -461,14 +462,14 @@ export class McpService implements OnModuleInit {
         this.languageService.getLanguageInstruction(language || 'en');
       const resolvedModel = await this.resolveModelForMode(result.agent);
 
-      return this.jsonResponse({
+      return createJsonResponse({
         ...result,
         language,
         languageInstruction: languageInstructionResult.instruction,
         resolvedModel,
       });
     } catch (error) {
-      return this.errorResponse(
+      return createErrorResponse(
         `Failed to parse mode: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
@@ -515,9 +516,9 @@ export class McpService implements OnModuleInit {
   private async handleGetProjectConfig() {
     try {
       const settings = await this.configService.getSettings();
-      return this.jsonResponse(settings);
+      return createJsonResponse(settings);
     } catch (error) {
-      return this.errorResponse(
+      return createErrorResponse(
         `Failed to get project config: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
@@ -544,9 +545,9 @@ export class McpService implements OnModuleInit {
         currentConfig,
       );
 
-      return this.jsonResponse(result);
+      return createJsonResponse(result);
     } catch (error) {
-      return this.errorResponse(
+      return createErrorResponse(
         `Failed to suggest config updates: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
@@ -555,13 +556,13 @@ export class McpService implements OnModuleInit {
   private handleRecommendSkills(args: Record<string, unknown> | undefined) {
     const prompt = args?.prompt;
     if (typeof prompt !== 'string') {
-      return this.errorResponse('Missing required parameter: prompt');
+      return createErrorResponse('Missing required parameter: prompt');
     }
     try {
       const result = this.skillRecommendationService.recommendSkills(prompt);
-      return this.jsonResponse(result);
+      return createJsonResponse(result);
     } catch (error) {
-      return this.errorResponse(
+      return createErrorResponse(
         `Failed to recommend skills: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
@@ -579,9 +580,9 @@ export class McpService implements OnModuleInit {
       }
 
       const result = this.skillRecommendationService.listSkills(options);
-      return this.jsonResponse(result);
+      return createJsonResponse(result);
     } catch (error) {
-      return this.errorResponse(
+      return createErrorResponse(
         `Failed to list skills: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
@@ -600,15 +601,15 @@ export class McpService implements OnModuleInit {
       | undefined;
 
     if (typeof agentName !== 'string') {
-      return this.errorResponse('Missing required parameter: agentName');
+      return createErrorResponse('Missing required parameter: agentName');
     }
     if (!context || typeof context.mode !== 'string') {
-      return this.errorResponse(
+      return createErrorResponse(
         'Missing required parameter: context.mode (PLAN, ACT, or EVAL)',
       );
     }
     if (!['PLAN', 'ACT', 'EVAL'].includes(context.mode)) {
-      return this.errorResponse(
+      return createErrorResponse(
         `Invalid mode: ${context.mode}. Must be PLAN, ACT, or EVAL`,
       );
     }
@@ -619,9 +620,9 @@ export class McpService implements OnModuleInit {
         targetFiles: context.targetFiles,
         taskDescription: context.taskDescription,
       });
-      return this.jsonResponse(result);
+      return createJsonResponse(result);
     } catch (error) {
-      return this.errorResponse(
+      return createErrorResponse(
         `Failed to get agent system prompt: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
@@ -636,17 +637,17 @@ export class McpService implements OnModuleInit {
     const sharedContext = args?.sharedContext as string | undefined;
 
     if (typeof mode !== 'string') {
-      return this.errorResponse(
+      return createErrorResponse(
         'Missing required parameter: mode (PLAN, ACT, or EVAL)',
       );
     }
     if (!['PLAN', 'ACT', 'EVAL'].includes(mode)) {
-      return this.errorResponse(
+      return createErrorResponse(
         `Invalid mode: ${mode}. Must be PLAN, ACT, or EVAL`,
       );
     }
     if (!Array.isArray(specialists) || specialists.length === 0) {
-      return this.errorResponse(
+      return createErrorResponse(
         'Missing required parameter: specialists (array of agent names)',
       );
     }
@@ -658,29 +659,12 @@ export class McpService implements OnModuleInit {
         targetFiles,
         sharedContext,
       );
-      return this.jsonResponse(result);
+      return createJsonResponse(result);
     } catch (error) {
-      return this.errorResponse(
+      return createErrorResponse(
         `Failed to prepare parallel agents: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
-  }
-
-  // ============================================================================
-  // Response Helpers
-  // ============================================================================
-
-  private jsonResponse(data: unknown) {
-    return {
-      content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
-    };
-  }
-
-  private errorResponse(message: string) {
-    return {
-      isError: true,
-      content: [{ type: 'text', text: message }],
-    };
   }
 
   // ============================================================================

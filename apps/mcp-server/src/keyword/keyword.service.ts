@@ -18,6 +18,7 @@ import {
 } from './keyword.types';
 import { PrimaryAgentResolver } from './primary-agent-resolver';
 import { ActivationMessageBuilder } from './activation-message.builder';
+import { filterRulesByMode } from './rule-filter';
 
 const DEFAULT_CONFIG: KeywordModesConfig = {
   modes: {
@@ -178,11 +179,14 @@ export class KeywordService {
     rules: RuleContent[],
     config: KeywordModesConfig,
   ): Promise<ParseModeResult> {
+    // Filter rules by mode to reduce token usage
+    const filteredRules = filterRulesByMode(rules, mode);
+
     const result: ParseModeResult = {
       mode,
       originalPrompt,
       instructions: modeConfig.instructions,
-      rules,
+      rules: filteredRules,
       ...(warnings.length > 0 ? { warnings } : {}),
     };
 
