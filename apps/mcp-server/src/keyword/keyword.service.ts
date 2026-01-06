@@ -16,6 +16,16 @@ import {
   type PrimaryAgentSource,
   type ActAgentRecommendation,
 } from './keyword.types';
+
+/**
+ * Options for parseMode method
+ */
+export interface ParseModeOptions {
+  /** ACT agent recommended from previous PLAN mode (only applies to ACT mode) */
+  recommendedActAgent?: string;
+  /** Resolution context for file-based inference */
+  context?: ResolutionContext;
+}
 import { PrimaryAgentResolver } from './primary-agent-resolver';
 import { ActivationMessageBuilder } from './activation-message.builder';
 import { filterRulesByMode } from './rule-filter';
@@ -78,7 +88,10 @@ export class KeywordService {
     this.primaryAgentResolver = primaryAgentResolver;
   }
 
-  async parseMode(prompt: string): Promise<ParseModeResult> {
+  async parseMode(
+    prompt: string,
+    options?: ParseModeOptions,
+  ): Promise<ParseModeResult> {
     const config = await this.loadModeConfig();
     const { mode, originalPrompt, warnings } = this.extractModeFromPrompt(
       prompt,
@@ -88,6 +101,10 @@ export class KeywordService {
     const modeConfig = config.modes[mode];
     const rules = await this.getRulesForMode(mode);
 
+    // Only pass recommendedActAgent for ACT mode
+    const effectiveRecommendedAgent =
+      mode === 'ACT' ? options?.recommendedActAgent : undefined;
+
     return this.buildParseModeResult(
       mode,
       originalPrompt,
@@ -95,6 +112,8 @@ export class KeywordService {
       modeConfig,
       rules,
       config,
+      options?.context,
+      effectiveRecommendedAgent,
     );
   }
 
@@ -178,6 +197,8 @@ export class KeywordService {
     modeConfig: KeywordModesConfig['modes'][Mode],
     rules: RuleContent[],
     config: KeywordModesConfig,
+    context?: ResolutionContext,
+    recommendedActAgent?: string,
   ): Promise<ParseModeResult> {
     // Filter rules by mode to reduce token usage
     const filteredRules = filterRulesByMode(rules, mode);
@@ -199,6 +220,8 @@ export class KeywordService {
       mode,
       originalPrompt,
       modeConfig.delegates_to,
+      context,
+      recommendedActAgent,
     );
 
     if (resolvedAgent) {
@@ -385,6 +408,7 @@ export class KeywordService {
     prompt: string,
     staticDelegatesTo?: string,
     context?: ResolutionContext,
+    recommendedActAgent?: string,
   ): Promise<{
     agentName: string;
     source: PrimaryAgentSource;
@@ -395,6 +419,7 @@ export class KeywordService {
         mode,
         prompt,
         context,
+        recommendedActAgent,
       );
       return { agentName: result.agentName, source: result.source };
     }

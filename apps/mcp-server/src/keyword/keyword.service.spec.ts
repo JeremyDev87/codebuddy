@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { KeywordService } from './keyword.service';
 import type { KeywordModesConfig } from './keyword.types';
+import type { PrimaryAgentResolver } from './primary-agent-resolver';
 
 /**
  * NOTE: Korean/Japanese/Chinese/Spanish test inputs (e.g., '계획 인증 기능 설계')
@@ -852,7 +853,7 @@ describe('KeywordService', () => {
         mockLoadConfig,
         mockLoadRule,
         mockLoadAgentInfo,
-        mockResolver as any,
+        mockResolver as unknown as PrimaryAgentResolver,
       );
 
       const result = await serviceWithResolver.parseMode('PLAN design API');
@@ -878,7 +879,7 @@ describe('KeywordService', () => {
         mockLoadConfig,
         mockLoadRule,
         mockLoadAgentInfo,
-        mockResolver as any,
+        mockResolver as unknown as PrimaryAgentResolver,
       );
 
       const result = await serviceWithResolver.parseMode('PLAN build UI');
@@ -903,7 +904,7 @@ describe('KeywordService', () => {
         mockLoadConfig,
         mockLoadRule,
         mockLoadAgentInfo,
-        mockResolver as any,
+        mockResolver as unknown as PrimaryAgentResolver,
       );
 
       const result = await serviceWithResolver.parseMode('ACT implement');
@@ -925,7 +926,7 @@ describe('KeywordService', () => {
         mockLoadConfig,
         mockLoadRule,
         mockLoadAgentInfo,
-        mockResolver as any,
+        mockResolver as unknown as PrimaryAgentResolver,
       );
 
       const result = await serviceWithResolver.parseMode('EVAL review');
@@ -952,7 +953,7 @@ describe('KeywordService', () => {
         mockLoadConfig,
         mockLoadRule,
         mockLoadAgentInfo,
-        mockResolver as any,
+        mockResolver as unknown as PrimaryAgentResolver,
       );
 
       const result = await serviceWithResolver.parseMode('PLAN design');
@@ -1029,6 +1030,179 @@ describe('KeywordService', () => {
 
       expect(result.activation_message).toBeDefined();
       expect(result.activation_message?.activations[0].tier).toBe('primary');
+    });
+  });
+
+  describe('recommendedActAgent parameter (ACT mode agent override)', () => {
+    it('uses recommendedActAgent when provided in ACT mode', async () => {
+      const mockResolver = {
+        resolve: vi.fn().mockResolvedValue({
+          agentName: 'backend-developer',
+          source: 'config',
+          confidence: 1.0,
+          reason: 'Using recommended agent from PLAN mode: backend-developer',
+        }),
+      };
+      const serviceWithResolver = new KeywordService(
+        mockLoadConfig,
+        mockLoadRule,
+        mockLoadAgentInfo,
+        mockResolver as unknown as PrimaryAgentResolver,
+      );
+
+      const result = await serviceWithResolver.parseMode(
+        'ACT implement login API',
+        { recommendedActAgent: 'backend-developer' },
+      );
+
+      expect(result.mode).toBe('ACT');
+      expect(result.delegates_to).toBe('backend-developer');
+      expect(mockResolver.resolve).toHaveBeenCalledWith(
+        'ACT',
+        'implement login API',
+        undefined,
+        'backend-developer',
+      );
+    });
+
+    it('ignores recommendedActAgent in PLAN mode', async () => {
+      const mockResolver = {
+        resolve: vi.fn().mockResolvedValue({
+          agentName: 'solution-architect',
+          source: 'default',
+          confidence: 1.0,
+          reason: 'PLAN mode default',
+        }),
+      };
+      const serviceWithResolver = new KeywordService(
+        mockLoadConfig,
+        mockLoadRule,
+        mockLoadAgentInfo,
+        mockResolver as unknown as PrimaryAgentResolver,
+      );
+
+      const result = await serviceWithResolver.parseMode('PLAN design API', {
+        recommendedActAgent: 'backend-developer',
+      });
+
+      expect(result.mode).toBe('PLAN');
+      expect(result.delegates_to).toBe('solution-architect');
+      // Should not pass recommendedActAgent for PLAN mode
+      expect(mockResolver.resolve).toHaveBeenCalledWith(
+        'PLAN',
+        'design API',
+        undefined,
+        undefined,
+      );
+    });
+
+    it('ignores recommendedActAgent in EVAL mode', async () => {
+      const mockResolver = {
+        resolve: vi.fn().mockResolvedValue({
+          agentName: 'code-reviewer',
+          source: 'default',
+          confidence: 1.0,
+          reason: 'EVAL always uses code-reviewer',
+        }),
+      };
+      const serviceWithResolver = new KeywordService(
+        mockLoadConfig,
+        mockLoadRule,
+        mockLoadAgentInfo,
+        mockResolver as unknown as PrimaryAgentResolver,
+      );
+
+      const result = await serviceWithResolver.parseMode('EVAL review code', {
+        recommendedActAgent: 'backend-developer',
+      });
+
+      expect(result.mode).toBe('EVAL');
+      expect(result.delegates_to).toBe('code-reviewer');
+    });
+
+    it('falls back to default resolution if no recommendedActAgent provided', async () => {
+      const mockResolver = {
+        resolve: vi.fn().mockResolvedValue({
+          agentName: 'frontend-developer',
+          source: 'default',
+          confidence: 1.0,
+          reason: 'ACT mode default: frontend-developer',
+        }),
+      };
+      const serviceWithResolver = new KeywordService(
+        mockLoadConfig,
+        mockLoadRule,
+        mockLoadAgentInfo,
+        mockResolver as unknown as PrimaryAgentResolver,
+      );
+
+      const result = await serviceWithResolver.parseMode(
+        'ACT implement feature',
+      );
+
+      expect(result.delegates_to).toBe('frontend-developer');
+      expect(mockResolver.resolve).toHaveBeenCalledWith(
+        'ACT',
+        'implement feature',
+        undefined,
+        undefined,
+      );
+    });
+
+    it('treats empty string recommendedActAgent as undefined', async () => {
+      const mockResolver = {
+        resolve: vi.fn().mockResolvedValue({
+          agentName: 'frontend-developer',
+          source: 'default',
+          confidence: 1.0,
+          reason: 'ACT mode default: frontend-developer',
+        }),
+      };
+      const serviceWithResolver = new KeywordService(
+        mockLoadConfig,
+        mockLoadRule,
+        mockLoadAgentInfo,
+        mockResolver as unknown as PrimaryAgentResolver,
+      );
+
+      // Empty string should be treated as undefined
+      const result = await serviceWithResolver.parseMode('ACT implement', {
+        recommendedActAgent: '',
+      });
+
+      expect(result.delegates_to).toBe('frontend-developer');
+      // Should be called with undefined, not empty string
+      expect(mockResolver.resolve).toHaveBeenCalledWith(
+        'ACT',
+        'implement',
+        undefined,
+        '', // Empty string is passed through (MCP layer handles trim)
+      );
+    });
+
+    it('treats whitespace-only recommendedActAgent as undefined', async () => {
+      const mockResolver = {
+        resolve: vi.fn().mockResolvedValue({
+          agentName: 'frontend-developer',
+          source: 'default',
+          confidence: 1.0,
+          reason: 'ACT mode default: frontend-developer',
+        }),
+      };
+      const serviceWithResolver = new KeywordService(
+        mockLoadConfig,
+        mockLoadRule,
+        mockLoadAgentInfo,
+        mockResolver as unknown as PrimaryAgentResolver,
+      );
+
+      // Whitespace should be treated as undefined at MCP layer
+      // KeywordService passes through, validation is in MCP handler
+      const result = await serviceWithResolver.parseMode('ACT implement', {
+        recommendedActAgent: '   ',
+      });
+
+      expect(result.delegates_to).toBe('frontend-developer');
     });
   });
 });

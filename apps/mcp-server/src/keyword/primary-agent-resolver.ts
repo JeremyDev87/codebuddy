@@ -45,6 +45,105 @@ export class PrimaryAgentResolver {
     /(\w+-\w+)\s+agent(?:로|으로)/i,
   ];
 
+  /**
+   * Intent patterns for tooling-engineer agent.
+   *
+   * These patterns detect prompts related to configuration, build tools, and package management.
+   * They are checked BEFORE context patterns (file path inference) but AFTER explicit agent requests.
+   *
+   * Resolution Priority Order:
+   * 1. Explicit request in prompt ("backend-developer로 작업해") - highest
+   * 2. recommended_agent from PLAN mode (PLAN→ACT context passing)
+   * 3. **TOOLING_INTENT_PATTERNS** ← checked here
+   * 4. CONTEXT_PATTERNS (file path/extension inference)
+   * 5. Project config (primaryAgent setting)
+   * 6. Default fallback (frontend-developer) - lowest
+   *
+   * Confidence Levels:
+   * - 0.95-0.98: Highly specific config file names (tsconfig, vite.config, etc.)
+   * - 0.85-0.90: Generic patterns, lock files, Korean keywords
+   *
+   * @example
+   * // English patterns
+   * "Fix tsconfig.json error" → tooling-engineer (0.95 confidence)
+   * "Update vite.config.ts"   → tooling-engineer (0.95 confidence)
+   *
+   * // Korean patterns
+   * "eslint 설정 변경해줘"    → tooling-engineer (0.85 confidence)
+   * "빌드 설정 수정"          → tooling-engineer (0.85 confidence)
+   */
+  private static readonly TOOLING_INTENT_PATTERNS: Array<{
+    pattern: RegExp;
+    confidence: number;
+    description: string;
+  }> = [
+    // Config files with high confidence (0.95-0.98)
+    {
+      pattern: /codingbuddy\.config/i,
+      confidence: 0.98,
+      description: 'CodingBuddy config',
+    },
+    {
+      pattern: /tsconfig.*\.json/i,
+      confidence: 0.95,
+      description: 'TypeScript config',
+    },
+    { pattern: /eslint/i, confidence: 0.95, description: 'ESLint config' },
+    { pattern: /prettier/i, confidence: 0.95, description: 'Prettier config' },
+    {
+      pattern: /stylelint/i,
+      confidence: 0.95,
+      description: 'Stylelint config',
+    },
+    // Build tools (0.90-0.95)
+    { pattern: /vite\.config/i, confidence: 0.95, description: 'Vite config' },
+    {
+      pattern: /next\.config/i,
+      confidence: 0.95,
+      description: 'Next.js config',
+    },
+    { pattern: /webpack/i, confidence: 0.9, description: 'Webpack config' },
+    {
+      pattern: /rollup\.config/i,
+      confidence: 0.9,
+      description: 'Rollup config',
+    },
+    // Package management (0.85-0.90)
+    { pattern: /package\.json/i, confidence: 0.9, description: 'Package.json' },
+    {
+      pattern: /yarn\.lock|pnpm-lock|package-lock/i,
+      confidence: 0.85,
+      description: 'Lock files',
+    },
+    // Generic config patterns (0.85)
+    {
+      pattern: /\.config\.(js|ts|mjs|cjs|json)$/i,
+      confidence: 0.85,
+      description: 'Config file extension',
+    },
+    // Korean patterns (0.85) - for Korean-speaking users
+    {
+      pattern: /설정\s*(파일|변경|수정)/i,
+      confidence: 0.85,
+      description: 'Korean: config file',
+    },
+    {
+      pattern: /빌드\s*(설정|도구|환경)/i,
+      confidence: 0.85,
+      description: 'Korean: build config',
+    },
+    {
+      pattern: /패키지\s*(관리|설치|업데이트|의존성)/i,
+      confidence: 0.85,
+      description: 'Korean: package management',
+    },
+    {
+      pattern: /린터|린트\s*설정/i,
+      confidence: 0.85,
+      description: 'Korean: linter config',
+    },
+  ];
+
   /** Context patterns for suggesting agents based on file paths */
   private static readonly CONTEXT_PATTERNS: Array<{
     pattern: RegExp;
@@ -212,7 +311,7 @@ export class PrimaryAgentResolver {
 
   /**
    * Resolve ACT mode agent.
-   * Priority: explicit > recommended > config > context > default
+   * Priority: explicit > recommended > tooling-intent > config > context > default
    */
   private async resolveActAgent(
     prompt: string,
@@ -240,13 +339,19 @@ export class PrimaryAgentResolver {
       );
     }
 
-    // 3. Check project configuration
+    // 3. Check tooling intent patterns (high priority for config/build tasks)
+    const fromTooling = this.inferFromToolingPatterns(prompt, availableAgents);
+    if (fromTooling) {
+      return fromTooling;
+    }
+
+    // 4. Check project configuration
     const fromConfig = await this.getFromProjectConfig(availableAgents);
     if (fromConfig) {
       return fromConfig;
     }
 
-    // 4. Check context-based suggestion
+    // 5. Check context-based suggestion
     if (context) {
       const fromContext = this.inferFromContext(context, availableAgents);
       if (fromContext && fromContext.confidence >= 0.8) {
@@ -254,13 +359,43 @@ export class PrimaryAgentResolver {
       }
     }
 
-    // 5. Default fallback for ACT mode
+    // 6. Default fallback for ACT mode
     return this.createResult(
       DEFAULT_ACT_AGENT,
       'default',
       1.0,
       'ACT mode default: frontend-developer',
     );
+  }
+
+  /**
+   * Infer tooling-engineer from prompt content patterns.
+   * High priority for config files, build tools, and package management tasks.
+   */
+  private inferFromToolingPatterns(
+    prompt: string,
+    availableAgents: string[],
+  ): PrimaryAgentResolutionResult | null {
+    if (!availableAgents.includes('tooling-engineer')) {
+      return null;
+    }
+
+    for (const {
+      pattern,
+      confidence,
+      description,
+    } of PrimaryAgentResolver.TOOLING_INTENT_PATTERNS) {
+      if (pattern.test(prompt)) {
+        return this.createResult(
+          'tooling-engineer',
+          'intent',
+          confidence,
+          `Tooling pattern detected: ${description}`,
+        );
+      }
+    }
+
+    return null;
   }
 
   /**

@@ -239,6 +239,112 @@ describe('PrimaryAgentResolver', () => {
   });
 
   describe('ACT mode agent resolution', () => {
+    describe('tooling-engineer pattern matching', () => {
+      beforeEach(() => {
+        // Add tooling-engineer to the available agents list
+        mockListPrimaryAgents.mockResolvedValue([
+          'tooling-engineer',
+          'frontend-developer',
+          'backend-developer',
+          'agent-architect',
+          'devops-engineer',
+          'solution-architect',
+          'technical-planner',
+          'code-reviewer',
+        ]);
+      });
+
+      it('returns tooling-engineer for codingbuddy.config.js prompt', async () => {
+        const result = await resolver.resolve(
+          'ACT',
+          'codingbuddy.config.js 수정해',
+        );
+
+        expect(result.agentName).toBe('tooling-engineer');
+        expect(result.source).toBe('intent');
+        expect(result.confidence).toBeGreaterThanOrEqual(0.9);
+      });
+
+      it('returns tooling-engineer for tsconfig.json prompt', async () => {
+        const result = await resolver.resolve(
+          'ACT',
+          'tsconfig.json 설정 변경해줘',
+        );
+
+        expect(result.agentName).toBe('tooling-engineer');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns tooling-engineer for eslint config prompt', async () => {
+        const result = await resolver.resolve('ACT', 'eslint 규칙 추가해줘');
+
+        expect(result.agentName).toBe('tooling-engineer');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns tooling-engineer for package.json prompt', async () => {
+        const result = await resolver.resolve(
+          'ACT',
+          'package.json 의존성 업데이트해',
+        );
+
+        expect(result.agentName).toBe('tooling-engineer');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns tooling-engineer for vite.config prompt', async () => {
+        const result = await resolver.resolve(
+          'ACT',
+          'vite.config.ts 최적화해줘',
+        );
+
+        expect(result.agentName).toBe('tooling-engineer');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns tooling-engineer for Korean "설정 파일" prompt', async () => {
+        const result = await resolver.resolve('ACT', '설정 파일 수정이 필요해');
+
+        expect(result.agentName).toBe('tooling-engineer');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns tooling-engineer for Korean "빌드 설정" prompt', async () => {
+        const result = await resolver.resolve('ACT', '빌드 설정 변경해줘');
+
+        expect(result.agentName).toBe('tooling-engineer');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns tooling-engineer for next.config.js prompt', async () => {
+        const result = await resolver.resolve(
+          'ACT',
+          'next.config.js 설정 변경',
+        );
+
+        expect(result.agentName).toBe('tooling-engineer');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns tooling-engineer for prettier config prompt', async () => {
+        const result = await resolver.resolve('ACT', 'prettier 설정 변경해줘');
+
+        expect(result.agentName).toBe('tooling-engineer');
+        expect(result.source).toBe('intent');
+      });
+
+      it('prioritizes tooling-engineer over frontend-developer for config files', async () => {
+        // eslint.config.ts는 .ts 파일이지만 tooling이 처리해야 함
+        const result = await resolver.resolve(
+          'ACT',
+          'eslint.config.ts 수정해줘',
+        );
+
+        expect(result.agentName).toBe('tooling-engineer');
+        expect(result.agentName).not.toBe('frontend-developer');
+      });
+    });
+
     describe('explicit request parsing', () => {
       it('returns explicit agent when prompt contains "backend-developer로 작업해"', async () => {
         const result = await resolver.resolve(

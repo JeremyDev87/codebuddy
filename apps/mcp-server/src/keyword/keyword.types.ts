@@ -15,6 +15,7 @@ export const PLAN_PRIMARY_AGENTS = [
 
 /** Primary Agents for ACT mode - centralized definition */
 export const ACT_PRIMARY_AGENTS = [
+  'tooling-engineer', // Config/build tools specialist - highest priority for pattern matching
   'frontend-developer',
   'backend-developer',
   'devops-engineer',

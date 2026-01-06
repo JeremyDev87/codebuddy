@@ -198,6 +198,11 @@ export class McpService implements OnModuleInit {
                   description:
                     'User prompt that may start with PLAN/ACT/EVAL keyword',
                 },
+                recommended_agent: {
+                  type: 'string',
+                  description:
+                    'ACT agent recommended from previous PLAN mode. Pass the agentName from recommended_act_agent field of PLAN mode response. Only applies to ACT mode.',
+                },
               },
               required: ['prompt'],
             },
@@ -455,8 +460,19 @@ export class McpService implements OnModuleInit {
 
   private async handleParseMode(args: Record<string, unknown> | undefined) {
     const prompt = String(args?.prompt ?? '');
+    // Validate recommended_agent: must be non-empty string after trimming
+    const rawRecommendedAgent = args?.recommended_agent;
+    const recommendedAgent =
+      typeof rawRecommendedAgent === 'string' &&
+      rawRecommendedAgent.trim().length > 0
+        ? rawRecommendedAgent.trim()
+        : undefined;
+
     try {
-      const result = await this.keywordService.parseMode(prompt);
+      const options = recommendedAgent
+        ? { recommendedActAgent: recommendedAgent }
+        : undefined;
+      const result = await this.keywordService.parseMode(prompt, options);
       const language = await this.configService.getLanguage();
       const languageInstructionResult =
         this.languageService.getLanguageInstruction(language || 'en');

@@ -175,8 +175,10 @@ CodingBuddy uses a layered agent hierarchy for different types of tasks:
 | Mode | Agents | Description |
 |------|--------|-------------|
 | **PLAN** | solution-architect, technical-planner | Design and planning tasks |
-| **ACT** | frontend-developer, backend-developer, devops-engineer, agent-architect | Implementation tasks |
+| **ACT** | tooling-engineer, frontend-developer, backend-developer, devops-engineer, agent-architect | Implementation tasks |
 | **EVAL** | code-reviewer | Code review and evaluation |
+
+> **Note**: `tooling-engineer` has highest priority for config/build tool tasks (tsconfig, eslint, vite.config, package.json, etc.)
 
 ### Tier 2: Specialist Agents
 
@@ -195,8 +197,33 @@ Specialist agents can be invoked by any Primary Agent as needed:
 ### Agent Resolution
 
 1. **PLAN mode**: Always uses `solution-architect` or `technical-planner` based on prompt analysis
-2. **ACT mode**: Uses recommended agent from PLAN, or falls back to AI analysis
+2. **ACT mode**: Resolution priority:
+   1. Explicit agent request in prompt (e.g., "backend-developer로 작업해")
+   2. `recommended_agent` parameter (from PLAN mode recommendation)
+   3. Tooling pattern matching (config files, build tools → `tooling-engineer`)
+   4. Project configuration (`primaryAgent` setting)
+   5. Context inference (file extension/path)
+   6. Default: `frontend-developer`
 3. **EVAL mode**: Always uses `code-reviewer`
+
+### Using recommended_agent Parameter
+
+When transitioning from PLAN to ACT mode, pass the recommended agent:
+
+```typescript
+// After PLAN mode returns recommended_act_agent
+const planResult = await parse_mode({ prompt: "PLAN design auth API" });
+// planResult.recommended_act_agent = { agentName: "backend-developer", ... }
+
+// Pass to ACT mode for context preservation
+const actResult = await parse_mode({
+  prompt: "ACT implement the API",
+  recommended_agent: planResult.recommended_act_agent.agentName
+});
+// actResult.delegates_to = "backend-developer" (uses the recommendation)
+```
+
+This enables seamless agent context passing across PLAN → ACT workflow transitions.
 
 ## Activation Messages
 
