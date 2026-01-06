@@ -47,7 +47,12 @@ export interface ParallelAgentRecommendation {
 }
 
 /** Source of Primary Agent selection */
-export type PrimaryAgentSource = 'explicit' | 'config' | 'context' | 'default';
+export type PrimaryAgentSource =
+  | 'explicit'
+  | 'config'
+  | 'intent'
+  | 'context'
+  | 'default';
 
 /** Result of Primary Agent resolution */
 export interface PrimaryAgentResolutionResult {

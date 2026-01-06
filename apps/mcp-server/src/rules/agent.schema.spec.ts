@@ -238,4 +238,88 @@ describe('parseAgentProfile', () => {
       }
     });
   });
+
+  describe('PLAN mode agent JSON validation', () => {
+    it('should validate solution-architect.json has valid schema', () => {
+      // Parse should not throw for valid agent
+      expect(() =>
+        parseAgentProfile({
+          name: 'Solution Architect',
+          description: 'High-level system design and architecture planning',
+          role: {
+            title: 'Solution Architect',
+            type: 'primary',
+            expertise: [
+              'System Architecture',
+              'Technology Selection',
+              'Design Patterns',
+            ],
+          },
+          skills: {
+            required: [{ name: 'superpowers:brainstorming', purpose: 'test' }],
+          },
+        }),
+      ).not.toThrow();
+    });
+
+    it('should validate technical-planner.json has valid schema', () => {
+      // Parse should not throw for valid agent
+      expect(() =>
+        parseAgentProfile({
+          name: 'Technical Planner',
+          description: 'Implementation planning with TDD approach',
+          role: {
+            title: 'Technical Planner',
+            type: 'primary',
+            expertise: ['Implementation Planning', 'TDD', 'Task Breakdown'],
+          },
+          skills: {
+            required: [{ name: 'superpowers:writing-plans', purpose: 'test' }],
+          },
+        }),
+      ).not.toThrow();
+    });
+
+    it('should accept agent with skills.required array', () => {
+      const agentWithSkills = {
+        name: 'Skilled Agent',
+        description: 'An agent with skills',
+        role: {
+          title: 'Developer',
+          type: 'primary',
+          expertise: ['Coding'],
+        },
+        skills: {
+          required: [
+            { name: 'skill:one', purpose: 'Purpose one', when: 'always' },
+          ],
+          recommended: [{ name: 'skill:two', purpose: 'Purpose two' }],
+        },
+      };
+
+      const result = parseAgentProfile(agentWithSkills);
+      expect(result.skills).toBeDefined();
+      const skills = result.skills as {
+        required: unknown[];
+        recommended: unknown[];
+      };
+      expect(skills.required).toHaveLength(1);
+      expect(skills.recommended).toHaveLength(1);
+    });
+
+    it('should accept primary agent type for PLAN mode agents', () => {
+      const planModeAgent = {
+        name: 'PLAN Mode Agent',
+        description: 'Agent for PLAN mode',
+        role: {
+          title: 'Planner',
+          type: 'primary',
+          expertise: ['Planning'],
+        },
+      };
+
+      const result = parseAgentProfile(planModeAgent);
+      expect(result.role.type).toBe('primary');
+    });
+  });
 });
