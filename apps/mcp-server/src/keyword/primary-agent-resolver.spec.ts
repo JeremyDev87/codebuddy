@@ -16,6 +16,8 @@ describe('PrimaryAgentResolver', () => {
         'backend-developer',
         'agent-architect',
         'devops-engineer',
+        'solution-architect',
+        'technical-planner',
       ]);
 
     resolver = new PrimaryAgentResolver(
@@ -151,6 +153,135 @@ describe('PrimaryAgentResolver', () => {
       });
     });
 
+    describe('intent-based resolution', () => {
+      it('suggests solution-architect when prompt contains "아키텍처"', async () => {
+        const result = await resolver.resolve(
+          'PLAN',
+          '인증 시스템 아키텍처를 설계해줘',
+        );
+
+        expect(result.agentName).toBe('solution-architect');
+        expect(result.source).toBe('intent');
+        expect(result.confidence).toBeGreaterThanOrEqual(0.8);
+        expect(result.reason).toContain('architecture');
+      });
+
+      it('suggests solution-architect when prompt contains "system design"', async () => {
+        const result = await resolver.resolve(
+          'PLAN',
+          'Create a system design for the authentication module',
+        );
+
+        expect(result.agentName).toBe('solution-architect');
+        expect(result.source).toBe('intent');
+      });
+
+      it('suggests solution-architect when prompt contains "시스템 설계"', async () => {
+        const result = await resolver.resolve(
+          'PLAN',
+          '새로운 결제 시스템 설계가 필요해',
+        );
+
+        expect(result.agentName).toBe('solution-architect');
+        expect(result.source).toBe('intent');
+      });
+
+      it('suggests technical-planner when prompt contains "구현 계획"', async () => {
+        const result = await resolver.resolve(
+          'PLAN',
+          '로그인 기능 구현 계획을 작성해줘',
+        );
+
+        expect(result.agentName).toBe('technical-planner');
+        expect(result.source).toBe('intent');
+        expect(result.confidence).toBeGreaterThanOrEqual(0.8);
+        expect(result.reason).toContain('planning');
+      });
+
+      it('suggests technical-planner when prompt contains "implementation plan"', async () => {
+        const result = await resolver.resolve(
+          'PLAN',
+          'Write an implementation plan for the new feature',
+        );
+
+        expect(result.agentName).toBe('technical-planner');
+        expect(result.source).toBe('intent');
+      });
+
+      it('suggests technical-planner when prompt contains "TDD 계획"', async () => {
+        const result = await resolver.resolve('PLAN', 'TDD 계획을 세워줘');
+
+        expect(result.agentName).toBe('technical-planner');
+        expect(result.source).toBe('intent');
+      });
+
+      it('suggests technical-planner when prompt contains "step by step"', async () => {
+        const result = await resolver.resolve(
+          'PLAN',
+          'Create a step-by-step plan for implementing the login feature',
+        );
+
+        expect(result.agentName).toBe('technical-planner');
+        expect(result.source).toBe('intent');
+      });
+
+      it('suggests solution-architect when prompt contains "API 설계"', async () => {
+        const result = await resolver.resolve(
+          'PLAN',
+          'REST API 설계를 진행해줘',
+        );
+
+        expect(result.agentName).toBe('solution-architect');
+        expect(result.source).toBe('intent');
+      });
+
+      it('suggests solution-architect when prompt contains "microservice"', async () => {
+        const result = await resolver.resolve(
+          'PLAN',
+          'Design a microservice architecture for the payment system',
+        );
+
+        expect(result.agentName).toBe('solution-architect');
+        expect(result.source).toBe('intent');
+      });
+
+      it('suggests technical-planner when prompt contains "개발 계획"', async () => {
+        const result = await resolver.resolve(
+          'PLAN',
+          '새 기능 개발 계획을 세워줘',
+        );
+
+        expect(result.agentName).toBe('technical-planner');
+        expect(result.source).toBe('intent');
+      });
+
+      it('suggests technical-planner when prompt contains "refactoring plan"', async () => {
+        const result = await resolver.resolve(
+          'PLAN',
+          'Create a refactoring plan for the authentication module',
+        );
+
+        expect(result.agentName).toBe('technical-planner');
+        expect(result.source).toBe('intent');
+      });
+
+      it('ignores intent when agent is not in registry', async () => {
+        mockListPrimaryAgents.mockResolvedValue([
+          'frontend-developer',
+          'backend-developer',
+        ]);
+
+        const result = await resolver.resolve(
+          'PLAN',
+          '인증 시스템 아키텍처를 설계해줘',
+        );
+
+        // solution-architect not in registry, so should fall to default
+        expect(result.agentName).toBe('frontend-developer');
+        expect(result.source).toBe('default');
+      });
+    });
+
     describe('default fallback', () => {
       it('returns frontend-developer when no preference found', async () => {
         const result = await resolver.resolve('PLAN', '새 기능 만들어');
@@ -163,6 +294,13 @@ describe('PrimaryAgentResolver', () => {
 
       it('returns default even with empty prompt', async () => {
         const result = await resolver.resolve('ACT', '');
+
+        expect(result.agentName).toBe('frontend-developer');
+        expect(result.source).toBe('default');
+      });
+
+      it('returns default for whitespace-only prompt', async () => {
+        const result = await resolver.resolve('PLAN', '   \n\t  ');
 
         expect(result.agentName).toBe('frontend-developer');
         expect(result.source).toBe('default');
@@ -205,6 +343,45 @@ describe('PrimaryAgentResolver', () => {
 
         expect(result.agentName).toBe('frontend-developer');
         expect(result.source).toBe('explicit');
+      });
+
+      it('explicit request takes priority over intent', async () => {
+        const result = await resolver.resolve(
+          'PLAN',
+          'backend-developer로 작업해 아키텍처 설계', // Explicit "backend-developer로 작업해", intent would suggest solution-architect
+        );
+
+        expect(result.agentName).toBe('backend-developer');
+        expect(result.source).toBe('explicit');
+      });
+
+      it('config takes priority over intent', async () => {
+        mockGetProjectConfig.mockResolvedValue({
+          primaryAgent: 'frontend-developer',
+        });
+
+        const result = await resolver.resolve(
+          'PLAN',
+          '시스템 아키텍처 설계해줘', // Intent would suggest solution-architect
+        );
+
+        expect(result.agentName).toBe('frontend-developer');
+        expect(result.source).toBe('config');
+      });
+
+      it('intent takes priority over context', async () => {
+        const context: ResolutionContext = {
+          filePath: '/project/main.go', // Would suggest backend-developer
+        };
+
+        const result = await resolver.resolve(
+          'PLAN',
+          '시스템 아키텍처 설계해줘', // Intent suggests solution-architect
+          context,
+        );
+
+        expect(result.agentName).toBe('solution-architect');
+        expect(result.source).toBe('intent');
       });
 
       it('config takes priority over context', async () => {

@@ -21,13 +21,23 @@ type ListPrimaryAgentsFn = () => Promise<string[]>;
  * PrimaryAgentResolver - Resolves which Primary Agent to use based on:
  * 1. Explicit request in prompt (highest priority)
  * 2. Project configuration
- * 3. Context (file path, project type)
- * 4. Default fallback (frontend-developer)
+ * 3. Intent analysis (prompt content analysis)
+ * 4. Context (file path, project type)
+ * 5. Default fallback (frontend-developer)
  */
 export class PrimaryAgentResolver {
   private readonly logger = new Logger(PrimaryAgentResolver.name);
   private static readonly DEFAULT_AGENT = 'frontend-developer';
   private static readonly EVAL_AGENT = 'code-reviewer';
+
+  /** Fallback agents when registry is unavailable */
+  private static readonly DEFAULT_FALLBACK_AGENTS = [
+    'frontend-developer',
+    'backend-developer',
+    'code-reviewer',
+    'solution-architect',
+    'technical-planner',
+  ];
 
   /** Patterns for explicit agent request in prompts */
   private static readonly EXPLICIT_PATTERNS = [
@@ -61,6 +71,78 @@ export class PrimaryAgentResolver {
     { pattern: /agents?.*\.json$/i, agent: 'agent-architect', confidence: 0.8 },
   ];
 
+  /** Intent patterns for automatic agent detection based on prompt content */
+  private static readonly INTENT_PATTERNS: Array<{
+    pattern: RegExp;
+    agent: string;
+    confidence: number;
+    category: 'architecture' | 'planning' | 'implementation';
+  }> = [
+    // Solution Architect triggers
+    {
+      pattern: /아키텍처|architecture|시스템\s*설계|system\s*design/i,
+      agent: 'solution-architect',
+      confidence: 0.85,
+      category: 'architecture',
+    },
+    {
+      pattern: /기술\s*선택|technology\s*selection|스택\s*선택/i,
+      agent: 'solution-architect',
+      confidence: 0.8,
+      category: 'architecture',
+    },
+    {
+      pattern: /전체\s*구조|overall\s*structure|설계\s*방향/i,
+      agent: 'solution-architect',
+      confidence: 0.85,
+      category: 'architecture',
+    },
+    {
+      pattern: /구조\s*설계|structural\s*design|API\s*설계|API\s*design/i,
+      agent: 'solution-architect',
+      confidence: 0.8,
+      category: 'architecture',
+    },
+    {
+      pattern:
+        /마이크로서비스|microservice|서비스\s*분리|service\s*decomposition/i,
+      agent: 'solution-architect',
+      confidence: 0.85,
+      category: 'architecture',
+    },
+    // Technical Planner triggers
+    {
+      pattern: /구현\s*계획|implementation\s*plan|작업\s*분해/i,
+      agent: 'technical-planner',
+      confidence: 0.85,
+      category: 'planning',
+    },
+    {
+      pattern: /태스크|task\s*breakdown|단계별|step.?by.?step/i,
+      agent: 'technical-planner',
+      confidence: 0.8,
+      category: 'planning',
+    },
+    {
+      pattern: /TDD\s*계획|TDD\s*plan|테스트\s*먼저|test.?first/i,
+      agent: 'technical-planner',
+      confidence: 0.85,
+      category: 'planning',
+    },
+    {
+      pattern: /실행\s*계획|execution\s*plan|개발\s*계획|development\s*plan/i,
+      agent: 'technical-planner',
+      confidence: 0.8,
+      category: 'planning',
+    },
+    {
+      pattern: /리팩토링\s*계획|refactoring\s*plan|work\s*breakdown/i,
+      agent: 'technical-planner',
+      confidence: 0.8,
+      category: 'planning',
+    },
+  ];
+
   constructor(
     private readonly getProjectConfig: GetProjectConfigFn,
     private readonly listPrimaryAgents: ListPrimaryAgentsFn,
@@ -68,7 +150,7 @@ export class PrimaryAgentResolver {
 
   /**
    * Resolve which Primary Agent to use.
-   * Priority: explicit > config > context > default
+   * Priority: explicit > config > intent > context > default
    *
    * Note: EVAL mode always returns code-reviewer regardless of other settings.
    */
@@ -101,7 +183,13 @@ export class PrimaryAgentResolver {
       return fromConfig;
     }
 
-    // 3. Check context-based suggestion
+    // 3. Check intent-based suggestion (analyze prompt content)
+    const fromIntent = this.analyzeIntent(prompt, availableAgents);
+    if (fromIntent && fromIntent.confidence >= 0.8) {
+      return fromIntent;
+    }
+
+    // 4. Check context-based suggestion
     if (context) {
       const fromContext = this.inferFromContext(context, availableAgents);
       if (fromContext && fromContext.confidence >= 0.8) {
@@ -109,7 +197,7 @@ export class PrimaryAgentResolver {
       }
     }
 
-    // 4. Default fallback
+    // 5. Default fallback
     return this.createResult(
       PrimaryAgentResolver.DEFAULT_AGENT,
       'default',
@@ -219,6 +307,50 @@ export class PrimaryAgentResolver {
   }
 
   /**
+   * Analyze prompt intent to suggest appropriate agent.
+   * Returns highest confidence match from intent patterns.
+   */
+  private analyzeIntent(
+    prompt: string,
+    availableAgents: string[],
+  ): PrimaryAgentResolutionResult | null {
+    // Early return for empty or whitespace-only prompts
+    if (!prompt || !prompt.trim()) {
+      return null;
+    }
+
+    let bestMatch: {
+      agent: string;
+      confidence: number;
+      category: string;
+    } | null = null;
+
+    for (const {
+      pattern,
+      agent,
+      confidence,
+      category,
+    } of PrimaryAgentResolver.INTENT_PATTERNS) {
+      if (pattern.test(prompt) && availableAgents.includes(agent)) {
+        if (!bestMatch || confidence > bestMatch.confidence) {
+          bestMatch = { agent, confidence, category };
+        }
+      }
+    }
+
+    if (bestMatch && bestMatch.confidence >= 0.8) {
+      return this.createResult(
+        bestMatch.agent,
+        'intent',
+        bestMatch.confidence,
+        `Intent detected: ${bestMatch.category} task`,
+      );
+    }
+
+    return null;
+  }
+
+  /**
    * Safely list primary agents, returning default list on error.
    */
   private async safeListPrimaryAgents(): Promise<string[]> {
@@ -228,7 +360,7 @@ export class PrimaryAgentResolver {
         this.logger.debug(
           'No primary agents found in registry, using default fallback list',
         );
-        return ['frontend-developer', 'backend-developer', 'code-reviewer'];
+        return [...PrimaryAgentResolver.DEFAULT_FALLBACK_AGENTS];
       }
       return agents;
     } catch (error) {
@@ -236,7 +368,7 @@ export class PrimaryAgentResolver {
         `Failed to list primary agents: ${error instanceof Error ? error.message : 'Unknown error'}. ` +
           `Using fallback list.`,
       );
-      return ['frontend-developer', 'backend-developer', 'code-reviewer'];
+      return [...PrimaryAgentResolver.DEFAULT_FALLBACK_AGENTS];
     }
   }
 

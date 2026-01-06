@@ -10,6 +10,7 @@ import {
   type AgentInfo,
   type ParallelAgentRecommendation,
   type ResolutionContext,
+  type PrimaryAgentSource,
 } from './keyword.types';
 import { PrimaryAgentResolver } from './primary-agent-resolver';
 
@@ -314,7 +315,7 @@ export class KeywordService {
     context?: ResolutionContext,
   ): Promise<{
     agentName: string;
-    source: 'explicit' | 'config' | 'context' | 'default';
+    source: PrimaryAgentSource;
   } | null> {
     // If PrimaryAgentResolver is available, use it
     if (this.primaryAgentResolver) {
