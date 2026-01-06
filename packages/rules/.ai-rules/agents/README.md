@@ -39,6 +39,7 @@ AI Agent definitions for specialized development roles.
 | **Documentation** | Documentation Specialist | `documentation-specialist.json` |
 | **Code Quality** | Code Quality Specialist | `code-quality-specialist.json` |
 | **Infrastructure/Deployment** | DevOps Engineer | `devops-engineer.json` |
+| **Config/Build Tools** | Tooling Engineer | `tooling-engineer.json` |
 | **Agent Management** | Agent Architect | `agent-architect.json` |
 
 ### Agent Summary
@@ -60,6 +61,7 @@ AI Agent definitions for specialized development roles.
 | Documentation Specialist | Code comments, JSDoc, documentation quality assessment |
 | Code Quality Specialist | SOLID, DRY, complexity analysis |
 | DevOps Engineer | Docker, monitoring, deployment optimization |
+| Tooling Engineer | Project configuration, build tools, dev environment setup |
 | Agent Architect | AI agent design, validation, checklist auditing |
 
 ---
@@ -108,6 +110,7 @@ as agent-architect, design new agent
 
 | Agent | role.type | Activation Condition |
 |-------|-----------|---------------------|
+| Tooling Engineer | `primary` | Config files, build tools, package management (highest priority) |
 | Frontend Developer | `primary` | Default for ACT mode, React/Next.js projects |
 | Backend Developer | `primary` | Backend file context (.go, .py, .java, .rs) |
 | Agent Architect | `primary` | Agent-related work requests |
@@ -143,6 +146,7 @@ Mode Agents (Workflow Orchestrators)
 └── eval-mode      → delegates to → code-reviewer (always)
 
 Primary Agents (Implementation Experts) - role.type: "primary"
+├── tooling-engineer       # Config/build tools specialist (highest priority)
 ├── frontend-developer     # React/Next.js expertise (default)
 ├── backend-developer      # Multi-language backend expertise
 ├── agent-architect        # AI agent framework expertise
@@ -472,6 +476,51 @@ Unified specialist agents organized by domain:
 - Optimize build performance and memory usage
 - Debug production issues with source maps
 - Monitor and improve application performance
+
+---
+
+### Tooling Engineer (`tooling-engineer.json`)
+
+> **Note**: This is a **Primary Agent** for ACT mode, specializing in project configuration and build tools. Has highest priority for config/tooling related tasks.
+
+**Expertise:**
+
+- Project Configuration (codingbuddy.config.js, .env)
+- TypeScript Configuration (tsconfig.json, paths)
+- Linting & Formatting (ESLint, Prettier, Stylelint)
+- Build Tools (Vite, Webpack, Next.js config, Rollup)
+- Package Management (package.json, yarn workspaces, dependencies)
+- MCP Tools & IDE Integration
+- Development Environment Setup
+
+**Development Philosophy:**
+
+- **Schema-First**: Configuration changes must maintain valid schema structure
+- **Backward-Compatible**: Changes must not break existing configurations or builds
+- **Documented**: Non-obvious configuration options must have inline comments
+- **Validated**: All changes validated through lint, typecheck, and build
+
+**Responsibilities:**
+
+- Configure and optimize project settings
+- Set up and maintain build tool configurations
+- Manage linter and formatter rules
+- Handle package dependencies and workspace configuration
+- Configure TypeScript compiler options
+- Set up development environment and IDE settings
+- Integrate MCP tools with development workflow
+
+**Workflow:**
+
+- **Config Modification**: Incremental change with validation
+- **Tool Setup**: Best practices implementation with project pattern alignment
+- **Dependency Management**: Safe updates with compatibility checking
+
+**Activation Patterns:**
+
+- Config files: `codingbuddy.config`, `tsconfig`, `eslint`, `prettier`, `vite.config`, `next.config`
+- Korean: "설정 파일", "빌드 설정", "패키지 관리", "린터 설정"
+- English: "config file", "build config", "package management"
 
 ---
 
@@ -853,6 +902,7 @@ All agent files are located directly in `.ai-rules/agents/` directory without su
 .ai-rules/agents/
 ├── solution-architect.json          # Primary Agent for PLAN mode (architecture)
 ├── technical-planner.json           # Primary Agent for PLAN mode (implementation)
+├── tooling-engineer.json            # Primary Agent for ACT mode (config/build tools)
 ├── frontend-developer.json          # Primary Agent for ACT mode (default)
 ├── backend-developer.json           # Primary Agent for ACT mode (backend)
 ├── agent-architect.json             # Primary Agent for agent management
