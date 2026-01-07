@@ -44,7 +44,7 @@ jobs:
         run: |
           TIMESTAMP=$(date +%Y%m%d%H%M%S)
           COMMIT_SHA=${GITHUB_SHA::7}
-          VERSION="0.0.0-canary.${TIMESTAMP}.${COMMIT_SHA}"
+          VERSION="0.0.0-canary.${TIMESTAMP}.g${COMMIT_SHA}"
           if [ -z "$VERSION" ]; then
             echo "::error::Failed to generate canary version"
             exit 1
