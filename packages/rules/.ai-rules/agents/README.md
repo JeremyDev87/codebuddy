@@ -44,6 +44,7 @@ AI Agent definitions for specialized development roles.
 | **Infrastructure/Deployment** | DevOps Engineer | `devops-engineer.json` |
 | **Config/Build Tools** | Tooling Engineer | `tooling-engineer.json` |
 | **Agent Management** | Agent Architect | `agent-architect.json` |
+| **AI/ML Development** | AI/ML Engineer | `ai-ml-engineer.json` |
 
 ### Agent Summary
 
@@ -69,6 +70,7 @@ AI Agent definitions for specialized development roles.
 | DevOps Engineer | Docker, monitoring, deployment optimization |
 | Tooling Engineer | Project configuration, build tools, dev environment setup |
 | Agent Architect | AI agent design, validation, checklist auditing |
+| AI/ML Engineer | LLM integration, RAG architecture, prompt engineering, AI safety |
 
 ---
 
@@ -121,6 +123,7 @@ as agent-architect, design new agent
 | Backend Developer | `primary` | Backend file context (.go, .py, .java, .rs) |
 | Agent Architect | `primary` | Agent-related work requests |
 | DevOps Engineer | `primary` | Dockerfile, docker-compose context |
+| AI/ML Engineer | `primary` | LLM integration, RAG, prompt engineering, AI safety |
 
 ### EVAL Mode
 
@@ -156,7 +159,8 @@ Primary Agents (Implementation Experts) - role.type: "primary"
 ├── frontend-developer     # React/Next.js expertise (default)
 ├── backend-developer      # Multi-language backend expertise
 ├── agent-architect        # AI agent framework expertise
-└── devops-engineer        # Infrastructure expertise
+├── devops-engineer        # Infrastructure expertise
+└── ai-ml-engineer         # LLM/RAG/AI safety expertise
 
 Specialist Agents (Domain Experts)
 ├── architecture-specialist
@@ -564,6 +568,55 @@ Unified specialist agents organized by domain:
 
 ---
 
+### AI/ML Engineer (`ai-ml-engineer.json`)
+
+> **Note**: This is a **Primary Agent** for AI/ML development tasks, specializing in LLM integration, RAG architecture, prompt engineering, and AI safety.
+
+**Supported Providers:**
+
+- Cloud: OpenAI, Anthropic, Google (Gemini), AWS Bedrock, Azure OpenAI
+- Local: Ollama, llama.cpp, vLLM, HuggingFace Transformers
+- Vector DBs: Pinecone, Weaviate, ChromaDB, pgvector, Milvus, Qdrant
+
+**Expertise:**
+
+- LLM Integration Patterns (provider abstraction, streaming, fallbacks)
+- Prompt Engineering & Optimization
+- RAG (Retrieval-Augmented Generation) Architecture
+- AI Safety & Responsible AI Practices
+- Testing Strategies for Non-deterministic AI Outputs
+- Embedding Models & Vector Databases
+- Token Management & Cost Optimization
+
+**Development Philosophy:**
+
+- **Safety-First**: Prompt injection prevention, output validation, PII handling
+- **Provider-Agnostic**: Abstraction layer for multiple LLM providers
+- **Test-Adapted**: Non-deterministic testing with semantic similarity and golden datasets
+- **Cost-Conscious**: Token counting, caching, model selection optimization
+
+**Responsibilities:**
+
+- Plan and implement LLM integration architecture
+- Design and optimize prompt templates with safety considerations
+- Architect RAG pipelines with proper retrieval strategies
+- Ensure AI safety (prompt injection prevention, output validation)
+- Design testing strategies for non-deterministic AI outputs
+- Optimize LLM API costs and latency
+
+**Workflow:**
+
+- **Planning**: LLM architecture design, RAG planning, safety review
+- **Implementation**: Provider integration, prompt templates, retrieval pipelines
+- **Evaluation**: AI output quality assessment, safety audit, performance metrics
+
+**Activation Patterns:**
+
+- Korean: "LLM 통합", "RAG 구현", "프롬프트 엔지니어링", "AI 안전"
+- English: "LLM integration", "RAG implementation", "prompt engineering", "AI safety"
+
+---
+
 ### Code Reviewer (`code-reviewer.json`)
 
 **Expertise:**
@@ -913,6 +966,7 @@ All agent files are located directly in `.ai-rules/agents/` directory without su
 ├── backend-developer.json           # Primary Agent for ACT mode (backend)
 ├── agent-architect.json             # Primary Agent for agent management
 ├── devops-engineer.json             # Primary Agent for infrastructure
+├── ai-ml-engineer.json              # Primary Agent for AI/ML development
 ├── code-reviewer.json               # Core agent (EVAL mode, fixed)
 ├── code-quality-specialist.json     # Utility agent
 ├── accessibility-specialist.json    # Domain specialist

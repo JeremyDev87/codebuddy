@@ -17,6 +17,20 @@
       "description": "Brief description of the agent's purpose and expertise",
       "minLength": 10
     },
+    "model": {
+      "type": "object",
+      "description": "Preferred AI model configuration",
+      "properties": {
+        "preferred": {
+          "type": "string",
+          "description": "Preferred model identifier (e.g., claude-sonnet-4-20250514)"
+        },
+        "reason": {
+          "type": "string",
+          "description": "Reason for model selection"
+        }
+      }
+    },
     "role": {
       "type": "object",
       "description": "Agent's role definition including title, expertise, and responsibilities",
@@ -26,6 +40,11 @@
           "type": "string",
           "description": "Official role title",
           "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "enum": ["primary", "specialist"],
+          "description": "Agent type: 'primary' uses top-level activation for PLAN/ACT workflow, 'specialist' uses modes for domain-specific guidance. RECOMMENDED: Always specify for new agents to ensure proper workflow integration."
         },
         "expertise": {
           "type": "array",
@@ -87,7 +106,27 @@
         },
         "workflow_integration": {
           "type": "object",
-          "description": "How this agent integrates with workflow"
+          "description": "How this agent integrates with workflow",
+          "properties": {
+            "trigger_conditions": {
+              "type": "array",
+              "description": "Semantic conditions that trigger agent activation",
+              "items": { "type": "string" }
+            },
+            "file_pattern_triggers": {
+              "type": "array",
+              "description": "Glob patterns for files that trigger agent activation (e.g., '**/*.llm.ts', '**/prompts/**')",
+              "items": { "type": "string" }
+            },
+            "activation_rule": {
+              "type": "string",
+              "description": "Rule describing when this agent must be activated"
+            },
+            "output_format": {
+              "type": "string",
+              "description": "Expected output format for this agent"
+            }
+          }
         },
         "planning_framework": {
           "type": "object",
