@@ -72,6 +72,12 @@ export { ModeHandler } from './mode.handler';
 export { ChecklistContextHandler } from './checklist-context.handler';
 
 /**
+ * Handler for code conventions tools (get_code_conventions)
+ * @see {@link ConventionsHandler}
+ */
+export { ConventionsHandler } from './conventions.handler';
+
+/**
  * Injection token for the array of all tool handlers.
  *
  * Use this token to inject all handlers into a service that needs to

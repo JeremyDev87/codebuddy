@@ -1,0 +1,201 @@
+{
+  "domain": "conventions",
+  "icon": "📐",
+  "description": "Code conventions and formatting consistency from project config files",
+  "categories": [
+    {
+      "name": "typescript",
+      "triggers": {
+        "files": ["**/*.ts", "**/*.tsx"],
+        "imports": [],
+        "patterns": []
+      },
+      "items": [
+        {
+          "id": "conv-ts-001",
+          "text": "TypeScript strict mode is enabled (tsconfig.json: strict: true)",
+          "priority": "high",
+          "reason": "Strict mode catches type errors early and improves code quality"
+        },
+        {
+          "id": "conv-ts-002",
+          "text": "No implicit any is enforced (tsconfig.json: noImplicitAny: true)",
+          "priority": "high",
+          "reason": "Explicit types prevent runtime errors"
+        },
+        {
+          "id": "conv-ts-003",
+          "text": "Strict null checks are enabled (tsconfig.json: strictNullChecks: true)",
+          "priority": "high",
+          "reason": "Prevents null/undefined errors at runtime"
+        },
+        {
+          "id": "conv-ts-004",
+          "text": "Path aliases match tsconfig.json paths configuration",
+          "priority": "medium",
+          "reason": "Consistent import paths improve maintainability"
+        }
+      ]
+    },
+    {
+      "name": "eslint",
+      "triggers": {
+        "files": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
+        "imports": [],
+        "patterns": []
+      },
+      "items": [
+        {
+          "id": "conv-eslint-001",
+          "text": "Using ESLint flat config (eslint.config.js, not .eslintrc)",
+          "priority": "medium",
+          "reason": "Flat config is the new standard and more maintainable"
+        },
+        {
+          "id": "conv-eslint-002",
+          "text": "Code follows ESLint rules defined in project config",
+          "priority": "high",
+          "reason": "Consistent linting prevents code quality issues"
+        },
+        {
+          "id": "conv-eslint-003",
+          "text": "No ESLint errors or warnings in modified files",
+          "priority": "high",
+          "reason": "Lint errors indicate code quality or style violations"
+        }
+      ]
+    },
+    {
+      "name": "prettier",
+      "triggers": {
+        "files": [
+          "**/*.ts",
+          "**/*.tsx",
+          "**/*.js",
+          "**/*.jsx",
+          "**/*.json",
+          "**/*.css",
+          "**/*.scss"
+        ],
+        "imports": [],
+        "patterns": []
+      },
+      "items": [
+        {
+          "id": "conv-prettier-001",
+          "text": "Code uses consistent quote style per .prettierrc (singleQuote setting)",
+          "priority": "medium",
+          "reason": "Consistent quoting improves readability"
+        },
+        {
+          "id": "conv-prettier-002",
+          "text": "Semicolons match .prettierrc setting (semi: true/false)",
+          "priority": "medium",
+          "reason": "Consistent semicolon usage prevents parsing ambiguities"
+        },
+        {
+          "id": "conv-prettier-003",
+          "text": "Trailing commas follow .prettierrc (trailingComma setting)",
+          "priority": "low",
+          "reason": "Consistent trailing commas make diffs cleaner"
+        },
+        {
+          "id": "conv-prettier-004",
+          "text": "Indentation matches .prettierrc (tabWidth setting)",
+          "priority": "medium",
+          "reason": "Consistent indentation is essential for readability"
+        },
+        {
+          "id": "conv-prettier-005",
+          "text": "Arrow function parentheses match .prettierrc (arrowParens setting)",
+          "priority": "low",
+          "reason": "Consistent arrow function style"
+        }
+      ]
+    },
+    {
+      "name": "editorconfig",
+      "triggers": {
+        "files": [
+          "**/*.ts",
+          "**/*.tsx",
+          "**/*.js",
+          "**/*.jsx",
+          "**/*.json",
+          "**/*.css",
+          "**/*.scss",
+          "**/*.md",
+          "**/*.mdx"
+        ],
+        "imports": [],
+        "patterns": []
+      },
+      "items": [
+        {
+          "id": "conv-editor-001",
+          "text": "Indentation style matches .editorconfig (indent_style: space/tab)",
+          "priority": "high",
+          "reason": "Mixed tabs and spaces cause rendering issues"
+        },
+        {
+          "id": "conv-editor-002",
+          "text": "Indent size matches .editorconfig (indent_size setting)",
+          "priority": "high",
+          "reason": "Consistent indentation improves code readability"
+        },
+        {
+          "id": "conv-editor-003",
+          "text": "Line endings match .editorconfig (end_of_line: lf/crlf)",
+          "priority": "medium",
+          "reason": "Consistent line endings prevent git conflicts"
+        },
+        {
+          "id": "conv-editor-004",
+          "text": "File encoding is UTF-8 per .editorconfig (charset setting)",
+          "priority": "medium",
+          "reason": "UTF-8 ensures proper character display"
+        },
+        {
+          "id": "conv-editor-005",
+          "text": "Trailing whitespace removed per .editorconfig",
+          "priority": "low",
+          "reason": "Trailing whitespace creates unnecessary diffs"
+        },
+        {
+          "id": "conv-editor-006",
+          "text": "Files end with newline per .editorconfig (insert_final_newline)",
+          "priority": "low",
+          "reason": "Final newlines are POSIX standard"
+        }
+      ]
+    },
+    {
+      "name": "markdown",
+      "triggers": {
+        "files": ["**/*.md", "**/*.mdx"],
+        "imports": [],
+        "patterns": []
+      },
+      "items": [
+        {
+          "id": "conv-md-001",
+          "text": "Markdown heading style follows .markdownlint.json (MD003 rule)",
+          "priority": "low",
+          "reason": "Consistent heading style improves document structure"
+        },
+        {
+          "id": "conv-md-002",
+          "text": "Markdown list style follows .markdownlint.json (MD004 rule)",
+          "priority": "low",
+          "reason": "Consistent list markers improve readability"
+        },
+        {
+          "id": "conv-md-003",
+          "text": "No markdownlint violations per .markdownlint.json rules",
+          "priority": "medium",
+          "reason": "Markdown lint rules ensure document quality"
+        }
+      ]
+    }
+  ]
+}

@@ -22,6 +22,7 @@ export const CHECKLIST_DOMAINS = [
   'testing',
   'code-quality',
   'seo',
+  'conventions',
 ] as const;
 
 /**

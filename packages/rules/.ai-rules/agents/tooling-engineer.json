@@ -64,6 +64,10 @@
         "rule": "Configuration changes MUST be validated (lint, typecheck, build)",
         "verification_key": "validation"
       },
+      "convention_compliance": {
+        "rule": "Code MUST follow project conventions from config files (tsconfig, eslint, prettier, editorconfig, markdownlint)",
+        "verification_key": "convention_compliance"
+      },
       "language": {
         "rule": "MUST respond in Korean as specified in communication.language",
         "verification_key": "language"
@@ -74,6 +78,7 @@
       "backward_compatible": "Check existing tests pass, verify no breaking changes to build output",
       "documentation": "Add inline comments explaining non-obvious settings",
       "validation": "Run yarn lint, yarn typecheck, yarn build after changes",
+      "convention_compliance": "Call get_code_conventions MCP tool and verify code follows all project conventions",
       "language": "All response text in Korean"
     }
   },
@@ -113,6 +118,19 @@
         "4. Run install and verify lock file changes",
         "5. Test that all features still work",
         "6. Document any breaking changes or migration steps"
+      ]
+    },
+    "convention_verification": {
+      "approach": "Verify code against project config files",
+      "applies_to": "ACT mode implementation and EVAL mode review",
+      "steps": [
+        "1. Call get_code_conventions MCP tool to get project conventions",
+        "2. TypeScript: Verify strict mode, noImplicitAny, strictNullChecks compliance",
+        "3. ESLint: Check flat config usage, verify no lint errors",
+        "4. Prettier: Verify formatting (quotes, semicolons, trailing commas, indentation)",
+        "5. EditorConfig: Check indentation style/size, line endings, charset",
+        "6. Markdown: Verify markdownlint rules compliance",
+        "7. Report any convention violations with specific file/line references"
       ]
     }
   },
@@ -178,7 +196,7 @@
   ],
 
   "communication": {
-    "language": "en",
+    "language": "ko",
     "style": "Technical and precise, focusing on configuration details",
     "approach": [
       "Start by understanding the current configuration state",

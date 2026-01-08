@@ -6,6 +6,42 @@ This guide explains how to use the common AI rules (`.ai-rules/`) in Claude Code
 
 Claude Code uses the `.claude/` directory for project-specific custom instructions, referencing the common rules from `.ai-rules/`.
 
+## 🆕 Code Conventions Support
+
+CodingBuddy now automatically enforces project code conventions from config files:
+
+### Available MCP Tool
+
+**`get_code_conventions`**: Parses and exposes project conventions from:
+- `tsconfig.json` - TypeScript strict mode, compiler options
+- `eslint.config.js` / `.eslintrc.json` - Linting rules
+- `.prettierrc` - Formatting rules (quotes, semicolons, indentation)
+- `.editorconfig` - Editor settings (indent style/size, line endings, charset)
+- `.markdownlint.json` - Markdown linting rules
+
+### When to Use
+
+**ACT Mode**: Call `get_code_conventions` before implementing to verify code follows project conventions.
+
+**EVAL Mode**: The `conventions` checklist domain is automatically included in code reviews.
+
+### Example Usage
+
+```typescript
+// In ACT mode
+const conventions = await get_code_conventions();
+
+// Verify TypeScript strict mode
+if (conventions.typescript.strict) {
+  // Ensure no implicit any types
+}
+
+// Check Prettier formatting
+if (conventions.prettier.singleQuote) {
+  // Use single quotes
+}
+```
+
 ## Integration Method
 
 ### 1. Create Claude Configuration
