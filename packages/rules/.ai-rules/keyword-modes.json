@@ -42,7 +42,11 @@
     "AUTO": {
       "description": "Autonomous execution mode",
       "instructions": "PLAN → ACT → EVAL 사이클 자동 실행. Critical/High 이슈가 0이 될 때까지 반복. (세션 문서는 각 PLAN/ACT/EVAL 단계에서 작성됨)",
-      "rules": ["rules/core.md", "rules/project.md", "rules/augmented-coding.md"],
+      "rules": [
+        "rules/core.md",
+        "rules/project.md",
+        "rules/augmented-coding.md"
+      ],
       "agent": "auto-mode",
       "delegates_to": "frontend-developer",
       "defaultSpecialists": [
