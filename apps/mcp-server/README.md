@@ -42,6 +42,9 @@ npx codingbuddy init
 | `get_agent_details` | Get detailed profile of a specialist agent |
 | `parse_mode` | Parse PLAN/ACT/EVAL workflow mode (includes language setting) |
 | `recommend_skills` | Recommend skills based on user prompt with multi-language support |
+| `get_code_conventions` | **🆕** Get project code conventions from config files (tsconfig, eslint, prettier, editorconfig, markdownlint) |
+| `generate_checklist` | Generate contextual checklists including conventions domain |
+| `analyze_task` | Comprehensive task analysis with risk assessment |
 
 ### MCP Prompts
 
@@ -181,6 +184,65 @@ curl -X POST https://your-project.vercel.app/api/mcp \
 | `CODINGBUDDY_RULES_DIR` | Custom path to `.ai-rules` directory | Auto-detected |
 | `CODINGBUDDY_PROJECT_ROOT` | Project root for config loading | Current directory |
 | `ANTHROPIC_API_KEY` | API key for `codingbuddy init` | Required for init |
+
+## 🆕 Code Conventions Usage
+
+The `get_code_conventions` MCP tool automatically parses your project's config files and enforces conventions.
+
+### Supported Config Files
+
+| File | Conventions Extracted |
+|------|----------------------|
+| `tsconfig.json` | TypeScript strict mode, compiler options, path aliases |
+| `eslint.config.js` / `.eslintrc.json` | ESLint flat/legacy config, rules, parser options |
+| `.prettierrc` | Quote style, semicolons, trailing commas, indentation |
+| `.editorconfig` | Indent style/size, line endings, charset |
+| `.markdownlint.json` | Markdown linting rules (MD001, MD003, etc.) |
+
+### Example Usage in ACT Mode
+
+```typescript
+// AI calls this tool before implementing
+const conventions = await get_code_conventions();
+
+// TypeScript conventions
+if (conventions.typescript.strict) {
+  // ✅ Use strict mode - no implicit any
+}
+
+// Prettier conventions
+const quote = conventions.prettier.singleQuote ? "'" : '"';
+const semi = conventions.prettier.semi ? ';' : '';
+
+// EditorConfig conventions
+const indent = ' '.repeat(conventions.editorconfig.indent_size || 2);
+```
+
+### Checklist Domain: `conventions`
+
+The conventions checklist includes 26 validation items across 5 categories:
+
+1. **TypeScript** (4 items): strict mode, noImplicitAny, strictNullChecks, path aliases
+2. **ESLint** (3 items): flat config usage, rules compliance, no errors
+3. **Prettier** (5 items): quotes, semicolons, trailing commas, indentation, arrow parens
+4. **EditorConfig** (6 items): indent style/size, line endings, charset, whitespace, final newline
+5. **Markdown** (3 items): heading style, list style, markdownlint rules
+
+### EVAL Mode Integration
+
+```typescript
+// AI automatically includes conventions in code review
+const checklist = await generate_checklist({
+  files: ['src/auth/login.ts'],
+  domains: ['security', 'conventions'] // conventions added automatically
+});
+
+// Checklist items include:
+// - "TypeScript strict mode is enabled"
+// - "Code uses consistent quote style per .prettierrc"
+// - "Indentation style matches .editorconfig"
+// ... and 23 more convention checks
+```
 
 ## Project Configuration
 

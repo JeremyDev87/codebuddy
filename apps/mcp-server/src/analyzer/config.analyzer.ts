@@ -53,6 +53,30 @@ export const CONFIG_FILE_PATTERNS: Record<string, string[]> = {
 const ALL_CONFIG_PATTERNS = Object.values(CONFIG_FILE_PATTERNS).flat();
 
 /**
+ * Pre-compiled regex patterns for wildcard matching
+ * PERF-002: Compile regex patterns once at module load time
+ * instead of creating new RegExp objects in hot path
+ */
+interface CompiledPattern {
+  pattern: string;
+  regex?: RegExp;
+}
+
+const COMPILED_PATTERNS: CompiledPattern[] = ALL_CONFIG_PATTERNS.map(
+  pattern => {
+    if (pattern.includes('*')) {
+      return {
+        pattern,
+        regex: new RegExp(
+          '^' + pattern.replace(/\./g, '\\.').replace(/\*/g, '.*') + '$',
+        ),
+      };
+    }
+    return { pattern };
+  },
+);
+
+/**
  * Parse tsconfig.json content
  */
 export function parseTsConfig(
@@ -123,20 +147,19 @@ export function parsePrettierConfig(
 
 /**
  * Check if a filename matches a config pattern
+ * PERF-002: Use pre-compiled regex patterns for better performance
  */
 function matchesConfigPattern(fileName: string): boolean {
   const baseName = path.basename(fileName);
 
-  for (const pattern of ALL_CONFIG_PATTERNS) {
-    if (pattern.includes('*')) {
-      // Simple wildcard matching
-      const regex = new RegExp(
-        '^' + pattern.replace(/\./g, '\\.').replace(/\*/g, '.*') + '$',
-      );
+  for (const { pattern, regex } of COMPILED_PATTERNS) {
+    if (regex) {
+      // Use pre-compiled regex for wildcard patterns
       if (regex.test(baseName)) {
         return true;
       }
     } else if (baseName === pattern) {
+      // Exact match for non-wildcard patterns
       return true;
     }
   }

@@ -21,6 +21,7 @@ import {
   AgentHandler,
   ModeHandler,
   ChecklistContextHandler,
+  ConventionsHandler,
 } from './handlers';
 
 const handlers = [
@@ -30,6 +31,7 @@ const handlers = [
   AgentHandler,
   ModeHandler,
   ChecklistContextHandler,
+  ConventionsHandler,
 ];
 
 @Module({
