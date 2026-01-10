@@ -8,6 +8,7 @@ import { AnalyzerModule } from '../analyzer/analyzer.module';
 import { AgentModule } from '../agent/agent.module';
 import { ChecklistModule } from '../checklist/checklist.module';
 import { ContextModule } from '../context/context.module';
+import { SessionModule } from '../session/session.module';
 import { SkillRecommendationService } from '../skill/skill-recommendation.service';
 import { LanguageService } from '../shared/language.service';
 import { ModelResolverService } from '../model';
@@ -22,6 +23,7 @@ import {
   ModeHandler,
   ChecklistContextHandler,
   ConventionsHandler,
+  SessionHandler,
 } from './handlers';
 
 const handlers = [
@@ -32,6 +34,7 @@ const handlers = [
   ModeHandler,
   ChecklistContextHandler,
   ConventionsHandler,
+  SessionHandler,
 ];
 
 @Module({
@@ -43,6 +46,7 @@ const handlers = [
     AgentModule,
     ChecklistModule,
     ContextModule,
+    SessionModule,
   ],
   controllers: [McpController],
   providers: [

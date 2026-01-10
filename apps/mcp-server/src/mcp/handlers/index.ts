@@ -78,6 +78,12 @@ export { ChecklistContextHandler } from './checklist-context.handler';
 export { ConventionsHandler } from './conventions.handler';
 
 /**
+ * Handler for session document tools (create_session, get_session, update_session)
+ * @see {@link SessionHandler}
+ */
+export { SessionHandler } from './session.handler';
+
+/**
  * Injection token for the array of all tool handlers.
  *
  * Use this token to inject all handlers into a service that needs to
