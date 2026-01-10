@@ -33,6 +33,13 @@ import { ActivationMessageBuilder } from './activation-message.builder';
 import { asyncWithFallback } from '../shared/async.utils';
 import { filterRulesByMode } from './rule-filter';
 
+/**
+ * Maximum allowed prompt length for defense-in-depth input validation.
+ * Prevents potential ReDoS attacks from extremely long input strings.
+ * 50KB should be sufficient for any reasonable prompt while protecting against abuse.
+ */
+const MAX_PROMPT_LENGTH = 50_000;
+
 const DEFAULT_CONFIG: KeywordModesConfig = {
   modes: {
     PLAN: {
@@ -105,6 +112,58 @@ export class KeywordService {
   private cacheHits = 0;
   private cacheMisses = 0;
 
+  /**
+   * Cached regex patterns for context-aware specialist detection.
+   * Static properties to avoid regex recompilation on each method call.
+   * Follows Open/Closed principle - add new specialists by adding patterns.
+   */
+  private static readonly CONTEXT_SPECIALIST_PATTERNS: ReadonlyArray<{
+    pattern: RegExp;
+    specialist: string;
+  }> = [
+    // Security keywords → security-specialist
+    {
+      pattern:
+        /보안|security|auth|인증|JWT|OAuth|XSS|CSRF|취약점|vulnerability/i,
+      specialist: 'security-specialist',
+    },
+    // Accessibility keywords → accessibility-specialist
+    {
+      pattern:
+        /접근성|accessibility|a11y|WCAG|aria|스크린\s*리더|screen\s*reader/i,
+      specialist: 'accessibility-specialist',
+    },
+    // Performance keywords → performance-specialist
+    {
+      pattern:
+        /성능|performance|최적화|optimiz|빠르게|느린|slow|fast|bundle\s*size|로딩/i,
+      specialist: 'performance-specialist',
+    },
+    // i18n keywords → i18n-specialist
+    {
+      pattern:
+        /다국어|i18n|internationalization|번역|locale|translation|localization/i,
+      specialist: 'i18n-specialist',
+    },
+    // SEO keywords → seo-specialist
+    {
+      pattern:
+        /SEO|검색\s*엔진|search\s*engine|메타|meta\s*tag|sitemap|구조화\s*데이터/i,
+      specialist: 'seo-specialist',
+    },
+    // Documentation keywords → documentation-specialist
+    {
+      pattern: /문서화|document|README|API\s*문서|JSDoc|주석|comment/i,
+      specialist: 'documentation-specialist',
+    },
+    // UI/UX keywords → ui-ux-designer
+    {
+      pattern:
+        /UI|UX|디자인|design\s*system|사용자\s*경험|user\s*experience|인터랙션/i,
+      specialist: 'ui-ux-designer',
+    },
+  ];
+
   constructor(
     private readonly loadConfigFn: () => Promise<KeywordModesConfig>,
     private readonly loadRuleFn: (path: string) => Promise<string>,
@@ -121,6 +180,14 @@ export class KeywordService {
     prompt: string,
     options?: ParseModeOptions,
   ): Promise<ParseModeResult> {
+    // Defense-in-depth: validate input length to prevent ReDoS attacks
+    if (prompt.length > MAX_PROMPT_LENGTH) {
+      this.logger.warn(
+        `Prompt exceeds maximum length (${prompt.length} > ${MAX_PROMPT_LENGTH}), truncating`,
+      );
+      prompt = prompt.slice(0, MAX_PROMPT_LENGTH);
+    }
+
     const config = await this.loadModeConfig();
     const { mode, originalPrompt, warnings } = this.extractModeFromPrompt(
       prompt,
@@ -242,6 +309,7 @@ export class KeywordService {
 
   /**
    * Build the ParseModeResult object with all resolved data.
+   * Orchestrates multiple focused helper methods for clarity.
    */
   private async buildParseModeResult(
     mode: Mode,
@@ -253,7 +321,50 @@ export class KeywordService {
     context?: ResolutionContext,
     recommendedActAgent?: string,
   ): Promise<ParseModeResult> {
-    // Filter rules by mode to reduce token usage
+    // 1. Build base result object
+    const result = this.buildBaseResult(
+      mode,
+      originalPrompt,
+      warnings,
+      modeConfig,
+      rules,
+    );
+
+    // 2. Resolve and add Primary Agent information
+    const resolvedAgent = await this.resolvePrimaryAgent(
+      mode,
+      originalPrompt,
+      modeConfig.delegates_to,
+      context,
+      recommendedActAgent,
+    );
+    await this.addAgentInfoToResult(result, resolvedAgent);
+
+    // 3. Add parallel agents recommendation
+    this.addParallelAgentsToResult(result, mode, config, originalPrompt);
+
+    // 4. Add ACT agent recommendation for PLAN mode
+    await this.addActRecommendationToResult(result, mode, originalPrompt);
+
+    // 5. Add activation message
+    this.addActivationMessageToResult(result, resolvedAgent);
+
+    // 6. Add AUTO config for AUTO mode
+    await this.addAutoConfigToResult(result, mode);
+
+    return result;
+  }
+
+  /**
+   * Build the base ParseModeResult with core fields.
+   */
+  private buildBaseResult(
+    mode: Mode,
+    originalPrompt: string,
+    warnings: string[],
+    modeConfig: KeywordModesConfig['modes'][Mode],
+    rules: RuleContent[],
+  ): ParseModeResult {
     const filteredRules = filterRulesByMode(rules, mode);
 
     const result: ParseModeResult = {
@@ -268,69 +379,104 @@ export class KeywordService {
       result.agent = modeConfig.agent;
     }
 
-    // Resolve Primary Agent dynamically
-    const resolvedAgent = await this.resolvePrimaryAgent(
-      mode,
-      originalPrompt,
-      modeConfig.delegates_to,
-      context,
-      recommendedActAgent,
-    );
+    return result;
+  }
 
-    if (resolvedAgent) {
-      result.delegates_to = resolvedAgent.agentName;
-      result.primary_agent_source = resolvedAgent.source;
-
-      const delegateAgentInfo = await this.getAgentInfo(
-        resolvedAgent.agentName,
-      );
-      if (delegateAgentInfo) {
-        result.delegate_agent_info = delegateAgentInfo;
-      }
+  /**
+   * Add resolved agent information to result.
+   */
+  private async addAgentInfoToResult(
+    result: ParseModeResult,
+    resolvedAgent: { agentName: string; source: PrimaryAgentSource } | null,
+  ): Promise<void> {
+    if (!resolvedAgent) {
+      return;
     }
 
-    // Add parallel agents recommendation
-    const parallelAgentsRecommendation = this.getParallelAgentsRecommendation(
+    result.delegates_to = resolvedAgent.agentName;
+    result.primary_agent_source = resolvedAgent.source;
+
+    const delegateAgentInfo = await this.getAgentInfo(resolvedAgent.agentName);
+    if (delegateAgentInfo) {
+      result.delegate_agent_info = delegateAgentInfo;
+    }
+  }
+
+  /**
+   * Add parallel agents recommendation to result.
+   */
+  private addParallelAgentsToResult(
+    result: ParseModeResult,
+    mode: Mode,
+    config: KeywordModesConfig,
+    originalPrompt: string,
+  ): void {
+    const recommendation = this.getParallelAgentsRecommendation(
       mode,
       config,
+      originalPrompt,
     );
-    if (parallelAgentsRecommendation) {
-      result.parallelAgentsRecommendation = parallelAgentsRecommendation;
+    if (recommendation) {
+      result.parallelAgentsRecommendation = recommendation;
+    }
+  }
+
+  /**
+   * Add ACT agent recommendation for PLAN mode.
+   */
+  private async addActRecommendationToResult(
+    result: ParseModeResult,
+    mode: Mode,
+    originalPrompt: string,
+  ): Promise<void> {
+    if (mode !== 'PLAN' || !this.primaryAgentResolver) {
+      return;
     }
 
-    // Add ACT agent recommendation for PLAN mode
-    if (mode === 'PLAN' && this.primaryAgentResolver) {
-      const actRecommendation =
-        await this.getActAgentRecommendation(originalPrompt);
-      if (actRecommendation) {
-        result.recommended_act_agent = actRecommendation;
-        result.available_act_agents = [...ACT_PRIMARY_AGENTS];
-      }
+    const actRecommendation =
+      await this.getActAgentRecommendation(originalPrompt);
+    if (actRecommendation) {
+      result.recommended_act_agent = actRecommendation;
+      result.available_act_agents = [...ACT_PRIMARY_AGENTS];
+    }
+  }
+
+  /**
+   * Add activation message to result.
+   */
+  private addActivationMessageToResult(
+    result: ParseModeResult,
+    resolvedAgent: { agentName: string; source: PrimaryAgentSource } | null,
+  ): void {
+    if (!resolvedAgent) {
+      return;
     }
 
-    // Add activation message for transparency
-    if (resolvedAgent) {
-      const tier = this.getPrimaryAgentTier(resolvedAgent.agentName);
-      const activationMessage = ActivationMessageBuilder.forPrimaryAgent(
+    const tier = this.getPrimaryAgentTier(resolvedAgent.agentName);
+    if (tier === 'specialist') {
+      result.activation_message = ActivationMessageBuilder.forSpecialistAgent(
         resolvedAgent.agentName,
       );
-      // Adjust tier in activation if needed
-      if (tier === 'specialist') {
-        result.activation_message = ActivationMessageBuilder.forSpecialistAgent(
-          resolvedAgent.agentName,
-        );
-      } else {
-        result.activation_message = activationMessage;
-      }
+    } else {
+      result.activation_message = ActivationMessageBuilder.forPrimaryAgent(
+        resolvedAgent.agentName,
+      );
+    }
+  }
+
+  /**
+   * Add AUTO config for AUTO mode.
+   */
+  private async addAutoConfigToResult(
+    result: ParseModeResult,
+    mode: Mode,
+  ): Promise<void> {
+    if (mode !== 'AUTO') {
+      return;
     }
 
-    // Add autoConfig for AUTO mode
-    if (mode === 'AUTO') {
-      const autoConfig = await this.getAutoConfig();
-      result.autoConfig = autoConfig;
-    }
-
-    return result;
+    const autoConfig = await this.getAutoConfig();
+    result.autoConfig = autoConfig;
   }
 
   /**
@@ -346,21 +492,57 @@ export class KeywordService {
   /**
    * Get recommended parallel agents for a given mode.
    * These specialists can be executed as Claude Code subagents via Task tool.
+   * Now includes context-aware specialist recommendations based on prompt content.
    */
   private getParallelAgentsRecommendation(
     mode: Mode,
     config: KeywordModesConfig,
+    prompt?: string,
   ): ParallelAgentRecommendation | undefined {
     const modeConfig = config.modes[mode];
-    const specialists = modeConfig?.defaultSpecialists;
-    if (!specialists || specialists.length === 0) {
+    const baseSpecialists = modeConfig?.defaultSpecialists ?? [];
+
+    // Get context-aware specialists based on prompt content
+    const contextSpecialists = prompt
+      ? this.getContextAwareSpecialists(prompt)
+      : [];
+
+    // Merge base and context specialists (deduplicated)
+    const allSpecialists = [
+      ...new Set([...baseSpecialists, ...contextSpecialists]),
+    ];
+
+    if (allSpecialists.length === 0) {
       return undefined;
     }
 
     return {
-      specialists: [...specialists],
+      specialists: allSpecialists,
       hint: `Use Task tool with subagent_type="general-purpose" and run_in_background=true for each specialist. Call prepare_parallel_agents MCP tool to get ready-to-use prompts.`,
     };
+  }
+
+  /**
+   * Detect additional specialists based on prompt content analysis.
+   * This enables dynamic specialist recommendations beyond mode defaults.
+   * Uses cached static regex patterns for performance.
+   *
+   * @param prompt - User prompt to analyze
+   * @returns Array of specialist agent names detected from prompt
+   */
+  private getContextAwareSpecialists(prompt: string): string[] {
+    const specialists: string[] = [];
+
+    for (const {
+      pattern,
+      specialist,
+    } of KeywordService.CONTEXT_SPECIALIST_PATTERNS) {
+      if (pattern.test(prompt)) {
+        specialists.push(specialist);
+      }
+    }
+
+    return specialists;
   }
 
   /**

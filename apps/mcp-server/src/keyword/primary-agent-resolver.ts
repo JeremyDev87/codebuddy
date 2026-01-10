@@ -23,6 +23,32 @@ type GetProjectConfigFn = () => Promise<ProjectConfig | null>;
 type ListPrimaryAgentsFn = () => Promise<string[]>;
 
 /**
+ * IntentPattern - Reusable type for pattern-based agent matching.
+ *
+ * Used by all intent pattern arrays (DATA_INTENT_PATTERNS, MOBILE_INTENT_PATTERNS, etc.)
+ * and the generic inferFromIntentPatterns method.
+ *
+ * @property pattern - Regex pattern to match against user prompts
+ * @property confidence - Match confidence score (0.0 - 1.0)
+ * @property description - Human-readable description for logging/debugging
+ */
+export type IntentPattern = {
+  readonly pattern: RegExp;
+  readonly confidence: number;
+  readonly description: string;
+};
+
+/**
+ * IntentPatternCheck - Configuration for checking a specific agent's intent patterns.
+ * Used by the static INTENT_PATTERN_CHECKS array.
+ */
+type IntentPatternCheck = {
+  readonly agent: string;
+  readonly patterns: ReadonlyArray<IntentPattern>;
+  readonly category: string;
+};
+
+/**
  * PrimaryAgentResolver - Resolves which Primary Agent to use based on:
  * 1. Explicit request in prompt (highest priority)
  * 2. Project configuration
@@ -61,11 +87,7 @@ export class PrimaryAgentResolver {
    * "데이터베이스 스키마 설계" → data-engineer (0.90)
    * "쿼리 최적화 필요해" → data-engineer (0.85)
    */
-  private static readonly DATA_INTENT_PATTERNS: Array<{
-    pattern: RegExp;
-    confidence: number;
-    description: string;
-  }> = [
+  private static readonly DATA_INTENT_PATTERNS: ReadonlyArray<IntentPattern> = [
     // Schema/migration patterns (0.95)
     {
       pattern: /schema\.prisma/i,
@@ -126,43 +148,40 @@ export class PrimaryAgentResolver {
    * "Flutter 위젯 구현해" → mobile-developer (0.95)
    * "모바일 앱 화면 개발" → mobile-developer (0.90)
    */
-  private static readonly MOBILE_INTENT_PATTERNS: Array<{
-    pattern: RegExp;
-    confidence: number;
-    description: string;
-  }> = [
-    // Platform-specific patterns (0.95)
-    {
-      pattern: /react.?native/i,
-      confidence: 0.95,
-      description: 'React Native',
-    },
-    { pattern: /flutter/i, confidence: 0.95, description: 'Flutter' },
-    { pattern: /expo/i, confidence: 0.9, description: 'Expo' },
-    { pattern: /swiftui/i, confidence: 0.95, description: 'SwiftUI' },
-    {
-      pattern: /jetpack\s*compose/i,
-      confidence: 0.95,
-      description: 'Jetpack Compose',
-    },
-    // Generic mobile patterns (0.85-0.90)
-    {
-      pattern: /모바일\s*(앱|개발|화면)/i,
-      confidence: 0.9,
-      description: 'Korean: mobile app',
-    },
-    {
-      pattern: /mobile\s*(app|develop|screen)/i,
-      confidence: 0.9,
-      description: 'Mobile app',
-    },
-    { pattern: /iOS\s*(앱|개발)/i, confidence: 0.9, description: 'iOS app' },
-    {
-      pattern: /android\s*(앱|개발)/i,
-      confidence: 0.9,
-      description: 'Android app',
-    },
-  ];
+  private static readonly MOBILE_INTENT_PATTERNS: ReadonlyArray<IntentPattern> =
+    [
+      // Platform-specific patterns (0.95)
+      {
+        pattern: /react.?native/i,
+        confidence: 0.95,
+        description: 'React Native',
+      },
+      { pattern: /flutter/i, confidence: 0.95, description: 'Flutter' },
+      { pattern: /expo/i, confidence: 0.9, description: 'Expo' },
+      { pattern: /swiftui/i, confidence: 0.95, description: 'SwiftUI' },
+      {
+        pattern: /jetpack\s*compose/i,
+        confidence: 0.95,
+        description: 'Jetpack Compose',
+      },
+      // Generic mobile patterns (0.85-0.90)
+      {
+        pattern: /모바일\s*(앱|개발|화면)/i,
+        confidence: 0.9,
+        description: 'Korean: mobile app',
+      },
+      {
+        pattern: /mobile\s*(app|develop|screen)/i,
+        confidence: 0.9,
+        description: 'Mobile app',
+      },
+      { pattern: /iOS\s*(앱|개발)/i, confidence: 0.9, description: 'iOS app' },
+      {
+        pattern: /android\s*(앱|개발)/i,
+        confidence: 0.9,
+        description: 'Android app',
+      },
+    ];
 
   /**
    * Intent patterns for tooling-engineer agent.
@@ -194,77 +213,86 @@ export class PrimaryAgentResolver {
    * "eslint 설정 변경해줘"    → tooling-engineer (0.85 confidence)
    * "빌드 설정 수정"          → tooling-engineer (0.85 confidence)
    */
-  private static readonly TOOLING_INTENT_PATTERNS: Array<{
-    pattern: RegExp;
-    confidence: number;
-    description: string;
-  }> = [
-    // Config files with high confidence (0.95-0.98)
-    {
-      pattern: /codingbuddy\.config/i,
-      confidence: 0.98,
-      description: 'CodingBuddy config',
-    },
-    {
-      pattern: /tsconfig.*\.json/i,
-      confidence: 0.95,
-      description: 'TypeScript config',
-    },
-    { pattern: /eslint/i, confidence: 0.95, description: 'ESLint config' },
-    { pattern: /prettier/i, confidence: 0.95, description: 'Prettier config' },
-    {
-      pattern: /stylelint/i,
-      confidence: 0.95,
-      description: 'Stylelint config',
-    },
-    // Build tools (0.90-0.95)
-    { pattern: /vite\.config/i, confidence: 0.95, description: 'Vite config' },
-    {
-      pattern: /next\.config/i,
-      confidence: 0.95,
-      description: 'Next.js config',
-    },
-    { pattern: /webpack/i, confidence: 0.9, description: 'Webpack config' },
-    {
-      pattern: /rollup\.config/i,
-      confidence: 0.9,
-      description: 'Rollup config',
-    },
-    // Package management (0.85-0.90)
-    { pattern: /package\.json/i, confidence: 0.9, description: 'Package.json' },
-    {
-      pattern: /yarn\.lock|pnpm-lock|package-lock/i,
-      confidence: 0.85,
-      description: 'Lock files',
-    },
-    // Generic config patterns (0.85)
-    {
-      pattern: /\.config\.(js|ts|mjs|cjs|json)$/i,
-      confidence: 0.85,
-      description: 'Config file extension',
-    },
-    // Korean patterns (0.85) - for Korean-speaking users
-    {
-      pattern: /설정\s*(파일|변경|수정)/i,
-      confidence: 0.85,
-      description: 'Korean: config file',
-    },
-    {
-      pattern: /빌드\s*(설정|도구|환경)/i,
-      confidence: 0.85,
-      description: 'Korean: build config',
-    },
-    {
-      pattern: /패키지\s*(관리|설치|업데이트|의존성)/i,
-      confidence: 0.85,
-      description: 'Korean: package management',
-    },
-    {
-      pattern: /린터|린트\s*설정/i,
-      confidence: 0.85,
-      description: 'Korean: linter config',
-    },
-  ];
+  private static readonly TOOLING_INTENT_PATTERNS: ReadonlyArray<IntentPattern> =
+    [
+      // Config files with high confidence (0.95-0.98)
+      {
+        pattern: /codingbuddy\.config/i,
+        confidence: 0.98,
+        description: 'CodingBuddy config',
+      },
+      {
+        pattern: /tsconfig.*\.json/i,
+        confidence: 0.95,
+        description: 'TypeScript config',
+      },
+      { pattern: /eslint/i, confidence: 0.95, description: 'ESLint config' },
+      {
+        pattern: /prettier/i,
+        confidence: 0.95,
+        description: 'Prettier config',
+      },
+      {
+        pattern: /stylelint/i,
+        confidence: 0.95,
+        description: 'Stylelint config',
+      },
+      // Build tools (0.90-0.95)
+      {
+        pattern: /vite\.config/i,
+        confidence: 0.95,
+        description: 'Vite config',
+      },
+      {
+        pattern: /next\.config/i,
+        confidence: 0.95,
+        description: 'Next.js config',
+      },
+      { pattern: /webpack/i, confidence: 0.9, description: 'Webpack config' },
+      {
+        pattern: /rollup\.config/i,
+        confidence: 0.9,
+        description: 'Rollup config',
+      },
+      // Package management (0.85-0.90)
+      {
+        pattern: /package\.json/i,
+        confidence: 0.9,
+        description: 'Package.json',
+      },
+      {
+        pattern: /yarn\.lock|pnpm-lock|package-lock/i,
+        confidence: 0.85,
+        description: 'Lock files',
+      },
+      // Generic config patterns (0.85)
+      {
+        pattern: /\.config\.(js|ts|mjs|cjs|json)$/i,
+        confidence: 0.85,
+        description: 'Config file extension',
+      },
+      // Korean patterns (0.85) - for Korean-speaking users
+      {
+        pattern: /설정\s*(파일|변경|수정)/i,
+        confidence: 0.85,
+        description: 'Korean: config file',
+      },
+      {
+        pattern: /빌드\s*(설정|도구|환경)/i,
+        confidence: 0.85,
+        description: 'Korean: build config',
+      },
+      {
+        pattern: /패키지\s*(관리|설치|업데이트|의존성)/i,
+        confidence: 0.85,
+        description: 'Korean: package management',
+      },
+      {
+        pattern: /린터|린트\s*설정/i,
+        confidence: 0.85,
+        description: 'Korean: linter config',
+      },
+    ];
 
   /**
    * Intent patterns for platform-engineer agent.
@@ -298,85 +326,433 @@ export class PrimaryAgentResolver {
    * "k8s 매니페스트 수정" → platform-engineer (0.90)
    * "인프라 코드 설정" → platform-engineer (0.85)
    */
-  private static readonly PLATFORM_INTENT_PATTERNS: Array<{
-    pattern: RegExp;
-    confidence: number;
-    description: string;
-  }> = [
-    // IaC tools (0.95)
-    { pattern: /terraform/i, confidence: 0.95, description: 'Terraform' },
-    { pattern: /pulumi/i, confidence: 0.95, description: 'Pulumi' },
-    { pattern: /aws.?cdk/i, confidence: 0.95, description: 'AWS CDK' },
-    { pattern: /helm/i, confidence: 0.95, description: 'Helm chart' },
-    {
-      pattern: /argocd|argo.?cd/i,
-      confidence: 0.95,
-      description: 'Argo CD',
-    },
-    { pattern: /flux.?cd|fluxcd/i, confidence: 0.95, description: 'Flux CD' },
-    // Kubernetes patterns (0.90-0.95)
-    {
-      pattern: /kubernetes|k8s/i,
-      confidence: 0.9,
-      description: 'Kubernetes',
-    },
-    {
-      pattern: /kustomize|kustomization/i,
-      confidence: 0.95,
-      description: 'Kustomize',
-    },
-    {
-      pattern: /kubectl|kubeconfig/i,
-      confidence: 0.9,
-      description: 'Kubectl',
-    },
-    {
-      pattern: /k8s.*manifest|manifest.*k8s|kubernetes.*manifest/i,
-      confidence: 0.9,
-      description: 'K8s manifest',
-    },
-    // Cloud provider infrastructure (0.85-0.90)
-    {
-      pattern: /EKS|GKE|AKS/i,
-      confidence: 0.9,
-      description: 'Managed Kubernetes',
-    },
-    {
-      pattern: /IRSA|workload.?identity/i,
-      confidence: 0.9,
-      description: 'Workload identity',
-    },
-    {
-      pattern: /인프라\s*(코드|설정|관리|자동화)/i,
-      confidence: 0.85,
-      description: 'Korean: infrastructure',
-    },
-    {
-      pattern: /infrastructure.?as.?code|IaC/i,
-      confidence: 0.9,
-      description: 'Infrastructure as Code',
-    },
-    // GitOps patterns (0.90)
-    { pattern: /gitops/i, confidence: 0.9, description: 'GitOps' },
-    // Multi-cloud patterns (0.85)
-    {
-      pattern: /multi.?cloud|hybrid.?cloud/i,
-      confidence: 0.85,
-      description: 'Multi-cloud',
-    },
-    // Cost optimization patterns (0.85)
-    {
-      pattern: /finops|cloud.?cost|비용\s*최적화/i,
-      confidence: 0.85,
-      description: 'Cloud cost optimization',
-    },
-    // Disaster recovery (0.85)
-    {
-      pattern: /disaster.?recovery|RTO|RPO/i,
-      confidence: 0.85,
-      description: 'Disaster recovery',
-    },
-  ];
+  private static readonly PLATFORM_INTENT_PATTERNS: ReadonlyArray<IntentPattern> =
+    [
+      // IaC tools (0.95)
+      { pattern: /terraform/i, confidence: 0.95, description: 'Terraform' },
+      { pattern: /pulumi/i, confidence: 0.95, description: 'Pulumi' },
+      { pattern: /aws.?cdk/i, confidence: 0.95, description: 'AWS CDK' },
+      { pattern: /helm/i, confidence: 0.95, description: 'Helm chart' },
+      {
+        pattern: /argocd|argo.?cd/i,
+        confidence: 0.95,
+        description: 'Argo CD',
+      },
+      { pattern: /flux.?cd|fluxcd/i, confidence: 0.95, description: 'Flux CD' },
+      // Kubernetes patterns (0.90-0.95)
+      {
+        pattern: /kubernetes|k8s/i,
+        confidence: 0.9,
+        description: 'Kubernetes',
+      },
+      {
+        pattern: /kustomize|kustomization/i,
+        confidence: 0.95,
+        description: 'Kustomize',
+      },
+      {
+        pattern: /kubectl|kubeconfig/i,
+        confidence: 0.9,
+        description: 'Kubectl',
+      },
+      {
+        pattern: /k8s.*manifest|manifest.*k8s|kubernetes.*manifest/i,
+        confidence: 0.9,
+        description: 'K8s manifest',
+      },
+      // Cloud provider infrastructure (0.85-0.90)
+      {
+        pattern: /EKS|GKE|AKS/i,
+        confidence: 0.9,
+        description: 'Managed Kubernetes',
+      },
+      {
+        pattern: /IRSA|workload.?identity/i,
+        confidence: 0.9,
+        description: 'Workload identity',
+      },
+      {
+        pattern: /인프라\s*(코드|설정|관리|자동화)/i,
+        confidence: 0.85,
+        description: 'Korean: infrastructure',
+      },
+      {
+        pattern: /infrastructure.?as.?code|IaC/i,
+        confidence: 0.9,
+        description: 'Infrastructure as Code',
+      },
+      // GitOps patterns (0.90)
+      { pattern: /gitops/i, confidence: 0.9, description: 'GitOps' },
+      // Multi-cloud patterns (0.85)
+      {
+        pattern: /multi.?cloud|hybrid.?cloud/i,
+        confidence: 0.85,
+        description: 'Multi-cloud',
+      },
+      // Cost optimization patterns (0.85)
+      {
+        pattern: /finops|cloud.?cost|비용\s*최적화/i,
+        confidence: 0.85,
+        description: 'Cloud cost optimization',
+      },
+      // Disaster recovery (0.85)
+      {
+        pattern: /disaster.?recovery|RTO|RPO/i,
+        confidence: 0.85,
+        description: 'Disaster recovery',
+      },
+    ];
+
+  /**
+   * Intent patterns for ai-ml-engineer agent.
+   *
+   * These patterns detect prompts related to machine learning, AI models,
+   * and LLM development tasks.
+   * Priority: 5th (after explicit, recommended, tooling, platform patterns).
+   *
+   * Confidence Levels:
+   * - 0.95: ML/AI frameworks (PyTorch, TensorFlow, HuggingFace, LangChain)
+   * - 0.90: ML concepts (training, fine-tuning, embeddings, RAG)
+   * - 0.85: Generic AI/ML keywords
+   *
+   * @example
+   * "PyTorch 모델 학습시켜줘" → ai-ml-engineer (0.95)
+   * "LangChain으로 RAG 구현" → ai-ml-engineer (0.95)
+   * "임베딩 생성해줘" → ai-ml-engineer (0.90)
+   */
+  private static readonly AI_ML_INTENT_PATTERNS: ReadonlyArray<IntentPattern> =
+    [
+      // ML Frameworks (0.95)
+      {
+        pattern: /pytorch|tensorflow|keras|jax/i,
+        confidence: 0.95,
+        description: 'ML Framework',
+      },
+      {
+        pattern: /hugging\s*face|transformers|diffusers/i,
+        confidence: 0.95,
+        description: 'HuggingFace',
+      },
+      {
+        pattern: /langchain|llama.?index|llamaindex/i,
+        confidence: 0.95,
+        description: 'LLM Framework',
+      },
+      {
+        pattern: /openai\s*(api|sdk)|anthropic\s*(api|sdk)/i,
+        confidence: 0.95,
+        description: 'LLM API',
+      },
+      // ML Concepts (0.90)
+      {
+        pattern: /machine\s*learning|ML\s*(모델|model|파이프라인|pipeline)/i,
+        confidence: 0.9,
+        description: 'Machine Learning',
+      },
+      {
+        pattern: /딥\s*러닝|deep\s*learning|신경망|neural\s*network/i,
+        confidence: 0.9,
+        description: 'Deep Learning',
+      },
+      {
+        pattern: /모델\s*학습|train.*model|fine.?tun|파인\s*튜닝/i,
+        confidence: 0.9,
+        description: 'Model Training',
+      },
+      {
+        pattern: /RAG|retrieval.*augment|검색\s*증강/i,
+        confidence: 0.9,
+        description: 'RAG',
+      },
+      {
+        pattern: /프롬프트\s*엔지니어링|prompt\s*engineer/i,
+        confidence: 0.9,
+        description: 'Prompt Engineering',
+      },
+      {
+        pattern: /LLM\s*(개발|develop|구현|implement|통합|integrat)/i,
+        confidence: 0.9,
+        description: 'LLM Development',
+      },
+      // Generic AI/ML patterns (0.85)
+      {
+        pattern: /임베딩|embedding|벡터\s*(DB|database|저장)/i,
+        confidence: 0.85,
+        description: 'Embeddings',
+      },
+      {
+        pattern: /추론|inference|predict|예측\s*모델/i,
+        confidence: 0.85,
+        description: 'Inference',
+      },
+      {
+        pattern: /AI\s*(모델|model|에이전트|agent|챗봇|chatbot)/i,
+        confidence: 0.85,
+        description: 'AI Model/Agent',
+      },
+      // Korean patterns (0.85)
+      {
+        pattern: /자연어\s*처리|NLP|텍스트\s*분석/i,
+        confidence: 0.85,
+        description: 'NLP',
+      },
+      {
+        pattern: /컴퓨터\s*비전|computer\s*vision|이미지\s*인식/i,
+        confidence: 0.85,
+        description: 'Computer Vision',
+      },
+    ];
+
+  /**
+   * Intent patterns for backend-developer agent.
+   *
+   * These patterns detect prompts related to server-side development,
+   * API design, and backend services.
+   * Priority: 6th (after AI/ML patterns).
+   *
+   * Confidence Levels:
+   * - 0.95: Backend frameworks (NestJS, Express, Django, Spring)
+   * - 0.90: API patterns (REST, GraphQL, gRPC), server concepts
+   * - 0.85: Generic backend keywords
+   *
+   * @example
+   * "NestJS API 만들어줘" → backend-developer (0.95)
+   * "REST API 설계해줘" → backend-developer (0.90)
+   * "서버 로직 구현" → backend-developer (0.85)
+   */
+  private static readonly BACKEND_INTENT_PATTERNS: ReadonlyArray<IntentPattern> =
+    [
+      // Node.js Backend Frameworks (0.95)
+      {
+        pattern: /nestjs|nest\.js/i,
+        confidence: 0.95,
+        description: 'NestJS',
+      },
+      {
+        pattern: /express\.js|express\s+서버|express\s+server/i,
+        confidence: 0.95,
+        description: 'Express',
+      },
+      {
+        pattern: /fastify|koa\.js|hapi/i,
+        confidence: 0.95,
+        description: 'Node.js Framework',
+      },
+      // Python Backend Frameworks (0.95)
+      {
+        pattern: /django|flask|fastapi/i,
+        confidence: 0.95,
+        description: 'Python Framework',
+      },
+      // Other Backend Frameworks (0.95)
+      {
+        pattern: /spring\s*boot|spring\s*framework/i,
+        confidence: 0.95,
+        description: 'Spring Boot',
+      },
+      {
+        pattern: /gin|echo|fiber/i,
+        confidence: 0.9,
+        description: 'Go Framework',
+      },
+      {
+        pattern: /rails|ruby\s+on\s+rails/i,
+        confidence: 0.95,
+        description: 'Ruby on Rails',
+      },
+      // API Patterns (0.90)
+      {
+        pattern: /REST\s*API|RESTful/i,
+        confidence: 0.9,
+        description: 'REST API',
+      },
+      {
+        pattern: /GraphQL\s*(API|서버|server|스키마|schema)/i,
+        confidence: 0.9,
+        description: 'GraphQL',
+      },
+      {
+        pattern: /gRPC|protobuf/i,
+        confidence: 0.9,
+        description: 'gRPC',
+      },
+      // Server concepts (0.85-0.90)
+      {
+        pattern: /API\s*(설계|개발|구현|design|develop|implement)/i,
+        confidence: 0.9,
+        description: 'API Development',
+      },
+      {
+        pattern: /서버\s*(개발|구현|로직)|server.?side\s*(logic|develop)/i,
+        confidence: 0.85,
+        description: 'Server Development',
+      },
+      {
+        pattern:
+          /백엔드\s*(개발|구현|로직)|backend\s*(develop|logic|implement)/i,
+        confidence: 0.85,
+        description: 'Backend Development',
+      },
+      {
+        pattern: /미들웨어|middleware/i,
+        confidence: 0.85,
+        description: 'Middleware',
+      },
+      {
+        pattern: /인증\s*서버|auth.*server|OAuth\s*서버/i,
+        confidence: 0.85,
+        description: 'Auth Server',
+      },
+      {
+        pattern: /웹소켓|websocket|socket\.io/i,
+        confidence: 0.85,
+        description: 'WebSocket',
+      },
+      {
+        pattern: /마이크로서비스|microservice/i,
+        confidence: 0.85,
+        description: 'Microservice',
+      },
+    ];
+
+  /**
+   * Intent patterns for agent-architect agent.
+   *
+   * These patterns detect prompts related to AI agent development,
+   * workflow automation, and MCP server development.
+   * Priority: 7th (after backend patterns).
+   *
+   * Confidence Levels:
+   * - 0.95: MCP-specific patterns, agent framework patterns
+   * - 0.90: Workflow automation, LLM orchestration
+   * - 0.85: Generic agent/automation keywords
+   *
+   * @example
+   * "MCP 서버 만들어줘" → agent-architect (0.95)
+   * "AI 에이전트 설계해줘" → agent-architect (0.90)
+   * "워크플로우 자동화 구현" → agent-architect (0.90)
+   */
+  private static readonly AGENT_INTENT_PATTERNS: ReadonlyArray<IntentPattern> =
+    [
+      // MCP-specific patterns (0.95)
+      {
+        pattern: /MCP\s*(서버|server|tool|도구)/i,
+        confidence: 0.95,
+        description: 'MCP Server',
+      },
+      {
+        pattern: /model\s*context\s*protocol/i,
+        confidence: 0.95,
+        description: 'Model Context Protocol',
+      },
+      // Agent framework patterns (0.95)
+      {
+        pattern: /에이전트\s*(설계|개발|구현|아키텍처)/i,
+        confidence: 0.95,
+        description: 'Korean: Agent Development',
+      },
+      {
+        pattern: /agent\s*(design|develop|architect|framework)/i,
+        confidence: 0.95,
+        description: 'Agent Development',
+      },
+      {
+        pattern: /claude\s*(code|에이전트|agent|sdk)/i,
+        confidence: 0.95,
+        description: 'Claude Agent',
+      },
+      // Workflow automation (0.90)
+      {
+        pattern: /워크플로우\s*(자동화|설계|구현)/i,
+        confidence: 0.9,
+        description: 'Korean: Workflow Automation',
+      },
+      {
+        pattern: /workflow\s*(automat|design|orchestrat)/i,
+        confidence: 0.9,
+        description: 'Workflow Automation',
+      },
+      {
+        pattern: /LLM\s*(체인|chain|오케스트레이션|orchestrat)/i,
+        confidence: 0.9,
+        description: 'LLM Orchestration',
+      },
+      {
+        pattern: /AI\s*에이전트\s*(설계|개발)|AI\s*agent\s*(design|develop)/i,
+        confidence: 0.9,
+        description: 'AI Agent Design',
+      },
+      // Generic patterns (0.85)
+      {
+        pattern: /자동화\s*(파이프라인|pipeline|시스템)/i,
+        confidence: 0.85,
+        description: 'Automation Pipeline',
+      },
+      {
+        pattern: /tool\s*(use|calling|호출)|function\s*calling/i,
+        confidence: 0.85,
+        description: 'Tool Calling',
+      },
+      {
+        pattern: /멀티\s*에이전트|multi.?agent/i,
+        confidence: 0.85,
+        description: 'Multi-Agent',
+      },
+    ];
+
+  /**
+   * Static array of intent pattern checks for ACT mode agent resolution.
+   *
+   * Cached as static property to avoid per-call allocation.
+   * Priority is determined by array order (first match wins).
+   *
+   * Pattern check order:
+   * 1. tooling-engineer - Build tools, linters, bundlers
+   * 2. platform-engineer - IaC, Kubernetes, cloud infrastructure
+   * 3. data-engineer - Database, schema, migrations
+   * 4. mobile-developer - React Native, Flutter, iOS/Android
+   * 5. ai-ml-engineer - ML frameworks, LLM, embeddings
+   * 6. backend-developer - APIs, servers, authentication
+   * 7. agent-architect - MCP, AI agents, workflows
+   */
+  private static readonly INTENT_PATTERN_CHECKS: ReadonlyArray<IntentPatternCheck> =
+    [
+      {
+        agent: 'tooling-engineer',
+        patterns: PrimaryAgentResolver.TOOLING_INTENT_PATTERNS,
+        category: 'Tooling',
+      },
+      {
+        agent: 'platform-engineer',
+        patterns: PrimaryAgentResolver.PLATFORM_INTENT_PATTERNS,
+        category: 'Platform',
+      },
+      {
+        agent: 'data-engineer',
+        patterns: PrimaryAgentResolver.DATA_INTENT_PATTERNS,
+        category: 'Data',
+      },
+      {
+        agent: 'mobile-developer',
+        patterns: PrimaryAgentResolver.MOBILE_INTENT_PATTERNS,
+        category: 'Mobile',
+      },
+      {
+        agent: 'ai-ml-engineer',
+        patterns: PrimaryAgentResolver.AI_ML_INTENT_PATTERNS,
+        category: 'AI/ML',
+      },
+      {
+        agent: 'backend-developer',
+        patterns: PrimaryAgentResolver.BACKEND_INTENT_PATTERNS,
+        category: 'Backend',
+      },
+      {
+        agent: 'agent-architect',
+        patterns: PrimaryAgentResolver.AGENT_INTENT_PATTERNS,
+        category: 'Agent',
+      },
+    ];
 
   /** Context patterns for suggesting agents based on file paths */
   private static readonly CONTEXT_PATTERNS: Array<{
@@ -616,7 +992,7 @@ export class PrimaryAgentResolver {
 
   /**
    * Resolve ACT mode agent.
-   * Priority: explicit > recommended > tooling-intent > platform-intent > data-intent > mobile-intent > config > context > default
+   * Priority: explicit > recommended > tooling > platform > data > mobile > ai-ml > backend > agent > config > context > default
    */
   private async resolveActAgent(
     prompt: string,
@@ -644,40 +1020,32 @@ export class PrimaryAgentResolver {
       );
     }
 
-    // 3. Check tooling intent patterns (high priority for config/build tasks)
-    const fromTooling = this.inferFromToolingPatterns(prompt, availableAgents);
-    if (fromTooling) {
-      return fromTooling;
+    // 3-9. Check intent patterns in priority order using static INTENT_PATTERN_CHECKS
+    // Pattern priority is determined by array order (first match wins within each category)
+    for (const {
+      agent,
+      patterns,
+      category,
+    } of PrimaryAgentResolver.INTENT_PATTERN_CHECKS) {
+      const result = this.inferFromIntentPatterns(
+        prompt,
+        availableAgents,
+        agent,
+        patterns,
+        category,
+      );
+      if (result) {
+        return result;
+      }
     }
 
-    // 4. Check platform intent patterns (IaC, Kubernetes, multi-cloud tasks)
-    const fromPlatform = this.inferFromPlatformPatterns(
-      prompt,
-      availableAgents,
-    );
-    if (fromPlatform) {
-      return fromPlatform;
-    }
-
-    // 5. Check data intent patterns (database/schema tasks)
-    const fromData = this.inferFromDataPatterns(prompt, availableAgents);
-    if (fromData) {
-      return fromData;
-    }
-
-    // 6. Check mobile intent patterns (mobile app tasks)
-    const fromMobile = this.inferFromMobilePatterns(prompt, availableAgents);
-    if (fromMobile) {
-      return fromMobile;
-    }
-
-    // 7. Check project configuration
+    // 10. Check project configuration
     const fromConfig = await this.getFromProjectConfig(availableAgents);
     if (fromConfig) {
       return fromConfig;
     }
 
-    // 8. Check context-based suggestion
+    // 11. Check context-based suggestion
     if (context) {
       const fromContext = this.inferFromContext(context, availableAgents);
       if (fromContext && fromContext.confidence >= 0.8) {
@@ -685,128 +1053,47 @@ export class PrimaryAgentResolver {
       }
     }
 
-    // 9. Default fallback for ACT mode
+    // 12. Default fallback for ACT mode
     return this.createResult(
       DEFAULT_ACT_AGENT,
       'default',
       1.0,
-      'ACT mode default: frontend-developer',
+      'ACT mode default: frontend-developer (no specific intent detected)',
     );
   }
 
   /**
-   * Infer tooling-engineer from prompt content patterns.
-   * High priority for config files, build tools, and package management tasks.
+   * Generic method to infer agent from intent patterns.
+   *
+   * Consolidates pattern-based agent inference into a single reusable function.
+   * Follows DRY principle by eliminating 7 near-identical methods.
+   * Follows Open/Closed principle - add new agents by adding patterns, not modifying code.
+   *
+   * @param prompt - User prompt to analyze
+   * @param availableAgents - List of available agents
+   * @param targetAgent - The agent name to match (e.g., 'tooling-engineer')
+   * @param patterns - Array of patterns with confidence and description
+   * @param patternCategory - Category name for result message (e.g., 'Tooling', 'Platform')
+   * @returns Resolution result if matched, null otherwise
    */
-  private inferFromToolingPatterns(
+  private inferFromIntentPatterns(
     prompt: string,
     availableAgents: string[],
+    targetAgent: string,
+    patterns: ReadonlyArray<IntentPattern>,
+    patternCategory: string,
   ): PrimaryAgentResolutionResult | null {
-    if (!availableAgents.includes('tooling-engineer')) {
+    if (!availableAgents.includes(targetAgent)) {
       return null;
     }
 
-    for (const {
-      pattern,
-      confidence,
-      description,
-    } of PrimaryAgentResolver.TOOLING_INTENT_PATTERNS) {
+    for (const { pattern, confidence, description } of patterns) {
       if (pattern.test(prompt)) {
         return this.createResult(
-          'tooling-engineer',
+          targetAgent,
           'intent',
           confidence,
-          `Tooling pattern detected: ${description}`,
-        );
-      }
-    }
-
-    return null;
-  }
-
-  /**
-   * Infer platform-engineer from prompt content patterns.
-   * High priority for IaC, Kubernetes, multi-cloud, and GitOps tasks.
-   */
-  private inferFromPlatformPatterns(
-    prompt: string,
-    availableAgents: string[],
-  ): PrimaryAgentResolutionResult | null {
-    if (!availableAgents.includes('platform-engineer')) {
-      return null;
-    }
-
-    for (const {
-      pattern,
-      confidence,
-      description,
-    } of PrimaryAgentResolver.PLATFORM_INTENT_PATTERNS) {
-      if (pattern.test(prompt)) {
-        return this.createResult(
-          'platform-engineer',
-          'intent',
-          confidence,
-          `Platform pattern detected: ${description}`,
-        );
-      }
-    }
-
-    return null;
-  }
-
-  /**
-   * Infer data-engineer from prompt content patterns.
-   * High priority for database, schema, and data tasks.
-   */
-  private inferFromDataPatterns(
-    prompt: string,
-    availableAgents: string[],
-  ): PrimaryAgentResolutionResult | null {
-    if (!availableAgents.includes('data-engineer')) {
-      return null;
-    }
-
-    for (const {
-      pattern,
-      confidence,
-      description,
-    } of PrimaryAgentResolver.DATA_INTENT_PATTERNS) {
-      if (pattern.test(prompt)) {
-        return this.createResult(
-          'data-engineer',
-          'intent',
-          confidence,
-          `Data pattern detected: ${description}`,
-        );
-      }
-    }
-
-    return null;
-  }
-
-  /**
-   * Infer mobile-developer from prompt content patterns.
-   * High priority for mobile app development tasks.
-   */
-  private inferFromMobilePatterns(
-    prompt: string,
-    availableAgents: string[],
-  ): PrimaryAgentResolutionResult | null {
-    if (!availableAgents.includes('mobile-developer')) {
-      return null;
-    }
-
-    for (const {
-      pattern,
-      confidence,
-      description,
-    } of PrimaryAgentResolver.MOBILE_INTENT_PATTERNS) {
-      if (pattern.test(prompt)) {
-        return this.createResult(
-          'mobile-developer',
-          'intent',
-          confidence,
-          `Mobile pattern detected: ${description}`,
+          `${patternCategory} pattern detected: ${description}`,
         );
       }
     }
