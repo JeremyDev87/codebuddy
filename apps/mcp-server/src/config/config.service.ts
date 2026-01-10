@@ -1,9 +1,11 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { existsSync, statSync } from 'fs';
+import { stat, realpath } from 'fs/promises';
 import * as path from 'path';
 import {
   loadConfig,
   findProjectRoot,
+  clearProjectRootCache,
   type ConfigLoadResult,
   ConfigLoadError,
 } from './config.loader';
@@ -11,6 +13,7 @@ import {
   loadIgnoreFile,
   getDefaultIgnorePatterns,
   shouldIgnore,
+  clearRegexCache,
   type IgnoreParseResult,
 } from './ignore.parser';
 import {
@@ -96,12 +99,72 @@ export class ConfigService implements OnModuleInit {
   }
 
   /**
-   * Set the project root directory
+   * Set the project root directory without validation
+   * @deprecated Use setProjectRootAndReload() instead for proper validation and config reload.
+   * This method bypasses security validations and should only be used for testing.
+   * @param root - Path to the project root directory
    */
   setProjectRoot(root: string): void {
     this.projectRoot = root;
     this.isLoaded = false;
     this.projectConfig = null;
+  }
+
+  /**
+   * Set the project root directory with validation and reload config
+   * @param root - Path to the project root directory
+   * @throws Error if path does not exist, is not a directory, or contains invalid characters
+   */
+  async setProjectRootAndReload(root: string): Promise<void> {
+    // Security: Reject null bytes (null byte injection attack)
+    if (root.includes('\x00')) {
+      throw new Error(
+        'Path contains null bytes (possible null byte injection)',
+      );
+    }
+
+    const normalizedPath = path.resolve(root);
+
+    // Validate: path must exist and be a directory (using async operations)
+    let pathStat;
+    try {
+      pathStat = await stat(normalizedPath);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        throw new Error(`Project root does not exist: ${normalizedPath}`);
+      }
+      throw error;
+    }
+
+    if (!pathStat.isDirectory()) {
+      throw new Error(`Project root is not a directory: ${normalizedPath}`);
+    }
+
+    // Security: Resolve symlinks to get the real path
+    // This prevents symlink attacks where a symlink points to sensitive directories
+    let resolvedPath: string;
+    try {
+      resolvedPath = await realpath(normalizedPath);
+    } catch {
+      // If realpath fails, use normalized path but log warning
+      this.logger.warn(
+        `Failed to resolve symlinks for ${normalizedPath}, using as-is`,
+      );
+      resolvedPath = normalizedPath;
+    }
+
+    // Clear the findProjectRoot cache to prevent stale results
+    clearProjectRootCache();
+
+    // Set new project root (use resolved real path)
+    this.projectRoot = resolvedPath;
+    this.isLoaded = false;
+    this.projectConfig = null;
+
+    // Reload config from new location
+    await this.loadProjectConfig();
+
+    this.logger.log(`Project root changed to: ${resolvedPath}`);
   }
 
   /**
@@ -115,6 +178,9 @@ export class ConfigService implements OnModuleInit {
    * Load all project configuration
    */
   async loadProjectConfig(): Promise<ProjectConfig> {
+    // Clear cached regex patterns to prevent stale patterns after project root change
+    clearRegexCache();
+
     this.logger.log(`Loading project config from: ${this.projectRoot}`);
 
     // Load config file

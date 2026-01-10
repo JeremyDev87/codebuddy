@@ -3,6 +3,7 @@ import type { ToolDefinition } from './base.handler';
 import type { ToolResponse } from '../response.utils';
 import { AbstractHandler } from './abstract-handler';
 import { ConventionsAnalyzer } from '../../analyzer/conventions.analyzer';
+import { ConfigService } from '../../config/config.service';
 import { createJsonResponse, createErrorResponse } from '../response.utils';
 import { extractOptionalString } from '../../shared/validation.constants';
 import { assertPathSafe } from '../../shared/security.utils';
@@ -13,7 +14,10 @@ import { assertPathSafe } from '../../shared/security.utils';
  */
 @Injectable()
 export class ConventionsHandler extends AbstractHandler {
-  constructor(private readonly conventionsAnalyzer: ConventionsAnalyzer) {
+  constructor(
+    private readonly conventionsAnalyzer: ConventionsAnalyzer,
+    private readonly configService: ConfigService,
+  ) {
     super();
   }
 
@@ -61,12 +65,13 @@ export class ConventionsHandler extends AbstractHandler {
     args: Record<string, unknown> | undefined,
   ): Promise<ToolResponse> {
     try {
+      const configProjectRoot = this.configService.getProjectRoot();
       const projectRootInput =
-        extractOptionalString(args, 'projectRoot') ?? process.cwd();
+        extractOptionalString(args, 'projectRoot') ?? configProjectRoot;
 
       // Validate path to prevent path traversal attacks
       const projectRoot = assertPathSafe(projectRootInput, {
-        basePath: process.cwd(),
+        basePath: configProjectRoot,
         allowAbsolute: true,
       });
 

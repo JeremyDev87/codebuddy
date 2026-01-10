@@ -7,6 +7,7 @@ import { ConfigDiffService } from '../../config/config-diff.service';
 import { AnalyzerService } from '../../analyzer/analyzer.service';
 import { createJsonResponse, createErrorResponse } from '../response.utils';
 import { extractOptionalString } from '../../shared/validation.constants';
+import { assertPathSafe } from '../../shared/security.utils';
 
 /**
  * Handler for configuration-related tools
@@ -24,7 +25,7 @@ export class ConfigHandler extends AbstractHandler {
   }
 
   protected getHandledTools(): string[] {
-    return ['get_project_config', 'suggest_config_updates'];
+    return ['get_project_config', 'suggest_config_updates', 'set_project_root'];
   }
 
   protected async handleTool(
@@ -37,6 +38,10 @@ export class ConfigHandler extends AbstractHandler {
 
     if (toolName === 'suggest_config_updates') {
       return this.handleSuggestConfigUpdates(args);
+    }
+
+    if (toolName === 'set_project_root') {
+      return this.handleSetProjectRoot(args);
     }
 
     // This should never be reached because AbstractHandler validates tool names
@@ -71,6 +76,21 @@ export class ConfigHandler extends AbstractHandler {
           required: [],
         },
       },
+      {
+        name: 'set_project_root',
+        description:
+          'Set the project root directory. Use this when the MCP server is launched from a different directory than the target project.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            projectRoot: {
+              type: 'string',
+              description: 'The absolute path to the project root directory',
+            },
+          },
+          required: ['projectRoot'],
+        },
+      },
     ];
   }
 
@@ -89,8 +109,15 @@ export class ConfigHandler extends AbstractHandler {
     args: Record<string, unknown> | undefined,
   ): Promise<ToolResponse> {
     try {
-      const projectRoot =
-        extractOptionalString(args, 'projectRoot') ?? process.cwd();
+      const configProjectRoot = this.configService.getProjectRoot();
+      const projectRootInput =
+        extractOptionalString(args, 'projectRoot') ?? configProjectRoot;
+
+      // Security: Validate path to prevent path traversal attacks
+      const projectRoot = assertPathSafe(projectRootInput, {
+        basePath: configProjectRoot,
+        allowAbsolute: true,
+      });
 
       // Analyze project
       const analysis = await this.analyzerService.analyzeProject(projectRoot);
@@ -111,6 +138,43 @@ export class ConfigHandler extends AbstractHandler {
     } catch (error) {
       return createErrorResponse(
         `Failed to suggest config updates: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+    }
+  }
+
+  private async handleSetProjectRoot(
+    args: Record<string, unknown> | undefined,
+  ): Promise<ToolResponse> {
+    try {
+      const projectRootInput = extractOptionalString(args, 'projectRoot');
+
+      // Validate projectRoot is provided and not empty/whitespace
+      if (!projectRootInput || projectRootInput.trim() === '') {
+        return createErrorResponse(
+          'projectRoot is required and must be a non-empty string',
+        );
+      }
+
+      // Security: Validate path to prevent path traversal attacks
+      // For set_project_root, we use the current project root as the base path
+      // and allow absolute paths since this is meant to change the project root
+      const currentProjectRoot = this.configService.getProjectRoot();
+      const projectRoot = assertPathSafe(projectRootInput, {
+        basePath: currentProjectRoot,
+        allowAbsolute: true,
+      });
+
+      // Set the project root and reload config
+      await this.configService.setProjectRootAndReload(projectRoot);
+
+      return createJsonResponse({
+        success: true,
+        projectRoot: this.configService.getProjectRoot(),
+        message: `Project root set to: ${this.configService.getProjectRoot()}`,
+      });
+    } catch (error) {
+      return createErrorResponse(
+        `Failed to set project root: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
