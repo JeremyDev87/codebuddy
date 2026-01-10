@@ -45,7 +45,9 @@ const DEFAULT_CONFIG: KeywordModesConfig = {
     PLAN: {
       description: 'Task planning and design phase',
       instructions:
-        'Design first approach. Define test cases from TDD perspective. Review architecture before implementation. 📝 After completion, recommend creating PLAN documentation in docs/codingbuddy/plan/ (./docs/codingbuddy/scripts/new-doc.sh plan <slug>).',
+        'Design first approach. Define test cases from TDD perspective. Review architecture before implementation. ' +
+        '📋 SESSION: Call create_session to start tracking, then update_session with mode=PLAN, recommended ACT agent, and decisions. ' +
+        'This enables ACT mode to read recommended agent even after context compaction.',
       rules: ['rules/core.md', 'rules/augmented-coding.md'],
       agent: MODE_AGENTS[0],
       // delegates_to is now resolved dynamically via PrimaryAgentResolver
@@ -57,7 +59,9 @@ const DEFAULT_CONFIG: KeywordModesConfig = {
     ACT: {
       description: 'Actual task execution phase',
       instructions:
-        'Follow Red-Green-Refactor cycle. Implement minimally then improve incrementally. Verify quality standards. 📝 After completion, recommend creating ACT documentation in docs/codingbuddy/act/ (./docs/codingbuddy/scripts/new-doc.sh act <slug>).',
+        'FIRST: Call get_active_session to read PLAN context and recommended agent. Use the recommended agent from PLAN. ' +
+        'Follow Red-Green-Refactor cycle. Implement minimally then improve incrementally. ' +
+        '📋 SESSION: Call update_session with mode=ACT to record implementation progress and notes.',
       rules: ['rules/core.md', 'rules/project.md', 'rules/augmented-coding.md'],
       agent: MODE_AGENTS[1],
       // delegates_to is now resolved dynamically via PrimaryAgentResolver
@@ -69,7 +73,8 @@ const DEFAULT_CONFIG: KeywordModesConfig = {
     EVAL: {
       description: 'Result review and assessment phase',
       instructions:
-        'Review code quality. Verify SOLID principles. Check test coverage. Suggest improvements. 📝 After completion, recommend creating EVAL documentation in docs/codingbuddy/eval/ (./docs/codingbuddy/scripts/new-doc.sh eval <slug>).',
+        'Review code quality. Verify SOLID principles. Check test coverage. Suggest improvements. ' +
+        '📋 SESSION: Call get_active_session to read context, then update_session with mode=EVAL and findings.',
       rules: ['rules/core.md', 'rules/augmented-coding.md'],
       agent: MODE_AGENTS[2],
       delegates_to: 'code-reviewer', // EVAL always uses code-reviewer
@@ -84,7 +89,8 @@ const DEFAULT_CONFIG: KeywordModesConfig = {
       description:
         'Autonomous execution mode - PLAN → ACT → EVAL cycle until quality achieved',
       instructions:
-        'Execute PLAN → ACT → EVAL cycle automatically. Repeat until Critical/High issues = 0 or max iterations reached. (Session documentation is captured at each PLAN/ACT/EVAL phase within iterations)',
+        'Execute PLAN → ACT → EVAL cycle automatically. Repeat until Critical/High issues = 0 or max iterations reached. ' +
+        '📋 SESSION: Create session at start, update at each phase transition to maintain context across iterations.',
       rules: ['rules/core.md', 'rules/project.md', 'rules/augmented-coding.md'],
       agent: MODE_AGENTS[3], // 'auto-mode'
       defaultSpecialists: [
