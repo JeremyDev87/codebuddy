@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ConventionsHandler } from './conventions.handler';
 import { ConventionsAnalyzer } from '../../analyzer/conventions.analyzer';
+import { ConfigService } from '../../config/config.service';
 import type { ProjectConventions } from '../../analyzer/conventions.types';
 
 // Mock security utils module
@@ -28,6 +29,9 @@ import { extractOptionalString } from '../../shared/validation.constants';
 describe('ConventionsHandler', () => {
   let handler: ConventionsHandler;
   let mockConventionsAnalyzer: ConventionsAnalyzer;
+  let mockConfigService: ConfigService;
+
+  const mockProjectRoot = '/test/project';
 
   const mockConventions: ProjectConventions = {
     projectRoot: '/test/project',
@@ -68,7 +72,14 @@ describe('ConventionsHandler', () => {
       analyzeProjectConventions: vi.fn().mockResolvedValue(mockConventions),
     } as unknown as ConventionsAnalyzer;
 
-    handler = new ConventionsHandler(mockConventionsAnalyzer);
+    mockConfigService = {
+      getProjectRoot: vi.fn().mockReturnValue(mockProjectRoot),
+    } as unknown as ConfigService;
+
+    handler = new ConventionsHandler(
+      mockConventionsAnalyzer,
+      mockConfigService,
+    );
 
     // Reset mocks to default behavior
     (assertPathSafe as ReturnType<typeof vi.fn>).mockImplementation(
@@ -92,18 +103,19 @@ describe('ConventionsHandler', () => {
     });
 
     describe('get_code_conventions', () => {
-      it('should return conventions with default projectRoot (cwd)', async () => {
+      it('should return conventions with default projectRoot from configService', async () => {
         const result = await handler.handle('get_code_conventions', {});
 
         expect(result?.isError).toBeFalsy();
+        expect(mockConfigService.getProjectRoot).toHaveBeenCalled();
         expect(extractOptionalString).toHaveBeenCalledWith({}, 'projectRoot');
-        expect(assertPathSafe).toHaveBeenCalledWith(process.cwd(), {
-          basePath: process.cwd(),
+        expect(assertPathSafe).toHaveBeenCalledWith(mockProjectRoot, {
+          basePath: mockProjectRoot,
           allowAbsolute: true,
         });
         expect(
           mockConventionsAnalyzer.analyzeProjectConventions,
-        ).toHaveBeenCalledWith(process.cwd());
+        ).toHaveBeenCalledWith(mockProjectRoot);
       });
 
       it('should use provided projectRoot when string', async () => {
@@ -118,7 +130,7 @@ describe('ConventionsHandler', () => {
           'projectRoot',
         );
         expect(assertPathSafe).toHaveBeenCalledWith(customPath, {
-          basePath: process.cwd(),
+          basePath: mockProjectRoot,
           allowAbsolute: true,
         });
         expect(
@@ -134,7 +146,7 @@ describe('ConventionsHandler', () => {
         });
 
         expect(assertPathSafe).toHaveBeenCalledWith(maliciousPath, {
-          basePath: process.cwd(),
+          basePath: mockProjectRoot,
           allowAbsolute: true,
         });
       });

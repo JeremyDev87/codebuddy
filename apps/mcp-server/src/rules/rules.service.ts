@@ -6,6 +6,7 @@ import { AgentProfile, SearchResult } from './rules.types';
 import { isPathSafe } from '../shared/security.utils';
 import { parseAgentProfile, AgentSchemaError } from './agent.schema';
 import { CustomService } from '../custom';
+import { ConfigService } from '../config/config.service';
 import { MODE_AGENTS } from '../keyword/keyword.types';
 
 @Injectable()
@@ -13,7 +14,10 @@ export class RulesService {
   private readonly logger = new Logger(RulesService.name);
   private readonly rulesDir: string;
 
-  constructor(private readonly customService: CustomService) {
+  constructor(
+    private readonly customService: CustomService,
+    private readonly configService: ConfigService,
+  ) {
     // Path resolution strategy:
     // 1. Use environment variable if directly specified
     // 2. Get path from codingbuddy-rules package
@@ -139,7 +143,7 @@ export class RulesService {
     const queryLower = query.toLowerCase();
 
     // Get custom rules first (they appear first in results)
-    const projectRoot = process.cwd();
+    const projectRoot = this.configService.getProjectRoot();
     const customRules = await this.customService.listCustomRules(projectRoot);
 
     for (const customRule of customRules) {

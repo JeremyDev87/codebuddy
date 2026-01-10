@@ -8,6 +8,35 @@ import { safeReadFile } from '../shared/file.utils';
 export const IGNORE_FILE_NAME = '.codingignore';
 
 /**
+ * Cache for compiled regex patterns
+ * Performance optimization: Avoids recompiling regex on every shouldIgnore call
+ */
+const regexCache = new Map<string, RegExp>();
+
+/**
+ * Get or create a cached regex for a pattern
+ * @param pattern - The gitignore-style pattern
+ * @returns Cached or newly compiled RegExp
+ */
+function getCachedRegex(pattern: string): RegExp {
+  const cached = regexCache.get(pattern);
+  if (cached) {
+    return cached;
+  }
+  const regex = patternToRegex(pattern);
+  regexCache.set(pattern, regex);
+  return regex;
+}
+
+/**
+ * Clear the regex cache
+ * Should be called when ignore patterns are reloaded
+ */
+export function clearRegexCache(): void {
+  regexCache.clear();
+}
+
+/**
  * Result of parsing an ignore file
  */
 export interface IgnoreParseResult {
@@ -161,6 +190,7 @@ export function patternToRegex(pattern: string): RegExp {
 
 /**
  * Check if a path should be ignored based on patterns
+ * Uses cached regex patterns for performance
  */
 export function shouldIgnore(
   relativePath: string,
@@ -174,7 +204,8 @@ export function shouldIgnore(
   for (const pattern of patterns) {
     const isNegated = pattern.startsWith('!');
     const actualPattern = isNegated ? pattern.slice(1) : pattern;
-    const regex = patternToRegex(actualPattern);
+    // Use cached regex instead of compiling new one each time
+    const regex = getCachedRegex(actualPattern);
 
     if (regex.test(normalizedPath)) {
       ignored = !isNegated;

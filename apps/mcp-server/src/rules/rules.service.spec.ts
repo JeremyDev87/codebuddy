@@ -15,6 +15,7 @@ vi.mock('fs', () => ({
 // Import after mocks
 import { RulesService } from './rules.service';
 import { CustomService } from '../custom';
+import { ConfigService } from '../config/config.service';
 import { CustomRule } from '../custom/custom.types';
 
 // Create a mock CustomService
@@ -25,6 +26,13 @@ const createMockCustomService = (): CustomService =>
     listCustomAgents: vi.fn().mockResolvedValue([]),
     listCustomSkills: vi.fn().mockResolvedValue([]),
   }) as unknown as CustomService;
+
+// Create a mock ConfigService
+const createMockConfigService = (): ConfigService =>
+  ({
+    getProjectRoot: vi.fn().mockReturnValue('/test/project'),
+    getSettings: vi.fn().mockResolvedValue({}),
+  }) as unknown as ConfigService;
 
 describe('RulesService', () => {
   beforeEach(() => {
@@ -37,7 +45,10 @@ describe('RulesService', () => {
     it('should use CODINGBUDDY_RULES_DIR env variable when set', () => {
       process.env.CODINGBUDDY_RULES_DIR = '/custom/rules/path';
 
-      const service = new RulesService(createMockCustomService());
+      const service = new RulesService(
+        createMockCustomService(),
+        createMockConfigService(),
+      );
 
       // Access private property via any cast for testing
       expect((service as unknown as { rulesDir: string }).rulesDir).toBe(
@@ -46,7 +57,10 @@ describe('RulesService', () => {
     });
 
     it('should use codingbuddy-rules package or dev fallback', () => {
-      const service = new RulesService(createMockCustomService());
+      const service = new RulesService(
+        createMockCustomService(),
+        createMockConfigService(),
+      );
       const rulesDir = (service as unknown as { rulesDir: string }).rulesDir;
 
       // Should resolve to .ai-rules path (either from package or dev fallback)
@@ -54,7 +68,10 @@ describe('RulesService', () => {
     });
 
     it('should find rules directory successfully', () => {
-      const service = new RulesService(createMockCustomService());
+      const service = new RulesService(
+        createMockCustomService(),
+        createMockConfigService(),
+      );
       const rulesDir = (service as unknown as { rulesDir: string }).rulesDir;
 
       // Verify the path contains the expected structure
@@ -68,7 +85,10 @@ describe('RulesService', () => {
 
     beforeEach(() => {
       process.env.CODINGBUDDY_RULES_DIR = '/test/rules';
-      service = new RulesService(createMockCustomService());
+      service = new RulesService(
+        createMockCustomService(),
+        createMockConfigService(),
+      );
     });
 
     it('should return file content when file exists', async () => {
@@ -148,7 +168,10 @@ describe('RulesService', () => {
 
     beforeEach(() => {
       process.env.CODINGBUDDY_RULES_DIR = '/test/rules';
-      service = new RulesService(createMockCustomService());
+      service = new RulesService(
+        createMockCustomService(),
+        createMockConfigService(),
+      );
     });
 
     it('should return agent names from directory', async () => {
@@ -204,7 +227,10 @@ describe('RulesService', () => {
 
     beforeEach(() => {
       process.env.CODINGBUDDY_RULES_DIR = '/test/rules';
-      service = new RulesService(createMockCustomService());
+      service = new RulesService(
+        createMockCustomService(),
+        createMockConfigService(),
+      );
     });
 
     it('should return parsed AgentProfile', async () => {
@@ -290,7 +316,7 @@ describe('RulesService', () => {
     beforeEach(() => {
       process.env.CODINGBUDDY_RULES_DIR = '/test/rules';
       mockCustomService = createMockCustomService();
-      service = new RulesService(mockCustomService);
+      service = new RulesService(mockCustomService, createMockConfigService());
     });
 
     it('should find matches across files', async () => {
@@ -423,7 +449,10 @@ describe('RulesService', () => {
 
   describe('checkExists (private method behavior)', () => {
     it('should resolve rules directory path', () => {
-      const service = new RulesService(createMockCustomService());
+      const service = new RulesService(
+        createMockCustomService(),
+        createMockConfigService(),
+      );
       const rulesDir = (service as unknown as { rulesDir: string }).rulesDir;
 
       // Should have resolved to a valid .ai-rules path
@@ -436,7 +465,13 @@ describe('RulesService', () => {
       });
 
       // Should not throw - either package provides path or fallback handles error
-      expect(() => new RulesService(createMockCustomService())).not.toThrow();
+      expect(
+        () =>
+          new RulesService(
+            createMockCustomService(),
+            createMockConfigService(),
+          ),
+      ).not.toThrow();
     });
   });
 
@@ -447,7 +482,7 @@ describe('RulesService', () => {
     beforeEach(() => {
       process.env.CODINGBUDDY_RULES_DIR = '/test/rules';
       mockCustomService = createMockCustomService();
-      service = new RulesService(mockCustomService);
+      service = new RulesService(mockCustomService, createMockConfigService());
     });
 
     it('includes custom rules in search results', async () => {
@@ -555,7 +590,7 @@ describe('RulesService', () => {
     beforeEach(() => {
       process.env.CODINGBUDDY_RULES_DIR = '/test/rules';
       mockCustomService = createMockCustomService();
-      service = new RulesService(mockCustomService);
+      service = new RulesService(mockCustomService, createMockConfigService());
     });
 
     describe('listAgents with Mode Agent priority', () => {

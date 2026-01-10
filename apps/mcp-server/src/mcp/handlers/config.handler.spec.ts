@@ -4,6 +4,16 @@ import { ConfigService } from '../../config/config.service';
 import { ConfigDiffService } from '../../config/config-diff.service';
 import { AnalyzerService } from '../../analyzer/analyzer.service';
 
+// Mock security utils module
+vi.mock('../../shared/security.utils', () => ({
+  assertPathSafe: vi.fn((path: string) => path),
+  sanitizeHandlerArgs: vi.fn((_args: Record<string, unknown> | undefined) => ({
+    safe: true,
+  })),
+}));
+
+import { assertPathSafe } from '../../shared/security.utils';
+
 describe('ConfigHandler', () => {
   let handler: ConfigHandler;
   let mockConfigService: ConfigService;
@@ -19,6 +29,8 @@ describe('ConfigHandler', () => {
     mockConfigService = {
       getSettings: vi.fn().mockResolvedValue(mockSettings),
       reload: vi.fn().mockResolvedValue(undefined),
+      setProjectRootAndReload: vi.fn().mockResolvedValue(undefined),
+      getProjectRoot: vi.fn().mockReturnValue('/test/project'),
     } as unknown as ConfigService;
 
     mockConfigDiffService = {
@@ -39,6 +51,11 @@ describe('ConfigHandler', () => {
       mockConfigService,
       mockConfigDiffService,
       mockAnalyzerService,
+    );
+
+    // Reset mocks to default behavior
+    (assertPathSafe as ReturnType<typeof vi.fn>).mockImplementation(
+      (path: string) => path,
     );
   });
 
@@ -117,25 +134,131 @@ describe('ConfigHandler', () => {
         });
       });
     });
+
+    describe('set_project_root', () => {
+      it('should set project root successfully', async () => {
+        const result = await handler.handle('set_project_root', {
+          projectRoot: '/new/project/path',
+        });
+
+        expect(result?.isError).toBeFalsy();
+        expect(mockConfigService.setProjectRootAndReload).toHaveBeenCalledWith(
+          '/new/project/path',
+        );
+      });
+
+      it('should return error when projectRoot is missing', async () => {
+        const result = await handler.handle('set_project_root', {});
+
+        expect(result?.isError).toBe(true);
+        expect(result?.content[0]).toMatchObject({
+          type: 'text',
+          text: expect.stringContaining('projectRoot'),
+        });
+      });
+
+      it('should return error when projectRoot is empty string', async () => {
+        const result = await handler.handle('set_project_root', {
+          projectRoot: '',
+        });
+
+        expect(result?.isError).toBe(true);
+        expect(result?.content[0]).toMatchObject({
+          type: 'text',
+          text: expect.stringContaining('projectRoot'),
+        });
+      });
+
+      it('should return error when projectRoot is whitespace only', async () => {
+        const result = await handler.handle('set_project_root', {
+          projectRoot: '   ',
+        });
+
+        expect(result?.isError).toBe(true);
+        expect(result?.content[0]).toMatchObject({
+          type: 'text',
+          text: expect.stringContaining('projectRoot'),
+        });
+      });
+
+      it('should return error when setProjectRootAndReload fails', async () => {
+        mockConfigService.setProjectRootAndReload = vi
+          .fn()
+          .mockRejectedValue(new Error('Path does not exist'));
+
+        const result = await handler.handle('set_project_root', {
+          projectRoot: '/nonexistent/path',
+        });
+
+        expect(result?.isError).toBe(true);
+        expect(result?.content[0]).toMatchObject({
+          type: 'text',
+          text: expect.stringContaining('Path does not exist'),
+        });
+      });
+
+      it('should return error when path validation fails', async () => {
+        (assertPathSafe as ReturnType<typeof vi.fn>).mockImplementation(() => {
+          throw new Error('Path traversal attempt detected');
+        });
+
+        const result = await handler.handle('set_project_root', {
+          projectRoot: '../../../etc/passwd',
+        });
+
+        expect(result?.isError).toBe(true);
+        expect(result?.content[0]).toMatchObject({
+          type: 'text',
+          text: expect.stringContaining('Path traversal'),
+        });
+      });
+
+      it('should return current project root on success', async () => {
+        const result = await handler.handle('set_project_root', {
+          projectRoot: '/new/project/path',
+        });
+
+        expect(result?.isError).toBeFalsy();
+        const content = JSON.parse(
+          (result?.content[0] as { text: string }).text,
+        );
+        expect(content).toHaveProperty('projectRoot');
+      });
+    });
   });
 
   describe('getToolDefinitions', () => {
     it('should return tool definitions', () => {
       const definitions = handler.getToolDefinitions();
 
-      expect(definitions).toHaveLength(2);
+      expect(definitions).toHaveLength(3);
       expect(definitions.map(d => d.name)).toEqual([
         'get_project_config',
         'suggest_config_updates',
+        'set_project_root',
       ]);
     });
 
-    it('should have no required parameters', () => {
+    it('should have no required parameters for get and suggest tools', () => {
       const definitions = handler.getToolDefinitions();
 
-      definitions.forEach(def => {
-        expect(def.inputSchema.required).toEqual([]);
-      });
+      const getConfigDef = definitions.find(
+        d => d.name === 'get_project_config',
+      );
+      const suggestDef = definitions.find(
+        d => d.name === 'suggest_config_updates',
+      );
+
+      expect(getConfigDef?.inputSchema.required).toEqual([]);
+      expect(suggestDef?.inputSchema.required).toEqual([]);
+    });
+
+    it('should require projectRoot for set_project_root tool', () => {
+      const definitions = handler.getToolDefinitions();
+
+      const setRootDef = definitions.find(d => d.name === 'set_project_root');
+
+      expect(setRootDef?.inputSchema.required).toEqual(['projectRoot']);
     });
   });
 });

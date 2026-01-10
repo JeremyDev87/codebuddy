@@ -181,6 +181,7 @@ const createMockConfigService = (
   getSettings: vi.fn().mockResolvedValue(config),
   getLanguage: vi.fn().mockResolvedValue(config.language),
   getFormattedContext: vi.fn().mockResolvedValue(''),
+  getProjectRoot: vi.fn().mockReturnValue('/test/project'),
   reload: vi.fn().mockResolvedValue({
     settings: config,
     ignorePatterns: ['node_modules', '.git'],
