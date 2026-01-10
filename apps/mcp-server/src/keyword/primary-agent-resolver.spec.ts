@@ -794,6 +794,352 @@ describe('PrimaryAgentResolver', () => {
       });
     });
 
+    describe('ai-ml-engineer pattern matching', () => {
+      beforeEach(() => {
+        mockListPrimaryAgents.mockResolvedValue([
+          'ai-ml-engineer',
+          'tooling-engineer',
+          'platform-engineer',
+          'data-engineer',
+          'mobile-developer',
+          'frontend-developer',
+          'backend-developer',
+          'agent-architect',
+          'devops-engineer',
+          'solution-architect',
+          'technical-planner',
+          'code-reviewer',
+        ]);
+      });
+
+      it('returns ai-ml-engineer for PyTorch prompt', async () => {
+        const result = await resolver.resolve('ACT', 'PyTorch 모델 학습시켜줘');
+
+        expect(result.agentName).toBe('ai-ml-engineer');
+        expect(result.source).toBe('intent');
+        expect(result.confidence).toBeGreaterThanOrEqual(0.9);
+      });
+
+      it('returns ai-ml-engineer for TensorFlow prompt', async () => {
+        const result = await resolver.resolve(
+          'ACT',
+          'TensorFlow로 이미지 분류 모델 만들어',
+        );
+
+        expect(result.agentName).toBe('ai-ml-engineer');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns ai-ml-engineer for HuggingFace prompt', async () => {
+        const result = await resolver.resolve(
+          'ACT',
+          'HuggingFace transformers 모델 파인튜닝해줘',
+        );
+
+        expect(result.agentName).toBe('ai-ml-engineer');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns ai-ml-engineer for LangChain prompt', async () => {
+        const result = await resolver.resolve(
+          'ACT',
+          'LangChain으로 RAG 파이프라인 구현해',
+        );
+
+        expect(result.agentName).toBe('ai-ml-engineer');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns ai-ml-engineer for RAG prompt', async () => {
+        const result = await resolver.resolve('ACT', 'RAG 시스템 구축해줘');
+
+        expect(result.agentName).toBe('ai-ml-engineer');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns ai-ml-engineer for Korean "딥러닝" prompt', async () => {
+        const result = await resolver.resolve('ACT', '딥러닝 모델 개발해');
+
+        expect(result.agentName).toBe('ai-ml-engineer');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns ai-ml-engineer for LLM development prompt', async () => {
+        const result = await resolver.resolve(
+          'ACT',
+          'LLM 개발 및 통합 작업해줘',
+        );
+
+        expect(result.agentName).toBe('ai-ml-engineer');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns ai-ml-engineer for embedding prompt', async () => {
+        const result = await resolver.resolve(
+          'ACT',
+          '임베딩 벡터 저장소 구현해',
+        );
+
+        expect(result.agentName).toBe('ai-ml-engineer');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns ai-ml-engineer for prompt engineering prompt', async () => {
+        const result = await resolver.resolve(
+          'ACT',
+          '프롬프트 엔지니어링 최적화해줘',
+        );
+
+        expect(result.agentName).toBe('ai-ml-engineer');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns ai-ml-engineer for OpenAI API prompt', async () => {
+        const result = await resolver.resolve('ACT', 'OpenAI API 연동해줘');
+
+        expect(result.agentName).toBe('ai-ml-engineer');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns null when ai-ml-engineer not available', async () => {
+        mockListPrimaryAgents.mockResolvedValue([
+          'frontend-developer',
+          'backend-developer',
+        ]);
+
+        const result = await resolver.resolve('ACT', 'PyTorch 모델 학습시켜');
+
+        expect(result.agentName).not.toBe('ai-ml-engineer');
+        expect(result.agentName).toBe('frontend-developer');
+      });
+    });
+
+    describe('backend-developer pattern matching', () => {
+      beforeEach(() => {
+        mockListPrimaryAgents.mockResolvedValue([
+          'ai-ml-engineer',
+          'tooling-engineer',
+          'platform-engineer',
+          'data-engineer',
+          'mobile-developer',
+          'frontend-developer',
+          'backend-developer',
+          'agent-architect',
+          'devops-engineer',
+          'solution-architect',
+          'technical-planner',
+          'code-reviewer',
+        ]);
+      });
+
+      it('returns backend-developer for NestJS prompt', async () => {
+        const result = await resolver.resolve('ACT', 'NestJS 서비스 만들어줘');
+
+        expect(result.agentName).toBe('backend-developer');
+        expect(result.source).toBe('intent');
+        expect(result.confidence).toBeGreaterThanOrEqual(0.9);
+      });
+
+      it('returns backend-developer for Express prompt', async () => {
+        const result = await resolver.resolve('ACT', 'Express.js 서버 구현해');
+
+        expect(result.agentName).toBe('backend-developer');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns backend-developer for FastAPI prompt', async () => {
+        const result = await resolver.resolve(
+          'ACT',
+          'FastAPI 엔드포인트 추가해',
+        );
+
+        expect(result.agentName).toBe('backend-developer');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns backend-developer for Django prompt', async () => {
+        const result = await resolver.resolve('ACT', 'Django 뷰 만들어줘');
+
+        expect(result.agentName).toBe('backend-developer');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns backend-developer for REST API prompt', async () => {
+        const result = await resolver.resolve(
+          'ACT',
+          'REST API 설계 및 구현해줘',
+        );
+
+        expect(result.agentName).toBe('backend-developer');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns backend-developer for GraphQL prompt', async () => {
+        const result = await resolver.resolve('ACT', 'GraphQL 서버 구현해줘');
+
+        expect(result.agentName).toBe('backend-developer');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns backend-developer for Korean "백엔드 개발" prompt', async () => {
+        const result = await resolver.resolve('ACT', '백엔드 로직 구현해줘');
+
+        expect(result.agentName).toBe('backend-developer');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns backend-developer for middleware prompt', async () => {
+        const result = await resolver.resolve('ACT', '미들웨어 추가해줘');
+
+        expect(result.agentName).toBe('backend-developer');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns backend-developer for Spring Boot prompt', async () => {
+        const result = await resolver.resolve(
+          'ACT',
+          'Spring Boot 컨트롤러 작성해',
+        );
+
+        expect(result.agentName).toBe('backend-developer');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns backend-developer for WebSocket prompt', async () => {
+        const result = await resolver.resolve('ACT', '웹소켓 서버 구현해');
+
+        expect(result.agentName).toBe('backend-developer');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns backend-developer for gRPC prompt', async () => {
+        const result = await resolver.resolve('ACT', 'gRPC 서비스 만들어');
+
+        expect(result.agentName).toBe('backend-developer');
+        expect(result.source).toBe('intent');
+      });
+    });
+
+    describe('agent-architect pattern matching', () => {
+      beforeEach(() => {
+        mockListPrimaryAgents.mockResolvedValue([
+          'ai-ml-engineer',
+          'tooling-engineer',
+          'platform-engineer',
+          'data-engineer',
+          'mobile-developer',
+          'frontend-developer',
+          'backend-developer',
+          'agent-architect',
+          'devops-engineer',
+          'solution-architect',
+          'technical-planner',
+          'code-reviewer',
+        ]);
+      });
+
+      it('returns agent-architect for MCP server prompt', async () => {
+        const result = await resolver.resolve('ACT', 'MCP 서버 만들어줘');
+
+        expect(result.agentName).toBe('agent-architect');
+        expect(result.source).toBe('intent');
+        expect(result.confidence).toBeGreaterThanOrEqual(0.9);
+      });
+
+      it('returns agent-architect for MCP tool prompt', async () => {
+        const result = await resolver.resolve('ACT', 'MCP tool 구현해');
+
+        expect(result.agentName).toBe('agent-architect');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns agent-architect for Korean "에이전트 설계" prompt', async () => {
+        const result = await resolver.resolve(
+          'ACT',
+          '에이전트 아키텍처 설계해줘',
+        );
+
+        expect(result.agentName).toBe('agent-architect');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns agent-architect for agent development prompt', async () => {
+        const result = await resolver.resolve('ACT', 'agent framework 개발해');
+
+        expect(result.agentName).toBe('agent-architect');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns agent-architect for Claude agent prompt', async () => {
+        const result = await resolver.resolve(
+          'ACT',
+          'Claude Code 에이전트 만들어줘',
+        );
+
+        expect(result.agentName).toBe('agent-architect');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns agent-architect for workflow automation prompt', async () => {
+        const result = await resolver.resolve(
+          'ACT',
+          '워크플로우 자동화 시스템 구현해',
+        );
+
+        expect(result.agentName).toBe('agent-architect');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns agent-architect for LLM orchestration prompt', async () => {
+        const result = await resolver.resolve(
+          'ACT',
+          'LLM 오케스트레이션 구현해줘',
+        );
+
+        expect(result.agentName).toBe('agent-architect');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns agent-architect for tool calling prompt', async () => {
+        const result = await resolver.resolve('ACT', 'tool use 기능 추가해');
+
+        expect(result.agentName).toBe('agent-architect');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns agent-architect for multi-agent prompt', async () => {
+        const result = await resolver.resolve(
+          'ACT',
+          '멀티 에이전트 시스템 설계해',
+        );
+
+        expect(result.agentName).toBe('agent-architect');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns agent-architect for Model Context Protocol prompt', async () => {
+        const result = await resolver.resolve(
+          'ACT',
+          'Model Context Protocol 구현해줘',
+        );
+
+        expect(result.agentName).toBe('agent-architect');
+        expect(result.source).toBe('intent');
+      });
+
+      it('returns null when agent-architect not available', async () => {
+        mockListPrimaryAgents.mockResolvedValue([
+          'frontend-developer',
+          'backend-developer',
+        ]);
+
+        const result = await resolver.resolve('ACT', 'MCP 서버 만들어');
+
+        expect(result.agentName).not.toBe('agent-architect');
+        expect(result.agentName).toBe('frontend-developer');
+      });
+    });
+
     describe('explicit request parsing', () => {
       it('returns explicit agent when prompt contains "backend-developer로 작업해"', async () => {
         const result = await resolver.resolve(
@@ -1401,6 +1747,386 @@ describe('PrimaryAgentResolver', () => {
 
       expect(result.agentName).toBe('backend-developer');
       expect(result.source).toBe('explicit');
+    });
+  });
+
+  describe('conflict resolution for multi-pattern matching', () => {
+    beforeEach(() => {
+      // Provide all agents to allow conflict scenarios
+      mockListPrimaryAgents.mockResolvedValue([
+        'frontend-developer',
+        'backend-developer',
+        'tooling-engineer',
+        'platform-engineer',
+        'data-engineer',
+        'mobile-developer',
+        'ai-ml-engineer',
+        'agent-architect',
+        'devops-engineer',
+        'solution-architect',
+        'technical-planner',
+        'code-reviewer',
+      ]);
+    });
+
+    describe('priority order verification', () => {
+      it('tooling-engineer wins over platform-engineer for tsconfig.json', async () => {
+        // tsconfig.json matches tooling patterns (higher priority in order)
+        const result = await resolver.resolve('ACT', 'Fix tsconfig.json error');
+
+        expect(result.agentName).toBe('tooling-engineer');
+        expect(result.source).toBe('intent');
+      });
+
+      it('tooling-engineer wins over backend-developer for eslint config', async () => {
+        // eslint matches tooling (priority 3) over backend patterns
+        const result = await resolver.resolve(
+          'ACT',
+          'eslint 설정 파일 수정해줘',
+        );
+
+        expect(result.agentName).toBe('tooling-engineer');
+      });
+
+      it('platform-engineer wins over backend-developer for Kubernetes manifest', async () => {
+        // k8s manifest should go to platform-engineer (priority 4) not backend
+        const result = await resolver.resolve(
+          'ACT',
+          'kubernetes manifest 파일 작성해줘',
+        );
+
+        expect(result.agentName).toBe('platform-engineer');
+      });
+
+      it('data-engineer wins over backend-developer for schema.prisma', async () => {
+        // schema.prisma is data-specific, should go to data-engineer (priority 5)
+        const result = await resolver.resolve(
+          'ACT',
+          'schema.prisma 모델 추가해줘',
+        );
+
+        expect(result.agentName).toBe('data-engineer');
+      });
+
+      it('ai-ml-engineer wins over backend-developer for PyTorch code', async () => {
+        // PyTorch is AI/ML specific, should go to ai-ml-engineer (priority 7)
+        const result = await resolver.resolve(
+          'ACT',
+          'PyTorch 모델 학습 코드 작성해줘',
+        );
+
+        expect(result.agentName).toBe('ai-ml-engineer');
+      });
+
+      it('agent-architect wins over backend-developer for MCP server', async () => {
+        // MCP server is agent-specific, should go to agent-architect (priority 9)
+        const result = await resolver.resolve(
+          'ACT',
+          'MCP 서버 새로운 tool 추가해줘',
+        );
+
+        expect(result.agentName).toBe('agent-architect');
+      });
+    });
+
+    describe('overlapping keyword scenarios', () => {
+      it('prefers tooling for "vite.config" even with "server" keyword', async () => {
+        // "vite.config server settings" - tooling should win
+        const result = await resolver.resolve(
+          'ACT',
+          'vite.config server 설정 변경',
+        );
+
+        expect(result.agentName).toBe('tooling-engineer');
+      });
+
+      it('prefers platform for "terraform" even with "config" keyword', async () => {
+        // terraform config should go to platform-engineer
+        const result = await resolver.resolve(
+          'ACT',
+          'terraform config 파일 작성',
+        );
+
+        expect(result.agentName).toBe('platform-engineer');
+      });
+
+      it('prefers ai-ml for "LangChain API" over backend API patterns', async () => {
+        // LangChain API development is AI/ML, not generic backend
+        const result = await resolver.resolve(
+          'ACT',
+          'LangChain API 통합 구현해줘',
+        );
+
+        expect(result.agentName).toBe('ai-ml-engineer');
+      });
+
+      it('prefers backend for generic "REST API" without ML context', async () => {
+        // Generic REST API should go to backend-developer
+        const result = await resolver.resolve(
+          'ACT',
+          'REST API 엔드포인트 만들어줘',
+        );
+
+        expect(result.agentName).toBe('backend-developer');
+      });
+
+      it('prefers mobile for "React Native" over frontend for "React"', async () => {
+        // React Native should go to mobile-developer, not frontend
+        const result = await resolver.resolve(
+          'ACT',
+          'React Native 컴포넌트 만들어줘',
+        );
+
+        expect(result.agentName).toBe('mobile-developer');
+      });
+    });
+
+    describe('explicit request overrides all patterns', () => {
+      it('explicit "backend-developer로 작업해" overrides tooling patterns', async () => {
+        // Even if tsconfig.json matches tooling, explicit request wins
+        // Pattern requires "로 작업해" or "로 개발해" or "로 해"
+        const result = await resolver.resolve(
+          'ACT',
+          'backend-developer로 작업해 tsconfig.json 수정',
+        );
+
+        expect(result.agentName).toBe('backend-developer');
+        expect(result.source).toBe('explicit');
+      });
+
+      it('explicit "frontend-developer로 개발해" overrides AI/ML patterns', async () => {
+        // Pattern requires "로 작업해" or "로 개발해" or "로 해"
+        const result = await resolver.resolve(
+          'ACT',
+          'frontend-developer로 개발해 PyTorch 관련 UI',
+        );
+
+        expect(result.agentName).toBe('frontend-developer');
+        expect(result.source).toBe('explicit');
+      });
+
+      it('explicit "using agent-architect" overrides backend patterns', async () => {
+        const result = await resolver.resolve(
+          'ACT',
+          'using agent-architect create REST API workflow',
+        );
+
+        expect(result.agentName).toBe('agent-architect');
+        expect(result.source).toBe('explicit');
+      });
+    });
+
+    describe('no pattern match falls back to default', () => {
+      it('returns frontend-developer for unmatched generic prompt', async () => {
+        const result = await resolver.resolve(
+          'ACT',
+          'help me with this random task',
+        );
+
+        expect(result.agentName).toBe('frontend-developer');
+        expect(result.source).toBe('default');
+        expect(result.reason).toContain('no specific intent detected');
+      });
+
+      it('returns frontend-developer for Korean generic prompt', async () => {
+        const result = await resolver.resolve('ACT', '이 작업 도와줘');
+
+        expect(result.agentName).toBe('frontend-developer');
+        expect(result.source).toBe('default');
+      });
+    });
+  });
+
+  describe('ReDoS vulnerability prevention', () => {
+    /**
+     * These tests verify that all regex patterns in the resolver are safe from
+     * Regular Expression Denial of Service (ReDoS) attacks.
+     *
+     * ReDoS occurs when a regex pattern has catastrophic backtracking behavior
+     * with specially crafted input strings, causing exponential time complexity.
+     *
+     * Test strategy:
+     * 1. Verify all patterns complete within reasonable time bounds
+     * 2. Test with common ReDoS attack vectors (repeated characters, nested patterns)
+     * 3. Test with maximum length inputs near the MAX_PROMPT_LENGTH boundary
+     */
+
+    const TIMEOUT_MS = 100; // Patterns should complete well under 100ms
+
+    describe('intent pattern safety', () => {
+      // Common ReDoS attack patterns
+      const REDOS_ATTACK_VECTORS = [
+        'a'.repeat(1000), // Repeated single character
+        'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaX', // Polynomial backtracking trigger
+        'a]'.repeat(500), // Nested character class escape attempts
+        '(a+)+'.repeat(100), // Nested quantifier simulation
+        'aaaaaaaaaaaaaaa!'.repeat(50), // Alternation attack
+        '\\'.repeat(500), // Escape character flood
+        '.*'.repeat(200), // Wildcard flood
+        '\t\n\r '.repeat(500), // Whitespace flood
+        '가나다라마바사'.repeat(200), // Korean character flood
+        '中文字符'.repeat(300), // Chinese character flood
+      ];
+
+      it('DATA_INTENT_PATTERNS are safe from ReDoS attacks', () => {
+        for (const vector of REDOS_ATTACK_VECTORS) {
+          const start = performance.now();
+          // Access private static via any cast for testing
+          const patterns = (PrimaryAgentResolver as any).DATA_INTENT_PATTERNS;
+          for (const { pattern } of patterns) {
+            pattern.test(vector);
+          }
+          const elapsed = performance.now() - start;
+          expect(elapsed).toBeLessThan(TIMEOUT_MS);
+        }
+      });
+
+      it('MOBILE_INTENT_PATTERNS are safe from ReDoS attacks', () => {
+        for (const vector of REDOS_ATTACK_VECTORS) {
+          const start = performance.now();
+          const patterns = (PrimaryAgentResolver as any).MOBILE_INTENT_PATTERNS;
+          for (const { pattern } of patterns) {
+            pattern.test(vector);
+          }
+          const elapsed = performance.now() - start;
+          expect(elapsed).toBeLessThan(TIMEOUT_MS);
+        }
+      });
+
+      it('TOOLING_INTENT_PATTERNS are safe from ReDoS attacks', () => {
+        for (const vector of REDOS_ATTACK_VECTORS) {
+          const start = performance.now();
+          const patterns = (PrimaryAgentResolver as any)
+            .TOOLING_INTENT_PATTERNS;
+          for (const { pattern } of patterns) {
+            pattern.test(vector);
+          }
+          const elapsed = performance.now() - start;
+          expect(elapsed).toBeLessThan(TIMEOUT_MS);
+        }
+      });
+
+      it('PLATFORM_INTENT_PATTERNS are safe from ReDoS attacks', () => {
+        for (const vector of REDOS_ATTACK_VECTORS) {
+          const start = performance.now();
+          const patterns = (PrimaryAgentResolver as any)
+            .PLATFORM_INTENT_PATTERNS;
+          for (const { pattern } of patterns) {
+            pattern.test(vector);
+          }
+          const elapsed = performance.now() - start;
+          expect(elapsed).toBeLessThan(TIMEOUT_MS);
+        }
+      });
+
+      it('AI_ML_INTENT_PATTERNS are safe from ReDoS attacks', () => {
+        for (const vector of REDOS_ATTACK_VECTORS) {
+          const start = performance.now();
+          const patterns = (PrimaryAgentResolver as any).AI_ML_INTENT_PATTERNS;
+          for (const { pattern } of patterns) {
+            pattern.test(vector);
+          }
+          const elapsed = performance.now() - start;
+          expect(elapsed).toBeLessThan(TIMEOUT_MS);
+        }
+      });
+
+      it('BACKEND_INTENT_PATTERNS are safe from ReDoS attacks', () => {
+        for (const vector of REDOS_ATTACK_VECTORS) {
+          const start = performance.now();
+          const patterns = (PrimaryAgentResolver as any)
+            .BACKEND_INTENT_PATTERNS;
+          for (const { pattern } of patterns) {
+            pattern.test(vector);
+          }
+          const elapsed = performance.now() - start;
+          expect(elapsed).toBeLessThan(TIMEOUT_MS);
+        }
+      });
+
+      it('AGENT_INTENT_PATTERNS are safe from ReDoS attacks', () => {
+        for (const vector of REDOS_ATTACK_VECTORS) {
+          const start = performance.now();
+          const patterns = (PrimaryAgentResolver as any).AGENT_INTENT_PATTERNS;
+          for (const { pattern } of patterns) {
+            pattern.test(vector);
+          }
+          const elapsed = performance.now() - start;
+          expect(elapsed).toBeLessThan(TIMEOUT_MS);
+        }
+      });
+    });
+
+    describe('explicit pattern safety', () => {
+      it('EXPLICIT_PATTERNS are safe from ReDoS attacks', () => {
+        const vectors = [
+          '-'.repeat(1000) + 'developer', // Long prefix with hyphen
+          'a-b'.repeat(500), // Repeated agent-like patterns
+          'use '.repeat(200) + 'agent', // Repeated keywords
+          'frontend-developer'.repeat(100), // Repeated valid agent names
+        ];
+
+        for (const vector of vectors) {
+          const start = performance.now();
+          const patterns = (PrimaryAgentResolver as any).EXPLICIT_PATTERNS;
+          for (const pattern of patterns) {
+            pattern.test(vector);
+          }
+          const elapsed = performance.now() - start;
+          expect(elapsed).toBeLessThan(TIMEOUT_MS);
+        }
+      });
+    });
+
+    describe('context pattern safety', () => {
+      it('CONTEXT_PATTERNS are safe from ReDoS attacks', () => {
+        const vectors = [
+          '/'.repeat(1000) + '.ts', // Deep path simulation
+          'Dockerfile'.repeat(100), // Repeated file names
+          '.tsx'.repeat(500), // Repeated extensions
+          'kubernetes/'.repeat(200), // Repeated directory patterns
+        ];
+
+        for (const vector of vectors) {
+          const start = performance.now();
+          const patterns = (PrimaryAgentResolver as any).CONTEXT_PATTERNS;
+          for (const { pattern } of patterns) {
+            pattern.test(vector);
+          }
+          const elapsed = performance.now() - start;
+          expect(elapsed).toBeLessThan(TIMEOUT_MS);
+        }
+      });
+    });
+
+    describe('boundary value testing', () => {
+      it('handles prompts near MAX_PROMPT_LENGTH boundary efficiently', async () => {
+        // Test with 49KB prompt (just under 50KB MAX_PROMPT_LENGTH)
+        const largePrompt = 'a'.repeat(49000);
+
+        const start = performance.now();
+        const result = await resolver.resolve('ACT', largePrompt);
+        const elapsed = performance.now() - start;
+
+        // Should complete within reasonable time even for large inputs
+        expect(elapsed).toBeLessThan(500); // 500ms is generous for large input
+        expect(result.agentName).toBe('frontend-developer');
+        expect(result.source).toBe('default');
+      });
+
+      it('handles mixed content large prompts efficiently', async () => {
+        // Mixed Korean, English, and special characters
+        const mixedPrompt = ('안녕하세요 hello 你好 ' + 'a'.repeat(100)).repeat(
+          400,
+        );
+
+        const start = performance.now();
+        const result = await resolver.resolve('ACT', mixedPrompt);
+        const elapsed = performance.now() - start;
+
+        expect(elapsed).toBeLessThan(500);
+        expect(result).toBeDefined();
+      });
     });
   });
 });
