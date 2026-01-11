@@ -1,5 +1,12 @@
 export type RuleSource = 'custom' | 'default';
 
+export interface AgentCommunication {
+  language?: string;
+  style?: string;
+  approach?: string[];
+  [key: string]: unknown; // Allow additional fields for extensibility
+}
+
 export interface AgentProfile {
   name: string;
   description: string;
@@ -9,6 +16,7 @@ export interface AgentProfile {
     tech_stack_reference?: string;
     responsibilities?: string[];
   };
+  communication?: AgentCommunication;
   source?: RuleSource;
   [key: string]: unknown; // Allow additional fields (passthrough)
 }
