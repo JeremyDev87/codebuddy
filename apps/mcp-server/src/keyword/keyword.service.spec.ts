@@ -1702,4 +1702,62 @@ describe('KeywordService', () => {
       });
     });
   });
+
+  describe('context-aware specialist patterns', () => {
+    describe('integration-specialist pattern', () => {
+      it.each([
+        'Create external API integration',
+        'Implement webhook handler',
+        'Add circuit breaker pattern',
+        'third-party service integration',
+        'SDK wrapper for Stripe',
+        'retry pattern implementation',
+        'API integration with payment gateway',
+      ])('detects integration-specialist for English: %s', async prompt => {
+        const result = await service.parseMode(`PLAN ${prompt}`);
+        expect(result.parallelAgentsRecommendation?.specialists).toContain(
+          'integration-specialist',
+        );
+      });
+
+      it.each([
+        '외부 서비스 연동 구현',
+        '웹훅 핸들러 추가',
+        '서드파티 API 연동',
+        '연동 테스트 작성',
+      ])('detects integration-specialist for Korean: %s', async prompt => {
+        const result = await service.parseMode(`PLAN ${prompt}`);
+        expect(result.parallelAgentsRecommendation?.specialists).toContain(
+          'integration-specialist',
+        );
+      });
+
+      it('does not detect integration-specialist for unrelated prompts', async () => {
+        const result = await service.parseMode('PLAN create login form');
+        expect(result.parallelAgentsRecommendation?.specialists).not.toContain(
+          'integration-specialist',
+        );
+      });
+
+      it('includes both default and context-aware specialists', async () => {
+        const result = await service.parseMode(
+          'PLAN external API integration with security review',
+        );
+        // Default PLAN specialists
+        expect(result.parallelAgentsRecommendation?.specialists).toContain(
+          'architecture-specialist',
+        );
+        expect(result.parallelAgentsRecommendation?.specialists).toContain(
+          'test-strategy-specialist',
+        );
+        // Context-aware specialists
+        expect(result.parallelAgentsRecommendation?.specialists).toContain(
+          'integration-specialist',
+        );
+        expect(result.parallelAgentsRecommendation?.specialists).toContain(
+          'security-specialist',
+        );
+      });
+    });
+  });
 });

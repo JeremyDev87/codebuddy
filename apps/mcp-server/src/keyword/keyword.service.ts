@@ -125,6 +125,31 @@ export class KeywordService {
    * Static properties to avoid regex recompilation on each method call.
    * Follows Open/Closed principle - add new specialists by adding patterns.
    */
+
+  /**
+   * Context-aware specialist patterns for automatic agent recommendation.
+   *
+   * These patterns detect domain-specific keywords in user prompts and
+   * recommend relevant specialist agents for parallel execution.
+   *
+   * @remarks
+   * - Patterns support both Korean and English keywords for i18n
+   * - All patterns are case-insensitive (using /i flag)
+   * - Patterns are checked against the full prompt text
+   * - Multiple patterns can match, resulting in multiple specialists
+   *
+   * @example
+   * ```typescript
+   * // Prompt: "Implement OAuth authentication for API"
+   * // Matches: security-specialist (OAuth, auth)
+   *
+   * // Prompt: "외부 API 연동 보안 점검"
+   * // Matches: integration-specialist (외부, 연동), security-specialist (보안)
+   * ```
+   *
+   * @see {@link MODE_DEFAULT_SPECIALISTS} for mode-based default specialists
+   * @see packages/rules/.ai-rules/agents/ for specialist agent definitions
+   */
   private static readonly CONTEXT_SPECIALIST_PATTERNS: ReadonlyArray<{
     pattern: RegExp;
     specialist: string;
@@ -169,6 +194,12 @@ export class KeywordService {
       pattern:
         /UI|UX|디자인|design\s*system|사용자\s*경험|user\s*experience|인터랙션/i,
       specialist: 'ui-ux-designer',
+    },
+    // Integration keywords → integration-specialist
+    {
+      pattern:
+        /외부\s*서비스|external\s*(api|service)|webhook|웹훅|third-?party|circuit\s*breaker|retry\s*pattern|API\s*integration|서드파티|연동|SDK\s*wrapper/i,
+      specialist: 'integration-specialist',
     },
   ];
 
