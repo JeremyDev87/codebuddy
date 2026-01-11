@@ -17,14 +17,14 @@ describe('getPackageVersion', () => {
     it('should return version from package.json', () => {
       const mockPackageJson = JSON.stringify({
         name: 'codingbuddy',
-        version: '2.2.1',
+        version: '2.4.1',
       });
 
       vi.mocked(fs.readFileSync).mockReturnValue(mockPackageJson);
 
       const version = getPackageVersion();
 
-      expect(version).toBe('2.2.1');
+      expect(version).toBe('2.4.1');
     });
 
     it('should read from correct package.json path', () => {
