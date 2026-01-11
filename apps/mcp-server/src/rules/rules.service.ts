@@ -128,7 +128,27 @@ export class RulesService {
       // Validate against schema and check for prototype pollution
       const validated = parseAgentProfile(parsed);
       // Add source field for default agents
-      return { ...(validated as unknown as AgentProfile), source: 'default' };
+      const agent: AgentProfile = {
+        ...(validated as unknown as AgentProfile),
+        source: 'default',
+      };
+
+      // Override communication.language with config language if available
+      try {
+        const configLanguage = await this.configService.getLanguage();
+        if (configLanguage) {
+          agent.communication = {
+            ...agent.communication,
+            language: configLanguage,
+          };
+        }
+      } catch (error) {
+        this.logger.warn(
+          `Failed to get config language for agent '${name}', using agent default: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        );
+      }
+
+      return agent;
     } catch (error) {
       if (error instanceof AgentSchemaError) {
         this.logger.warn(`Invalid agent profile: ${name}`, error.message);

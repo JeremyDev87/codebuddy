@@ -28,10 +28,11 @@ const createMockCustomService = (): CustomService =>
   }) as unknown as CustomService;
 
 // Create a mock ConfigService
-const createMockConfigService = (): ConfigService =>
+const createMockConfigService = (language?: string): ConfigService =>
   ({
     getProjectRoot: vi.fn().mockReturnValue('/test/project'),
     getSettings: vi.fn().mockResolvedValue({}),
+    getLanguage: vi.fn().mockResolvedValue(language),
   }) as unknown as ConfigService;
 
 describe('RulesService', () => {
@@ -306,6 +307,141 @@ describe('RulesService', () => {
       await expect(service.getAgent('nonexistent')).rejects.toThrow(
         'Failed to read rule file',
       );
+    });
+
+    describe('language override from config', () => {
+      it('should override communication.language with config language', async () => {
+        const mockAgent = {
+          name: 'Frontend Developer',
+          description: 'Frontend development specialist',
+          role: {
+            title: 'Senior Frontend Developer',
+            expertise: ['React', 'TypeScript'],
+          },
+          communication: {
+            language: 'en',
+            style: 'Technical and precise',
+          },
+        };
+        vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(mockAgent));
+
+        // Create service with config language 'ko'
+        const serviceWithLang = new RulesService(
+          createMockCustomService(),
+          createMockConfigService('ko'),
+        );
+
+        const result = await serviceWithLang.getAgent('frontend-developer');
+
+        expect(result.communication?.language).toBe('ko');
+        // Other communication properties should be preserved
+        expect(result.communication?.style).toBe('Technical and precise');
+      });
+
+      it('should preserve agent language when config has no language', async () => {
+        const mockAgent = {
+          name: 'Frontend Developer',
+          description: 'Frontend development specialist',
+          role: {
+            title: 'Senior Frontend Developer',
+            expertise: ['React', 'TypeScript'],
+          },
+          communication: {
+            language: 'en',
+          },
+        };
+        vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(mockAgent));
+
+        // Create service with no config language
+        const serviceWithoutLang = new RulesService(
+          createMockCustomService(),
+          createMockConfigService(undefined),
+        );
+
+        const result = await serviceWithoutLang.getAgent('frontend-developer');
+
+        expect(result.communication?.language).toBe('en');
+      });
+
+      it('should create communication object with config language when agent has none', async () => {
+        const mockAgent = {
+          name: 'Frontend Developer',
+          description: 'Frontend development specialist',
+          role: {
+            title: 'Senior Frontend Developer',
+            expertise: ['React', 'TypeScript'],
+          },
+          // No communication field
+        };
+        vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(mockAgent));
+
+        // Create service with config language 'ja'
+        const serviceWithLang = new RulesService(
+          createMockCustomService(),
+          createMockConfigService('ja'),
+        );
+
+        const result = await serviceWithLang.getAgent('frontend-developer');
+
+        expect(result.communication?.language).toBe('ja');
+      });
+
+      it('should not modify agent when config language is undefined and agent has no communication', async () => {
+        const mockAgent = {
+          name: 'Frontend Developer',
+          description: 'Frontend development specialist',
+          role: {
+            title: 'Senior Frontend Developer',
+            expertise: ['React', 'TypeScript'],
+          },
+          // No communication field
+        };
+        vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(mockAgent));
+
+        // Create service without config language
+        const serviceWithoutLang = new RulesService(
+          createMockCustomService(),
+          createMockConfigService(undefined),
+        );
+
+        const result = await serviceWithoutLang.getAgent('frontend-developer');
+
+        expect(result.communication).toBeUndefined();
+      });
+
+      it('should return agent with original language when getLanguage() fails', async () => {
+        const mockAgent = {
+          name: 'Frontend Developer',
+          description: 'Frontend development specialist',
+          role: {
+            title: 'Senior Frontend Developer',
+            expertise: ['React', 'TypeScript'],
+          },
+          communication: {
+            language: 'en',
+            style: 'Technical and precise',
+          },
+        };
+        vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(mockAgent));
+
+        // Create service with failing getLanguage
+        const failingConfigService = {
+          getProjectRoot: vi.fn().mockReturnValue('/test/project'),
+          getSettings: vi.fn().mockResolvedValue({}),
+          getLanguage: vi.fn().mockRejectedValue(new Error('Config error')),
+        } as unknown as ConfigService;
+
+        const serviceWithError = new RulesService(
+          createMockCustomService(),
+          failingConfigService,
+        );
+
+        const result = await serviceWithError.getAgent('frontend-developer');
+
+        // Should still return agent with original language
+        expect(result.communication?.language).toBe('en');
+        expect(result.communication?.style).toBe('Technical and precise');
+      });
     });
   });
 
