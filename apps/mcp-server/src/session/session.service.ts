@@ -40,6 +40,134 @@ const MARKDOWN = {
 } as const;
 
 /**
+ * Localized labels for session documents.
+ * Used for serializing documents in user's preferred language.
+ */
+interface LocalizedLabels {
+  SESSION_HEADER: string;
+  CREATED_PREFIX: string;
+  UPDATED_PREFIX: string;
+  STATUS_PREFIX: string;
+  PRIMARY_AGENT_PREFIX: string;
+  RECOMMENDED_ACT_AGENT_PREFIX: string;
+  SPECIALISTS_PREFIX: string;
+  SECTION_SEPARATOR: string;
+  TASK_HEADER: string;
+  DECISIONS_HEADER: string;
+  NOTES_HEADER: string;
+}
+
+const LOCALIZED_LABELS: Record<string, LocalizedLabels> = {
+  en: MARKDOWN,
+  ko: {
+    SESSION_HEADER: '# 세션:',
+    CREATED_PREFIX: '**생성일**:',
+    UPDATED_PREFIX: '**수정일**:',
+    STATUS_PREFIX: '**상태**:',
+    PRIMARY_AGENT_PREFIX: '**주 에이전트**:',
+    RECOMMENDED_ACT_AGENT_PREFIX: '**권장 ACT 에이전트**:',
+    SPECIALISTS_PREFIX: '**전문가**:',
+    SECTION_SEPARATOR: '---',
+    TASK_HEADER: '### 작업',
+    DECISIONS_HEADER: '### 결정 사항',
+    NOTES_HEADER: '### 노트',
+  },
+  ja: {
+    SESSION_HEADER: '# セッション:',
+    CREATED_PREFIX: '**作成日**:',
+    UPDATED_PREFIX: '**更新日**:',
+    STATUS_PREFIX: '**状態**:',
+    PRIMARY_AGENT_PREFIX: '**主エージェント**:',
+    RECOMMENDED_ACT_AGENT_PREFIX: '**推奨ACTエージェント**:',
+    SPECIALISTS_PREFIX: '**専門家**:',
+    SECTION_SEPARATOR: '---',
+    TASK_HEADER: '### タスク',
+    DECISIONS_HEADER: '### 決定事項',
+    NOTES_HEADER: '### ノート',
+  },
+  zh: {
+    SESSION_HEADER: '# 会话:',
+    CREATED_PREFIX: '**创建时间**:',
+    UPDATED_PREFIX: '**更新时间**:',
+    STATUS_PREFIX: '**状态**:',
+    PRIMARY_AGENT_PREFIX: '**主代理**:',
+    RECOMMENDED_ACT_AGENT_PREFIX: '**推荐ACT代理**:',
+    SPECIALISTS_PREFIX: '**专家**:',
+    SECTION_SEPARATOR: '---',
+    TASK_HEADER: '### 任务',
+    DECISIONS_HEADER: '### 决策',
+    NOTES_HEADER: '### 备注',
+  },
+};
+
+/**
+ * Get localized labels for session documents.
+ * Falls back to English if language not supported.
+ */
+function getLocalizedLabels(language: string): LocalizedLabels {
+  return LOCALIZED_LABELS[language] || LOCALIZED_LABELS.en;
+}
+
+/**
+ * Pre-computed cache of all localized values per label key.
+ * Avoids repeated array allocation on every parsing call.
+ */
+const LOCALIZED_VALUES_CACHE: Record<keyof LocalizedLabels, string[]> = (() => {
+  const keys: (keyof LocalizedLabels)[] = [
+    'SESSION_HEADER',
+    'CREATED_PREFIX',
+    'UPDATED_PREFIX',
+    'STATUS_PREFIX',
+    'PRIMARY_AGENT_PREFIX',
+    'RECOMMENDED_ACT_AGENT_PREFIX',
+    'SPECIALISTS_PREFIX',
+    'SECTION_SEPARATOR',
+    'TASK_HEADER',
+    'DECISIONS_HEADER',
+    'NOTES_HEADER',
+  ];
+  const cache = {} as Record<keyof LocalizedLabels, string[]>;
+  for (const key of keys) {
+    cache[key] = Object.values(LOCALIZED_LABELS).map(labels => labels[key]);
+  }
+  return cache;
+})();
+
+/**
+ * All localized label values for a given label key.
+ * Uses pre-computed cache for performance.
+ */
+function getAllLocalizedValues(key: keyof LocalizedLabels): string[] {
+  return LOCALIZED_VALUES_CACHE[key];
+}
+
+/**
+ * Check if a line starts with any localized version of a label.
+ * Returns the matched prefix if found, null otherwise.
+ */
+function matchLocalizedPrefix(
+  line: string,
+  key: keyof LocalizedLabels,
+): string | null {
+  for (const prefix of getAllLocalizedValues(key)) {
+    if (line.startsWith(prefix)) {
+      return prefix;
+    }
+  }
+  return null;
+}
+
+/**
+ * Check if a line matches any localized version of an exact label.
+ */
+function matchLocalizedExact(
+  line: string,
+  key: keyof LocalizedLabels,
+): boolean {
+  return getAllLocalizedValues(key).includes(line);
+}
+
+/**
  * Session ID validation pattern.
  * Allows: lowercase letters, numbers, Korean characters, hyphens.
  * Prevents: path traversal, special characters, null bytes.
@@ -85,12 +213,6 @@ const VALID_SECTION_STATUSES = ['in_progress', 'completed', 'blocked'] as const;
 const SECTION_HEADER_PATTERN = /^## (PLAN|ACT|EVAL|AUTO) \((.+)\)$/;
 
 /**
- * Pattern to match recommended ACT agent line.
- */
-const RECOMMENDED_AGENT_PATTERN =
-  /\*\*Recommended ACT Agent\*\*: ([^\s(]+)(?:\s*\(confidence: ([\d.]+)\))?/;
-
-/**
  * Type guard for session metadata status.
  */
 function isValidSessionStatus(
@@ -123,28 +245,37 @@ interface ParseContext {
 
 /**
  * Parse metadata line (title, created, updated, status).
+ * Supports all localized label variants (en, ko, ja, zh).
  * @returns true if line was handled as metadata
  */
 function parseMetadataLine(line: string, ctx: ParseContext): boolean {
-  if (line.startsWith(MARKDOWN.SESSION_HEADER)) {
-    ctx.metadata.title = line.replace(MARKDOWN.SESSION_HEADER, '').trim();
+  const sessionHeader = matchLocalizedPrefix(line, 'SESSION_HEADER');
+  if (sessionHeader) {
+    ctx.metadata.title = line.replace(sessionHeader, '').trim();
     return true;
   }
-  if (line.startsWith(MARKDOWN.CREATED_PREFIX)) {
-    ctx.metadata.createdAt = line.replace(MARKDOWN.CREATED_PREFIX, '').trim();
+
+  const createdPrefix = matchLocalizedPrefix(line, 'CREATED_PREFIX');
+  if (createdPrefix) {
+    ctx.metadata.createdAt = line.replace(createdPrefix, '').trim();
     return true;
   }
-  if (line.startsWith(MARKDOWN.UPDATED_PREFIX)) {
-    ctx.metadata.updatedAt = line.replace(MARKDOWN.UPDATED_PREFIX, '').trim();
+
+  const updatedPrefix = matchLocalizedPrefix(line, 'UPDATED_PREFIX');
+  if (updatedPrefix) {
+    ctx.metadata.updatedAt = line.replace(updatedPrefix, '').trim();
     return true;
   }
-  if (line.startsWith(MARKDOWN.STATUS_PREFIX) && !ctx.currentSection) {
-    const statusValue = line.replace(MARKDOWN.STATUS_PREFIX, '').trim();
+
+  const statusPrefix = matchLocalizedPrefix(line, 'STATUS_PREFIX');
+  if (statusPrefix && !ctx.currentSection) {
+    const statusValue = line.replace(statusPrefix, '').trim();
     if (isValidSessionStatus(statusValue)) {
       ctx.metadata.status = statusValue;
     }
     return true;
   }
+
   return false;
 }
 
@@ -171,43 +302,57 @@ function parseSectionHeader(line: string, ctx: ParseContext): boolean {
 
 /**
  * Parse section field line (primary agent, recommended agent, specialists, status).
+ * Supports all localized label variants (en, ko, ja, zh).
  * @returns true if line was handled as a section field
  */
 function parseSectionField(
   line: string,
   section: Partial<SessionSection>,
 ): boolean {
-  if (line.startsWith(MARKDOWN.PRIMARY_AGENT_PREFIX)) {
-    section.primaryAgent = line
-      .replace(MARKDOWN.PRIMARY_AGENT_PREFIX, '')
-      .trim();
+  const primaryAgentPrefix = matchLocalizedPrefix(line, 'PRIMARY_AGENT_PREFIX');
+  if (primaryAgentPrefix) {
+    section.primaryAgent = line.replace(primaryAgentPrefix, '').trim();
     return true;
   }
-  if (line.startsWith(MARKDOWN.RECOMMENDED_ACT_AGENT_PREFIX)) {
-    const match = line.match(RECOMMENDED_AGENT_PATTERN);
-    if (match) {
-      section.recommendedActAgent = match[1];
-      if (match[2]) {
-        section.recommendedActAgentConfidence = parseFloat(match[2]);
+
+  const recommendedAgentPrefix = matchLocalizedPrefix(
+    line,
+    'RECOMMENDED_ACT_AGENT_PREFIX',
+  );
+  if (recommendedAgentPrefix) {
+    // Extract agent name and optional confidence from the rest of the line
+    const rest = line.replace(recommendedAgentPrefix, '').trim();
+    const confidenceMatch = rest.match(
+      /^([^\s(]+)(?:\s*\(confidence: ([\d.]+)\))?/,
+    );
+    if (confidenceMatch) {
+      section.recommendedActAgent = confidenceMatch[1];
+      if (confidenceMatch[2]) {
+        section.recommendedActAgentConfidence = parseFloat(confidenceMatch[2]);
       }
     }
     return true;
   }
-  if (line.startsWith(MARKDOWN.SPECIALISTS_PREFIX)) {
+
+  const specialistsPrefix = matchLocalizedPrefix(line, 'SPECIALISTS_PREFIX');
+  if (specialistsPrefix) {
     section.specialists = line
-      .replace(MARKDOWN.SPECIALISTS_PREFIX, '')
+      .replace(specialistsPrefix, '')
       .trim()
       .split(',')
       .map(s => s.trim());
     return true;
   }
-  if (line.startsWith(MARKDOWN.STATUS_PREFIX)) {
-    const statusValue = line.replace(MARKDOWN.STATUS_PREFIX, '').trim();
+
+  const statusPrefix = matchLocalizedPrefix(line, 'STATUS_PREFIX');
+  if (statusPrefix) {
+    const statusValue = line.replace(statusPrefix, '').trim();
     if (isValidSectionStatus(statusValue)) {
       section.status = statusValue;
     }
     return true;
   }
+
   return false;
 }
 
@@ -228,20 +373,21 @@ interface SessionCacheEntry {
 
 /**
  * Parse section list header (### Task, ### Decisions, ### Notes).
+ * Supports all localized label variants (en, ko, ja, zh).
  * @returns parsed result with matched flag and list type
  */
 function parseListHeader(
   line: string,
   section: Partial<SessionSection>,
 ): ListHeaderResult {
-  if (line === MARKDOWN.TASK_HEADER) {
+  if (matchLocalizedExact(line, 'TASK_HEADER')) {
     return { matched: true, listType: 'task' };
   }
-  if (line === MARKDOWN.DECISIONS_HEADER) {
+  if (matchLocalizedExact(line, 'DECISIONS_HEADER')) {
     section.decisions = [];
     return { matched: true, listType: 'decisions' };
   }
-  if (line === MARKDOWN.NOTES_HEADER) {
+  if (matchLocalizedExact(line, 'NOTES_HEADER')) {
     section.notes = [];
     return { matched: true, listType: 'notes' };
   }
@@ -500,7 +646,9 @@ export class SessionService {
         sections: [],
       };
 
-      const content = this.serializeDocument(document);
+      // Get language for localized labels
+      const language = (await this.configService.getLanguage()) || 'en';
+      const content = this.serializeDocument(document, language);
       await fs.writeFile(filePath, content, 'utf-8');
 
       // Invalidate active session cache (new session may become active)
@@ -645,21 +793,22 @@ export class SessionService {
         s => s.mode === options.section.mode,
       );
 
-      // Spread options.section first, then override timestamp if not provided
-      const section: SessionSection = {
+      // Build section with timestamp
+      const newSection: SessionSection = {
         ...options.section,
         timestamp: options.section.timestamp || timestamp,
       };
 
       if (existingIndex >= 0) {
-        // Update existing section
-        session.sections[existingIndex] = {
-          ...session.sections[existingIndex],
-          ...section,
-        };
+        // Update existing section with accumulation logic
+        const existing = session.sections[existingIndex];
+        session.sections[existingIndex] = this.mergeSection(
+          existing,
+          newSection,
+        );
       } else {
         // Add new section
-        session.sections.push(section);
+        session.sections.push(newSection);
       }
 
       // Update metadata
@@ -674,7 +823,9 @@ export class SessionService {
         };
       }
 
-      const content = this.serializeDocument(session);
+      // Get language for localized labels
+      const language = (await this.configService.getLanguage()) || 'en';
+      const content = this.serializeDocument(session, language);
       await fs.writeFile(filePath, content, 'utf-8');
 
       // Invalidate only the updated session from cache
@@ -698,6 +849,54 @@ export class SessionService {
         error: message,
       };
     }
+  }
+
+  /**
+   * Merge two sections with accumulation logic.
+   * - decisions: Append new decisions to existing (deduplicated)
+   * - notes: Append new notes to existing (deduplicated)
+   * - Other fields: New values override existing
+   */
+  private mergeSection(
+    existing: SessionSection,
+    newSection: SessionSection,
+  ): SessionSection {
+    // Merge decisions (append, deduplicate)
+    const mergedDecisions = this.mergeArrays(
+      existing.decisions,
+      newSection.decisions,
+    );
+
+    // Merge notes (append, deduplicate)
+    const mergedNotes = this.mergeArrays(existing.notes, newSection.notes);
+
+    return {
+      ...existing,
+      ...newSection,
+      // Use merged arrays instead of new ones
+      decisions: mergedDecisions.length > 0 ? mergedDecisions : undefined,
+      notes: mergedNotes.length > 0 ? mergedNotes : undefined,
+    };
+  }
+
+  /**
+   * Merge two arrays, deduplicating entries.
+   */
+  private mergeArrays(
+    existing: string[] | undefined,
+    newItems: string[] | undefined,
+  ): string[] {
+    const existingSet = new Set(existing || []);
+    const newArray = [...existingSet];
+
+    for (const item of newItems || []) {
+      if (!existingSet.has(item)) {
+        newArray.push(item);
+        existingSet.add(item);
+      }
+    }
+
+    return newArray;
   }
 
   /**
@@ -726,18 +925,20 @@ export class SessionService {
 
   /**
    * Serialize a session document to markdown.
+   * Uses localized labels based on language setting.
    */
-  private serializeDocument(doc: SessionDocument): string {
+  private serializeDocument(doc: SessionDocument, language: string): string {
+    const labels = getLocalizedLabels(language);
     const lines: string[] = [];
 
     // Header
-    lines.push(`# Session: ${doc.metadata.title}`);
+    lines.push(`${labels.SESSION_HEADER} ${doc.metadata.title}`);
     lines.push('');
-    lines.push(`**Created**: ${doc.metadata.createdAt}`);
-    lines.push(`**Updated**: ${doc.metadata.updatedAt}`);
-    lines.push(`**Status**: ${doc.metadata.status}`);
+    lines.push(`${labels.CREATED_PREFIX} ${doc.metadata.createdAt}`);
+    lines.push(`${labels.UPDATED_PREFIX} ${doc.metadata.updatedAt}`);
+    lines.push(`${labels.STATUS_PREFIX} ${doc.metadata.status}`);
     lines.push('');
-    lines.push('---');
+    lines.push(labels.SECTION_SEPARATOR);
 
     // Sections
     for (const section of doc.sections) {
@@ -746,7 +947,7 @@ export class SessionService {
       lines.push('');
 
       if (section.primaryAgent) {
-        lines.push(`**Primary Agent**: ${section.primaryAgent}`);
+        lines.push(`${labels.PRIMARY_AGENT_PREFIX} ${section.primaryAgent}`);
       }
 
       if (section.recommendedActAgent) {
@@ -754,28 +955,30 @@ export class SessionService {
           ? ` (confidence: ${section.recommendedActAgentConfidence})`
           : '';
         lines.push(
-          `**Recommended ACT Agent**: ${section.recommendedActAgent}${confidence}`,
+          `${labels.RECOMMENDED_ACT_AGENT_PREFIX} ${section.recommendedActAgent}${confidence}`,
         );
       }
 
       if (section.specialists && section.specialists.length > 0) {
-        lines.push(`**Specialists**: ${section.specialists.join(', ')}`);
+        lines.push(
+          `${labels.SPECIALISTS_PREFIX} ${section.specialists.join(', ')}`,
+        );
       }
 
       if (section.status) {
-        lines.push(`**Status**: ${section.status}`);
+        lines.push(`${labels.STATUS_PREFIX} ${section.status}`);
       }
 
       lines.push('');
 
       if (section.task) {
-        lines.push('### Task');
+        lines.push(labels.TASK_HEADER);
         lines.push(section.task);
         lines.push('');
       }
 
       if (section.decisions && section.decisions.length > 0) {
-        lines.push('### Decisions');
+        lines.push(labels.DECISIONS_HEADER);
         for (const decision of section.decisions) {
           lines.push(`- ${decision}`);
         }
@@ -783,14 +986,14 @@ export class SessionService {
       }
 
       if (section.notes && section.notes.length > 0) {
-        lines.push('### Notes');
+        lines.push(labels.NOTES_HEADER);
         for (const note of section.notes) {
           lines.push(`- ${note}`);
         }
         lines.push('');
       }
 
-      lines.push('---');
+      lines.push(labels.SECTION_SEPARATOR);
     }
 
     return lines.join('\n');

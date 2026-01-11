@@ -80,3 +80,25 @@ export interface SessionOperationResult {
   message?: string;
   error?: string;
 }
+
+/**
+ * Session context included in parse_mode response.
+ * Provides previous mode context automatically to AI.
+ */
+export interface SessionContext {
+  /** Session ID */
+  sessionId: string;
+  /** Session title */
+  title: string;
+  /** All previous sections (for context) */
+  previousSections: SessionSection[];
+  /** Recommended ACT agent from PLAN (if available) */
+  recommendedActAgent?: {
+    agent: string;
+    confidence: number;
+  };
+  /** Summary of key decisions from all modes */
+  allDecisions: string[];
+  /** Summary of all notes from all modes */
+  allNotes: string[];
+}
