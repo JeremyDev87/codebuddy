@@ -39,6 +39,7 @@ AI Agent definitions for specialized development roles.
 | **SEO Optimization** | SEO Specialist | `seo-specialist.json` |
 | **UI/UX Design** | UI/UX Designer | `ui-ux-designer.json` |
 | **Internationalization** | i18n Specialist | `i18n-specialist.json` |
+| **External Service Integration** | Integration Specialist | `integration-specialist.json` |
 | **Documentation** | Documentation Specialist | `documentation-specialist.json` |
 | **Code Quality** | Code Quality Specialist | `code-quality-specialist.json` |
 | **Docker/Monitoring** | DevOps Engineer | `devops-engineer.json` |
@@ -66,6 +67,7 @@ AI Agent definitions for specialized development roles.
 | SEO Specialist | Metadata, JSON-LD, Open Graph |
 | UI/UX Designer | Visual hierarchy, UX laws, interaction patterns |
 | i18n Specialist | Internationalization, translation key structure, RTL support |
+| Integration Specialist | API integration patterns, webhooks, OAuth, circuit breakers, failure isolation |
 | Documentation Specialist | Code comments, JSDoc, documentation quality assessment |
 | Code Quality Specialist | SOLID, DRY, complexity analysis |
 | DevOps Engineer | Docker, monitoring, deployment optimization |
@@ -304,6 +306,7 @@ Unified specialist agents organized by domain:
 - **Architecture** (`architecture-specialist.json`)
 - **UI/UX Design** (`ui-ux-designer.json`)
 - **Documentation** (`documentation-specialist.json`)
+- **Integration** (`integration-specialist.json`)
 - **Performance** (`performance-specialist.json`)
 - **Security** (`security-specialist.json`)
 - **SEO** (`seo-specialist.json`)
@@ -709,6 +712,64 @@ Unified specialist agents organized by domain:
 
 ---
 
+### Integration Specialist (`integration-specialist.json`)
+
+> **Note**: This is a **Domain Specialist** for external service integrations, covering API patterns, webhooks, OAuth, failure isolation, and integration testing strategies.
+
+**Supported Integration Types:**
+
+- Payment Gateways (Stripe, PayPal, Braintree)
+- Authentication Providers (Auth0, Okta, Firebase Auth)
+- Email Services (SendGrid, SES, Mailgun)
+- Analytics (Segment, Mixpanel, Amplitude)
+- Cloud Services (AWS, GCP, Azure APIs)
+- Any REST/GraphQL/gRPC external service
+
+**Expertise:**
+
+- API Integration Patterns (retries, timeouts, circuit breakers)
+- Webhook Security (HMAC, JWT signature verification)
+- OAuth 2.0 / OIDC implementation variations across providers
+- Failure Isolation and Graceful Degradation
+- Idempotency and Event Ordering
+- External Service Monitoring and SLA Tracking
+- SDK Wrapper Design and Abstraction
+- Integration Testing Strategies
+
+**Development Philosophy:**
+
+- **Resilience-First**: Every external call must have retry, timeout, and circuit breaker
+- **Security-First**: All webhooks verified, all secrets managed properly
+- **Fail-Safe**: External service failures should degrade gracefully, not crash
+- **Observable**: Every external service call tracked with metrics and logs
+- **Testable**: Mock/stub strategies for local development and CI
+
+**Responsibilities:**
+
+- Plan and review external API integration implementations
+- Design webhook security and idempotency patterns
+- Plan and verify OAuth flow implementations across providers
+- Design failure isolation and circuit breaker patterns
+- Plan external service monitoring and alerting strategies
+- Review SDK wrapper designs for external services
+- Plan integration testing and mock service strategies
+
+**Workflow:**
+
+- **Planning**: API client architecture, resilience patterns, security design
+- **Implementation**: SDK wrapper verification, timeout/retry validation, security checks
+- **Evaluation**: Integration quality assessment, failure isolation audit, monitoring review
+
+**Activation Patterns:**
+
+- Files: API clients, webhook handlers, OAuth implementations, external service integrations
+- Korean: "외부 서비스 연동", "웹훅", "API 통합", "서킷 브레이커"
+- English: "external API", "webhook", "integration", "circuit breaker", "third-party service"
+
+**Auto-Activation:** Supported via MCP server. Integration Specialist is automatically selected when prompts contain external service integration keywords or when working with API client/webhook files.
+
+---
+
 ### Code Reviewer (`code-reviewer.json`)
 
 **Expertise:**
@@ -1066,6 +1127,7 @@ All agent files are located directly in `.ai-rules/agents/` directory without su
 ├── architecture-specialist.json     # Domain specialist
 ├── ui-ux-designer.json              # Domain specialist
 ├── documentation-specialist.json    # Domain specialist
+├── integration-specialist.json      # Domain specialist
 ├── performance-specialist.json      # Domain specialist
 ├── security-specialist.json         # Domain specialist
 ├── seo-specialist.json              # Domain specialist
@@ -1091,6 +1153,55 @@ Each domain has a **unified specialist** agent that supports multiple modes:
 
 - Reference: `.ai-rules/agents/{domain}-specialist.json modes.{planning|implementation|evaluation}`
 - Example: `.ai-rules/agents/architecture-specialist.json modes.planning`
+
+### Delegation Rules Pattern
+
+Some specialist agents define **delegation rules** to clarify when work should be handed off to another specialist. This ensures proper separation of concerns and expertise matching.
+
+**Structure:**
+
+```json
+{
+  "delegation_rules": {
+    "to_{specialist}": [
+      "When condition X requires specialist expertise",
+      "When condition Y is beyond current agent scope"
+    ],
+    "from_{specialist}": [
+      "When specialist identifies work for this agent",
+      "When specialist review triggers this agent's domain"
+    ]
+  }
+}
+```
+
+**Example (Integration Specialist ↔ Security Specialist):**
+
+| Direction | Trigger Conditions |
+|-----------|-------------------|
+| Integration → Security | OAuth vulnerability assessment, auth architecture audit, secrets management review |
+| Security → Integration | External API concerns, OAuth flow verification, webhook signature implementation |
+
+**When to Use:**
+
+- When two specialists have overlapping concerns
+- When one specialist's work commonly triggers another's review
+- To clarify handoff boundaries and prevent scope confusion
+
+**Currently Implemented:**
+
+- `integration-specialist.json` ↔ `security-specialist.json` (bidirectional delegation rules)
+
+**Potential Future Delegation Patterns:**
+
+| Specialists | Use Case |
+|-------------|----------|
+| Performance ↔ Frontend | Bundle optimization, lazy loading, rendering performance |
+| Accessibility ↔ UI/UX | ARIA implementation, color contrast, interaction design |
+| Security ↔ DevOps | Secrets management, CI/CD security, infrastructure hardening |
+| Architecture ↔ Test Strategy | Testability design, mock boundaries, integration testing |
+
+> **Note**: Add delegation_rules when specialists have clear handoff scenarios. Avoid unnecessary rules for specialists with minimal overlap.
 
 ### Agent File Structure
 

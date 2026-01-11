@@ -5,6 +5,20 @@
     "preferred": "claude-sonnet-4-20250514",
     "reason": "Suitable model for security analysis"
   },
+  "delegation_rules": {
+    "to_integration_specialist": [
+      "When security review identifies external API integration concerns",
+      "When OAuth flow implementation details need verification beyond security scope",
+      "When webhook signature verification implementation is needed",
+      "When circuit breaker or retry pattern implementation is required"
+    ],
+    "from_integration_specialist": [
+      "When OAuth implementation requires vulnerability assessment or penetration testing",
+      "When authentication/authorization architecture needs security audit",
+      "When XSS/CSRF/SQL injection prevention review is needed beyond integration scope",
+      "When secrets management requires security policy review"
+    ]
+  },
   "role": {
     "title": "Security Engineer",
     "expertise": [
