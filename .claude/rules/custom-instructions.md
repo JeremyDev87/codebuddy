@@ -112,49 +112,59 @@ Examples:
 
 </PARALLEL_EXECUTION_MANDATORY_RULE>
 
-## 🔴 MANDATORY: Session Document Management
+## 🔴 MANDATORY: Context Document Management
 
-<SESSION_DOCUMENT_RULE>
+<CONTEXT_DOCUMENT_RULE>
 
-**Session documents persist PLAN → ACT context across context compaction.**
+**Fixed file `docs/codingbuddy/context.md` persists PLAN → ACT → EVAL context across context compaction.**
 
-### When to Create Sessions
+### How It Works
 
-**PLAN mode entry** requires session creation for:
-- Complex multi-step tasks
-- Features requiring ACT agent recommendations
-- Tasks spanning multiple conversation turns
+`parse_mode` **automatically** manages the context document:
+
+- **PLAN/AUTO mode**: Resets (deletes and recreates) the context document
+- **ACT/EVAL mode**: Appends a new section to the existing document
+
+### Key Fields in parse_mode Response
+
+| Field | Description |
+|-------|-------------|
+| `contextFilePath` | Always `docs/codingbuddy/context.md` |
+| `contextExists` | Whether document was found/created |
+| `contextDocument` | Full parsed document with all sections |
+| `mandatoryAction` | Required action before completing the mode |
 
 ### Required Workflow
 
-**In PLAN mode:**
-1. `create_session` - Create session document with task title
-2. `update_session` - Record PLAN details, recommendedActAgent, decisions
+**In ALL modes:**
+1. `parse_mode` automatically reads/creates context
+2. Review `contextDocument` for previous decisions and notes
+3. Before completing: `update_context` to persist current work
 
-**In ACT mode:**
-1. `get_active_session` - Retrieve PLAN context and recommended agent
-2. `update_session` - Record ACT progress and notes
-
-**In EVAL mode:**
-1. `get_active_session` - Retrieve full context
-2. `update_session` - Record evaluation findings
+**update_context parameters:**
+- `decisions[]` - Key decisions made
+- `notes[]` - Implementation notes
+- `progress[]` - (ACT) Progress items
+- `findings[]` - (EVAL) Review findings
+- `recommendations[]` - (EVAL) Improvement recommendations
+- `status` - `in_progress` | `completed` | `blocked`
 
 ### Why This Matters
 
-Without session documents:
-- Agent recommendations from PLAN are **lost** after context compaction
-- ACT mode cannot retrieve which agent was recommended
-- Cross-mode context sharing **fails**
+- **Single fixed path** - No dynamic filenames, always `docs/codingbuddy/context.md`
+- **Automatic integration** - `parse_mode` handles reset/append logic
+- **Survives compaction** - Context persists even when conversation is summarized
+- **Cross-mode continuity** - ACT mode sees PLAN decisions, EVAL sees ACT progress
 
 ### Red Flags (STOP if you think these):
 
 | Thought | Reality |
 |---------|---------|
-| "I'll remember the agent" | NO. Context compaction erases memory. |
-| "This task is simple" | Simple tasks grow. Create session anyway. |
-| "I'll create it later" | NO. Create at PLAN start, not after. |
+| "I'll remember the context" | NO. Context compaction erases memory. |
+| "parse_mode handles everything" | NO. You must call `update_context` before completing. |
+| "The file doesn't exist" | `parse_mode` creates it automatically in PLAN mode. |
 
-</SESSION_DOCUMENT_RULE>
+</CONTEXT_DOCUMENT_RULE>
 
 ## Claude Code Specific
 

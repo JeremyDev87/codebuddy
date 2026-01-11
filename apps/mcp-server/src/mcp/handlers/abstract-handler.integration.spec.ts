@@ -18,6 +18,7 @@ import { LanguageService } from '../../shared/language.service';
 import { ModelResolverService } from '../../model/model-resolver.service';
 import { SessionService } from '../../session/session.service';
 import { StateService } from '../../state/state.service';
+import { ContextDocumentService } from '../../context/context-document.service';
 
 /**
  * Integration tests verifying all concrete handlers inherit
@@ -48,6 +49,7 @@ describe('Handler Security Integration', () => {
   let mockModelResolverService: ModelResolverService;
   let mockSessionService: SessionService;
   let mockStateService: StateService;
+  let mockContextDocService: ContextDocumentService;
 
   beforeEach(() => {
     // Create mock services with minimal implementation
@@ -111,6 +113,22 @@ describe('Handler Security Integration', () => {
       updateLastSession: vi.fn().mockResolvedValue({ success: true }),
     } as unknown as StateService;
 
+    mockContextDocService = {
+      resetContext: vi.fn().mockResolvedValue({
+        success: true,
+        document: { metadata: { title: 'test' }, sections: [] },
+      }),
+      appendContext: vi.fn().mockResolvedValue({
+        success: true,
+        document: { metadata: { title: 'test' }, sections: [] },
+      }),
+      readContext: vi.fn().mockResolvedValue({
+        exists: true,
+        document: { metadata: { title: 'test' }, sections: [] },
+      }),
+      contextExists: vi.fn().mockResolvedValue(true),
+    } as unknown as ContextDocumentService;
+
     // Initialize handlers
     agentHandler = new AgentHandler(mockAgentService);
     checklistHandler = new ChecklistContextHandler(
@@ -129,6 +147,7 @@ describe('Handler Security Integration', () => {
       mockModelResolverService,
       mockSessionService,
       mockStateService,
+      mockContextDocService,
     );
     rulesHandler = new RulesHandler(mockRulesService);
     skillHandler = new SkillHandler(mockSkillRecommendationService);

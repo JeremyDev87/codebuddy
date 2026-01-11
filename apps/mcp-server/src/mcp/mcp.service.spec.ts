@@ -19,6 +19,7 @@ import { AgentService } from '../agent/agent.service';
 import type { AgentSystemPrompt, ParallelAgentSet } from '../agent/agent.types';
 import { ChecklistService } from '../checklist/checklist.service';
 import { ContextService } from '../context/context.service';
+import { ContextDocumentService } from '../context/context-document.service';
 import { ModelResolverService } from '../model';
 import { SessionService } from '../session/session.service';
 import { StateService } from '../state/state.service';
@@ -388,6 +389,49 @@ const createMockStateService = (): Partial<StateService> => ({
   getLastSessionId: vi.fn().mockResolvedValue(null),
 });
 
+const createMockContextDocService = (): Partial<ContextDocumentService> => ({
+  resetContext: vi.fn().mockResolvedValue({
+    success: true,
+    document: {
+      metadata: {
+        title: 'test-task',
+        createdAt: '2024-01-01T00:00:00.000Z',
+        lastUpdatedAt: '2024-01-01T00:00:00.000Z',
+        currentMode: 'PLAN',
+        status: 'active',
+      },
+      sections: [],
+    },
+  }),
+  appendContext: vi.fn().mockResolvedValue({
+    success: true,
+    document: {
+      metadata: {
+        title: 'test-task',
+        createdAt: '2024-01-01T00:00:00.000Z',
+        lastUpdatedAt: '2024-01-01T00:00:00.000Z',
+        currentMode: 'ACT',
+        status: 'active',
+      },
+      sections: [],
+    },
+  }),
+  readContext: vi.fn().mockResolvedValue({
+    exists: true,
+    document: {
+      metadata: {
+        title: 'test-task',
+        createdAt: '2024-01-01T00:00:00.000Z',
+        lastUpdatedAt: '2024-01-01T00:00:00.000Z',
+        currentMode: 'PLAN',
+        status: 'active',
+      },
+      sections: [],
+    },
+  }),
+  contextExists: vi.fn().mockResolvedValue(true),
+});
+
 // Import after mocks
 import { McpService } from './mcp.service';
 
@@ -403,6 +447,7 @@ interface CreateMcpServiceOptions {
   agentService?: Partial<AgentService>;
   checklistService?: Partial<ChecklistService>;
   contextService?: Partial<ContextService>;
+  contextDocService?: Partial<ContextDocumentService>;
   modelResolverService?: Partial<ModelResolverService>;
   sessionService?: Partial<SessionService>;
   stateService?: Partial<StateService>;
@@ -432,6 +477,7 @@ function createMcpServiceWithHandlers(
       services.modelResolverService as ModelResolverService,
       services.sessionService as SessionService,
       services.stateService as StateService,
+      services.contextDocService as ContextDocumentService,
     ),
     new ChecklistContextHandler(
       services.checklistService as ChecklistService,
@@ -457,6 +503,7 @@ describe('McpService', () => {
   let mockAgentService: Partial<AgentService>;
   let mockChecklistService: Partial<ChecklistService>;
   let mockContextService: Partial<ContextService>;
+  let mockContextDocService: Partial<ContextDocumentService>;
   let mockModelResolverService: Partial<ModelResolverService>;
   let mockSessionService: Partial<SessionService>;
   let mockStateService: Partial<StateService>;
@@ -487,6 +534,7 @@ describe('McpService', () => {
     mockAgentService = createMockAgentService();
     mockChecklistService = createMockChecklistService();
     mockContextService = createMockContextService();
+    mockContextDocService = createMockContextDocService();
     mockModelResolverService = createMockModelResolverService();
     mockSessionService = createMockSessionService();
     mockStateService = createMockStateService();
@@ -503,6 +551,7 @@ describe('McpService', () => {
       agentService: mockAgentService,
       checklistService: mockChecklistService,
       contextService: mockContextService,
+      contextDocService: mockContextDocService,
       modelResolverService: mockModelResolverService,
       sessionService: mockSessionService,
       stateService: mockStateService,

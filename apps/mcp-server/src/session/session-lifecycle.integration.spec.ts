@@ -6,6 +6,7 @@ import { ConfigService } from '../config/config.service';
 import { LanguageService } from '../shared/language.service';
 import { ModelResolverService } from '../model/model-resolver.service';
 import { StateService } from '../state/state.service';
+import { ContextDocumentService } from '../context/context-document.service';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as os from 'os';
@@ -28,6 +29,7 @@ describe('Session Lifecycle Integration', () => {
   let mockStateService: StateService;
   let mockLanguageService: LanguageService;
   let mockModelResolverService: ModelResolverService;
+  let mockContextDocService: ContextDocumentService;
 
   let tempDir: string;
   let sessionsDir: string;
@@ -72,6 +74,50 @@ describe('Session Lifecycle Integration', () => {
       updateLastSession: vi.fn().mockResolvedValue({ success: true }),
     } as unknown as StateService;
 
+    // Mock ContextDocumentService
+    mockContextDocService = {
+      resetContext: vi.fn().mockResolvedValue({
+        success: true,
+        document: {
+          metadata: {
+            title: 'test-task',
+            createdAt: new Date().toISOString(),
+            lastUpdatedAt: new Date().toISOString(),
+            currentMode: 'PLAN',
+            status: 'active',
+          },
+          sections: [],
+        },
+      }),
+      appendContext: vi.fn().mockResolvedValue({
+        success: true,
+        document: {
+          metadata: {
+            title: 'test-task',
+            createdAt: new Date().toISOString(),
+            lastUpdatedAt: new Date().toISOString(),
+            currentMode: 'ACT',
+            status: 'active',
+          },
+          sections: [],
+        },
+      }),
+      readContext: vi.fn().mockResolvedValue({
+        exists: true,
+        document: {
+          metadata: {
+            title: 'test-task',
+            createdAt: new Date().toISOString(),
+            lastUpdatedAt: new Date().toISOString(),
+            currentMode: 'PLAN',
+            status: 'active',
+          },
+          sections: [],
+        },
+      }),
+      contextExists: vi.fn().mockResolvedValue(true),
+    } as unknown as ContextDocumentService;
+
     // Create ModeHandler with real SessionService
     modeHandler = new ModeHandler(
       mockKeywordService,
@@ -80,6 +126,7 @@ describe('Session Lifecycle Integration', () => {
       mockModelResolverService,
       sessionService,
       mockStateService,
+      mockContextDocService,
     );
   });
 

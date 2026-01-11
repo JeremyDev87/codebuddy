@@ -91,6 +91,17 @@ export const AutoConfigSchema = z.object({
   maxIterations: z.number().int().min(1).max(10).default(3),
 });
 
+/**
+ * Context document configuration for DoS prevention limits.
+ * Limits array sizes and string lengths to prevent memory exhaustion.
+ */
+export const ContextConfigSchema = z.object({
+  /** Maximum items per array (decisions, notes, etc.). Default: 100 */
+  maxArrayItems: z.number().int().min(10).max(1000).default(100),
+  /** Maximum characters per array item string. Default: 2000 */
+  maxItemLength: z.number().int().min(100).max(10000).default(2000),
+});
+
 // ============================================================================
 // Main Configuration Schema
 // ============================================================================
@@ -114,6 +125,9 @@ export const CodingBuddyConfigSchema = z.object({
   // AUTO mode settings
   auto: AutoConfigSchema.optional(),
 
+  // Context document limits (DoS prevention)
+  context: ContextConfigSchema.optional(),
+
   // Additional Context
   keyFiles: z.array(z.string()).optional(),
   avoid: z.array(z.string()).optional(),
@@ -133,6 +147,7 @@ export type ConventionsConfig = z.infer<typeof ConventionsConfigSchema>;
 export type TestStrategyConfig = z.infer<typeof TestStrategyConfigSchema>;
 export type AIConfig = z.infer<typeof AIConfigSchema>;
 export type AutoConfig = z.infer<typeof AutoConfigSchema>;
+export type ContextConfig = z.infer<typeof ContextConfigSchema>;
 export type CodingBuddyConfig = z.infer<typeof CodingBuddyConfigSchema>;
 
 // ============================================================================
