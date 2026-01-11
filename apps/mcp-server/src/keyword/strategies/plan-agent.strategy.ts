@@ -21,13 +21,13 @@ import type {
   StrategyContext,
 } from './resolution-strategy.interface';
 
-/** Architecture-focused keywords */
+/** Architecture-focused keywords (EN, KO, JA, ZH, ES) */
 const ARCHITECTURE_PATTERNS =
-  /아키텍처|architecture|시스템\s*설계|system\s*design|구조|structure|API\s*설계|마이크로서비스|microservice|기술\s*선택|technology/i;
+  /아키텍처|architecture|시스템\s*설계|system\s*design|구조|structure|API\s*설계|마이크로서비스|microservice|기술\s*선택|technology|アーキテクチャ|構造|設計|架构|结构|设计|arquitectura|estructura|diseño/i;
 
-/** Planning/task-focused keywords */
+/** Planning/task-focused keywords (EN, KO, JA, ZH, ES) */
 const PLANNING_PATTERNS =
-  /계획|plan|단계|step|태스크|task|TDD|구현\s*순서|implementation\s*order|리팩토링|refactor/i;
+  /계획|plan|단계|step|태스크|task|TDD|구현\s*순서|implementation\s*order|리팩토링|refactor|計画|ロードマップ|スケジュール|リファクタリング|计划|路线图|重构|cronograma|planificar|refactorizar/i;
 
 /**
  * Create a resolution result object.

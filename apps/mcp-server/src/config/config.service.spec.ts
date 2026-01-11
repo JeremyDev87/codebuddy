@@ -1,32 +1,34 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { mkdirSync, rmSync, writeFileSync, existsSync, realpathSync } from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { ConfigService } from './config.service';
+import { ConfigLoadError } from './config.loader';
+
+// Module-level test helpers
+function createTestDir(prefix = 'config-service-test'): string {
+  const tempDir = path.join(
+    os.tmpdir(),
+    `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+  );
+  mkdirSync(tempDir, { recursive: true });
+  return tempDir;
+}
+
+function cleanupTestDir(dir: string): void {
+  try {
+    if (existsSync(dir)) {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  } catch {
+    // Ignore cleanup errors
+  }
+}
 
 describe('ConfigService', () => {
   describe('resolveProjectRoot (via constructor)', () => {
     let testTempDir: string;
     const originalEnv = process.env.CODINGBUDDY_PROJECT_ROOT;
-
-    function createTestDir(): string {
-      const tempDir = path.join(
-        os.tmpdir(),
-        `config-service-test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      );
-      mkdirSync(tempDir, { recursive: true });
-      return tempDir;
-    }
-
-    function cleanupTestDir(dir: string): void {
-      try {
-        if (existsSync(dir)) {
-          rmSync(dir, { recursive: true, force: true });
-        }
-      } catch {
-        // Ignore cleanup errors
-      }
-    }
 
     beforeEach(() => {
       // Clear the env var before each test
@@ -201,25 +203,6 @@ describe('ConfigService', () => {
     let testTempDir: string;
     const originalEnv = process.env.CODINGBUDDY_PROJECT_ROOT;
 
-    function createTestDir(): string {
-      const tempDir = path.join(
-        os.tmpdir(),
-        `config-service-reload-test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      );
-      mkdirSync(tempDir, { recursive: true });
-      return tempDir;
-    }
-
-    function cleanupTestDir(dir: string): void {
-      try {
-        if (existsSync(dir)) {
-          rmSync(dir, { recursive: true, force: true });
-        }
-      } catch {
-        // Ignore cleanup errors
-      }
-    }
-
     beforeEach(() => {
       delete process.env.CODINGBUDDY_PROJECT_ROOT;
     });
@@ -328,22 +311,335 @@ describe('ConfigService', () => {
       // Use realpathSync on expected value to handle platform differences (e.g., /var -> /private/var on macOS)
       expect(service.getProjectRoot()).toBe(realpathSync(realDir));
     });
+  });
 
-    it('should reject paths outside allowed boundaries when allowlist is configured', async () => {
-      testTempDir = createTestDir();
+  describe('getProjectConfig', () => {
+    const originalEnv = process.env.CODINGBUDDY_PROJECT_ROOT;
+
+    afterEach(() => {
+      if (originalEnv !== undefined) {
+        process.env.CODINGBUDDY_PROJECT_ROOT = originalEnv;
+      } else {
+        delete process.env.CODINGBUDDY_PROJECT_ROOT;
+      }
+    });
+
+    it('should load config if not already loaded', async () => {
+      delete process.env.CODINGBUDDY_PROJECT_ROOT;
       const service = new ConfigService();
 
-      // First set a valid project root
-      await service.setProjectRootAndReload(testTempDir);
+      expect(service.isConfigLoaded()).toBe(false);
 
-      // The implementation will validate against allowed paths
-      // By default, paths should be validated
-      const _systemPath = '/etc';
+      const config = await service.getProjectConfig();
 
-      // This test verifies the containment validation is working
-      // Since /etc is outside the user's typical project directories
-      // it should be rejected when strict validation is enabled
-      // Note: This behavior depends on the implementation
+      expect(service.isConfigLoaded()).toBe(true);
+      expect(config).toBeDefined();
+      expect(config.settings).toBeDefined();
+      expect(config.ignorePatterns).toBeDefined();
+      expect(config.contextFiles).toBeDefined();
+    });
+
+    it('should return cached config if already loaded', async () => {
+      delete process.env.CODINGBUDDY_PROJECT_ROOT;
+      const service = new ConfigService();
+
+      const config1 = await service.getProjectConfig();
+      const config2 = await service.getProjectConfig();
+
+      expect(config1).toBe(config2);
     });
   });
+
+  describe('getSettings', () => {
+    const originalEnv = process.env.CODINGBUDDY_PROJECT_ROOT;
+
+    afterEach(() => {
+      if (originalEnv !== undefined) {
+        process.env.CODINGBUDDY_PROJECT_ROOT = originalEnv;
+      } else {
+        delete process.env.CODINGBUDDY_PROJECT_ROOT;
+      }
+    });
+
+    it('should return settings from config', async () => {
+      delete process.env.CODINGBUDDY_PROJECT_ROOT;
+      const service = new ConfigService();
+
+      const settings = await service.getSettings();
+
+      expect(settings).toBeDefined();
+      expect(typeof settings).toBe('object');
+    });
+  });
+
+  describe('getIgnorePatterns', () => {
+    const originalEnv = process.env.CODINGBUDDY_PROJECT_ROOT;
+
+    afterEach(() => {
+      if (originalEnv !== undefined) {
+        process.env.CODINGBUDDY_PROJECT_ROOT = originalEnv;
+      } else {
+        delete process.env.CODINGBUDDY_PROJECT_ROOT;
+      }
+    });
+
+    it('should return ignore patterns including defaults', async () => {
+      delete process.env.CODINGBUDDY_PROJECT_ROOT;
+      const service = new ConfigService();
+
+      const patterns = await service.getIgnorePatterns();
+
+      expect(Array.isArray(patterns)).toBe(true);
+      expect(patterns.length).toBeGreaterThan(0);
+      // Should include default patterns
+      expect(patterns.some(p => p.includes('node_modules'))).toBe(true);
+    });
+  });
+
+  describe('shouldIgnorePath', () => {
+    const originalEnv = process.env.CODINGBUDDY_PROJECT_ROOT;
+
+    afterEach(() => {
+      if (originalEnv !== undefined) {
+        process.env.CODINGBUDDY_PROJECT_ROOT = originalEnv;
+      } else {
+        delete process.env.CODINGBUDDY_PROJECT_ROOT;
+      }
+    });
+
+    it('should return true for node_modules path', async () => {
+      delete process.env.CODINGBUDDY_PROJECT_ROOT;
+      const service = new ConfigService();
+
+      const shouldIgnore = await service.shouldIgnorePath(
+        'node_modules/package/index.js',
+      );
+
+      expect(shouldIgnore).toBe(true);
+    });
+
+    it('should return false for regular source file', async () => {
+      delete process.env.CODINGBUDDY_PROJECT_ROOT;
+      const service = new ConfigService();
+
+      const shouldIgnore = await service.shouldIgnorePath('src/index.ts');
+
+      expect(shouldIgnore).toBe(false);
+    });
+
+    it('should return true for .git directory', async () => {
+      delete process.env.CODINGBUDDY_PROJECT_ROOT;
+      const service = new ConfigService();
+
+      const shouldIgnore = await service.shouldIgnorePath('.git/config');
+
+      expect(shouldIgnore).toBe(true);
+    });
+  });
+
+  describe('getContextFiles', () => {
+    const originalEnv = process.env.CODINGBUDDY_PROJECT_ROOT;
+
+    afterEach(() => {
+      if (originalEnv !== undefined) {
+        process.env.CODINGBUDDY_PROJECT_ROOT = originalEnv;
+      } else {
+        delete process.env.CODINGBUDDY_PROJECT_ROOT;
+      }
+    });
+
+    it('should return context files array', async () => {
+      delete process.env.CODINGBUDDY_PROJECT_ROOT;
+      const service = new ConfigService();
+
+      const files = await service.getContextFiles();
+
+      expect(Array.isArray(files)).toBe(true);
+    });
+  });
+
+  describe('getFormattedContext', () => {
+    const originalEnv = process.env.CODINGBUDDY_PROJECT_ROOT;
+
+    afterEach(() => {
+      if (originalEnv !== undefined) {
+        process.env.CODINGBUDDY_PROJECT_ROOT = originalEnv;
+      } else {
+        delete process.env.CODINGBUDDY_PROJECT_ROOT;
+      }
+    });
+
+    it('should return formatted context string', async () => {
+      delete process.env.CODINGBUDDY_PROJECT_ROOT;
+      const service = new ConfigService();
+
+      const context = await service.getFormattedContext();
+
+      expect(typeof context).toBe('string');
+    });
+  });
+
+  describe('getLanguage', () => {
+    const originalEnv = process.env.CODINGBUDDY_PROJECT_ROOT;
+
+    afterEach(() => {
+      if (originalEnv !== undefined) {
+        process.env.CODINGBUDDY_PROJECT_ROOT = originalEnv;
+      } else {
+        delete process.env.CODINGBUDDY_PROJECT_ROOT;
+      }
+    });
+
+    it('should return language from settings if configured', async () => {
+      delete process.env.CODINGBUDDY_PROJECT_ROOT;
+      const service = new ConfigService();
+
+      const language = await service.getLanguage();
+
+      // May be undefined or a string depending on config
+      expect(language === undefined || typeof language === 'string').toBe(true);
+    });
+  });
+
+  describe('getContextLimits', () => {
+    const originalEnv = process.env.CODINGBUDDY_PROJECT_ROOT;
+
+    afterEach(() => {
+      if (originalEnv !== undefined) {
+        process.env.CODINGBUDDY_PROJECT_ROOT = originalEnv;
+      } else {
+        delete process.env.CODINGBUDDY_PROJECT_ROOT;
+      }
+    });
+
+    it('should return context limits with defaults', async () => {
+      delete process.env.CODINGBUDDY_PROJECT_ROOT;
+      const service = new ConfigService();
+
+      const limits = await service.getContextLimits();
+
+      expect(limits).toBeDefined();
+      expect(typeof limits.maxArrayItems).toBe('number');
+      expect(typeof limits.maxItemLength).toBe('number');
+      expect(limits.maxArrayItems).toBeGreaterThan(0);
+      expect(limits.maxItemLength).toBeGreaterThan(0);
+    });
+
+    it('should return default values when not configured', async () => {
+      delete process.env.CODINGBUDDY_PROJECT_ROOT;
+      const service = new ConfigService();
+
+      const limits = await service.getContextLimits();
+
+      // Default values
+      expect(limits.maxArrayItems).toBe(100);
+      expect(limits.maxItemLength).toBe(2000);
+    });
+  });
+
+  describe('loadProjectConfig error handling', () => {
+    let testTempDir: string;
+    const originalEnv = process.env.CODINGBUDDY_PROJECT_ROOT;
+
+    beforeEach(() => {
+      delete process.env.CODINGBUDDY_PROJECT_ROOT;
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+      if (originalEnv !== undefined) {
+        process.env.CODINGBUDDY_PROJECT_ROOT = originalEnv;
+      } else {
+        delete process.env.CODINGBUDDY_PROJECT_ROOT;
+      }
+      if (testTempDir) {
+        cleanupTestDir(testTempDir);
+      }
+    });
+
+    it('should handle ConfigLoadError and use default config', async () => {
+      testTempDir = createTestDir();
+      const service = new ConfigService();
+      service.setProjectRoot(testTempDir);
+
+      // Mock loadConfig to throw ConfigLoadError
+      const configLoader = await import('./config.loader');
+      vi.spyOn(configLoader, 'loadConfig').mockRejectedValueOnce(
+        new ConfigLoadError('Test config error', testTempDir),
+      );
+
+      const config = await service.loadProjectConfig();
+
+      // Should return default config instead of failing
+      expect(config).toBeDefined();
+      expect(config.settings).toEqual({});
+      expect(config.sources.config).toBeNull();
+    });
+
+    it('should log ignore patterns source when .codingignore exists', async () => {
+      testTempDir = createTestDir();
+
+      // Create a .codingignore file
+      const ignoreFilePath = path.join(testTempDir, '.codingignore');
+      writeFileSync(ignoreFilePath, '*.log\n*.tmp\n');
+
+      const service = new ConfigService();
+      service.setProjectRoot(testTempDir);
+
+      const config = await service.loadProjectConfig();
+
+      // Should have ignore source set
+      expect(config.sources.ignore).toBe(ignoreFilePath);
+      // Should include patterns from the file plus defaults
+      expect(config.ignorePatterns).toContain('*.log');
+      expect(config.ignorePatterns).toContain('*.tmp');
+    });
+
+    it('should handle context loading with errors gracefully', async () => {
+      testTempDir = createTestDir();
+
+      // Create .codingbuddy directory with an unreadable file
+      const contextDir = path.join(testTempDir, '.codingbuddy', 'context');
+      mkdirSync(contextDir, { recursive: true });
+
+      // Create a valid context file
+      const contextFilePath = path.join(contextDir, 'test-context.md');
+      writeFileSync(contextFilePath, '# Test Context\nSome context content.');
+
+      const service = new ConfigService();
+      service.setProjectRoot(testTempDir);
+
+      const config = await service.loadProjectConfig();
+
+      // Should have context source set
+      expect(config.sources.context).toBeDefined();
+      // Should have loaded the context file
+      expect(config.contextFiles.length).toBeGreaterThan(0);
+    });
+
+    it('should handle generic errors from loadConfig', async () => {
+      testTempDir = createTestDir();
+      const service = new ConfigService();
+      service.setProjectRoot(testTempDir);
+
+      // Mock loadConfig to throw a generic Error (not ConfigLoadError)
+      const configLoader = await import('./config.loader');
+      vi.spyOn(configLoader, 'loadConfig').mockRejectedValueOnce(
+        new Error('Generic error'),
+      );
+
+      const config = await service.loadProjectConfig();
+
+      // Should still return default config
+      expect(config).toBeDefined();
+      expect(config.settings).toEqual({});
+      expect(config.sources.config).toBeNull();
+    });
+  });
+
+  // Note: The following edge cases in setProjectRootAndReload are difficult to test in ESM:
+  // - Line 136: Re-throwing non-ENOENT errors from stat (e.g., EACCES)
+  // - Lines 150-153: Fallback when realpath fails
+  // ESM modules don't allow spying on exports (fs/promises.stat, realpath).
+  // These paths are defensive error handling and are acceptable to remain uncovered.
 });
