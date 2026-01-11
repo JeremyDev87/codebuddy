@@ -11,6 +11,10 @@ import { ModelResolverService } from '../../model';
 import { extractRequiredString } from '../../shared/validation.constants';
 import { SessionService } from '../../session/session.service';
 import { StateService } from '../../state/state.service';
+import type {
+  SessionContext,
+  SessionDocument,
+} from '../../session/session.types';
 
 /** Maximum length for session title slug generation */
 const SESSION_TITLE_MAX_LENGTH = 50;
@@ -46,6 +50,8 @@ interface AutoSessionInfo {
 interface SessionResult {
   autoSession?: AutoSessionInfo;
   sessionWarning?: string;
+  /** Session context for AI to read previous mode information */
+  sessionContext?: SessionContext;
 }
 
 /**
@@ -179,6 +185,7 @@ export class ModeHandler extends AbstractHandler {
 
   /**
    * D: Check if active session exists for ACT/EVAL modes
+   * Now also includes session context for AI to read previous mode information
    */
   private async checkActiveSessionForNonCreateModes(
     mode: string,
@@ -190,8 +197,56 @@ export class ModeHandler extends AbstractHandler {
           sessionWarning: SESSION_WARNINGS.NO_ACTIVE_SESSION,
         };
       }
+      // Include session context for AI to read previous mode information
+      return {
+        autoSession: {
+          sessionId: activeSession.metadata.id,
+          filePath: `${SESSION_PATH_PREFIX}${activeSession.metadata.id}.md`,
+          created: false,
+        },
+        sessionContext: this.buildSessionContext(activeSession),
+      };
     }
     return this.emptySessionResult;
+  }
+
+  /**
+   * Build session context from session document.
+   * Aggregates all decisions and notes from all sections.
+   */
+  private buildSessionContext(session: SessionDocument): SessionContext {
+    const allDecisions: string[] = [];
+    const allNotes: string[] = [];
+
+    // Aggregate decisions and notes from all sections
+    for (const section of session.sections) {
+      if (section.decisions) {
+        allDecisions.push(...section.decisions);
+      }
+      if (section.notes) {
+        allNotes.push(...section.notes);
+      }
+    }
+
+    // Find recommended ACT agent from PLAN section
+    const planSection = session.sections.find(s => s.mode === 'PLAN');
+    const recommendedActAgent =
+      planSection?.recommendedActAgent &&
+      planSection.recommendedActAgentConfidence
+        ? {
+            agent: planSection.recommendedActAgent,
+            confidence: planSection.recommendedActAgentConfidence,
+          }
+        : undefined;
+
+    return {
+      sessionId: session.metadata.id,
+      title: session.metadata.title,
+      previousSections: session.sections,
+      recommendedActAgent,
+      allDecisions,
+      allNotes,
+    };
   }
 
   /**
@@ -203,7 +258,7 @@ export class ModeHandler extends AbstractHandler {
     // Check if there's already an active session
     const existingSession = await this.sessionService.getActiveSession();
     if (existingSession) {
-      return this.handleExistingSession(existingSession.metadata.id);
+      return this.handleExistingSession(existingSession);
     }
 
     // Create new session
@@ -213,16 +268,20 @@ export class ModeHandler extends AbstractHandler {
 
   /**
    * Handle existing active session case
+   * Now also includes session context
    */
-  private handleExistingSession(sessionId: string): Required<SessionResult> {
-    this.logger.debug(`Active session already exists: ${sessionId}`);
+  private async handleExistingSession(
+    session: SessionDocument,
+  ): Promise<SessionResult> {
+    this.logger.debug(`Active session already exists: ${session.metadata.id}`);
     return {
       autoSession: {
-        sessionId,
-        filePath: `${SESSION_PATH_PREFIX}${sessionId}.md`,
+        sessionId: session.metadata.id,
+        filePath: `${SESSION_PATH_PREFIX}${session.metadata.id}.md`,
         created: false,
       },
       sessionWarning: SESSION_WARNINGS.USING_EXISTING_SESSION,
+      sessionContext: this.buildSessionContext(session),
     };
   }
 

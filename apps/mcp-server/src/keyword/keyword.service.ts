@@ -45,9 +45,10 @@ const DEFAULT_CONFIG: KeywordModesConfig = {
     PLAN: {
       description: 'Task planning and design phase',
       instructions:
-        '🔴 SESSION AUTO-CREATED: Check autoSession field for session ID. ' +
-        'Call update_session with mode=PLAN, recommendedActAgent, and decisions to persist context. ' +
-        'Design first approach. Define test cases from TDD perspective. Review architecture before implementation.',
+        '🔴 SESSION: Check sessionContext field for previous mode context (decisions, notes, recommendedActAgent). ' +
+        'Design first approach. Define test cases from TDD perspective. Review architecture before implementation. ' +
+        '📝 MANDATORY BEFORE COMPLETION: Call update_session with mode=PLAN, recommendedActAgent, task, decisions, and notes. ' +
+        'Decisions and notes will be APPENDED to existing content, not overwritten.',
       rules: ['rules/core.md', 'rules/augmented-coding.md'],
       agent: MODE_AGENTS[0],
       // delegates_to is now resolved dynamically via PrimaryAgentResolver
@@ -59,9 +60,10 @@ const DEFAULT_CONFIG: KeywordModesConfig = {
     ACT: {
       description: 'Actual task execution phase',
       instructions:
-        '🔴 FIRST: Check autoSession or call get_active_session to read PLAN context and recommended agent. ' +
-        'Use the recommended agent from PLAN. Follow Red-Green-Refactor cycle. ' +
-        'Call update_session with mode=ACT to record implementation progress.',
+        '🔴 CONTEXT: sessionContext contains PLAN decisions and recommendedActAgent. Use this context! ' +
+        'Follow Red-Green-Refactor cycle. Use recommended agent from PLAN. ' +
+        '📝 MANDATORY BEFORE COMPLETION: Call update_session with mode=ACT, task (what was done), decisions, and notes. ' +
+        'Decisions and notes will be APPENDED to existing content.',
       rules: ['rules/core.md', 'rules/project.md', 'rules/augmented-coding.md'],
       agent: MODE_AGENTS[1],
       // delegates_to is now resolved dynamically via PrimaryAgentResolver
@@ -73,9 +75,10 @@ const DEFAULT_CONFIG: KeywordModesConfig = {
     EVAL: {
       description: 'Result review and assessment phase',
       instructions:
-        '🔴 FIRST: Check autoSession or call get_active_session to read full context. ' +
-        'Review code quality. Verify SOLID principles. Check test coverage. ' +
-        'Call update_session with mode=EVAL and findings.',
+        '🔴 CONTEXT: sessionContext contains all PLAN and ACT decisions/notes. Review this accumulated context! ' +
+        'Evaluate code quality. Verify SOLID principles. Check test coverage. ' +
+        '📝 MANDATORY BEFORE COMPLETION: Call update_session with mode=EVAL, task (evaluation summary), decisions, and notes. ' +
+        'Decisions and notes will be APPENDED to existing content.',
       rules: ['rules/core.md', 'rules/augmented-coding.md'],
       agent: MODE_AGENTS[2],
       delegates_to: 'code-reviewer', // EVAL always uses code-reviewer
@@ -90,9 +93,10 @@ const DEFAULT_CONFIG: KeywordModesConfig = {
       description:
         'Autonomous execution mode - PLAN → ACT → EVAL cycle until quality achieved',
       instructions:
-        '🔴 SESSION AUTO-CREATED: Check autoSession field. ' +
+        '🔴 SESSION: Check sessionContext for accumulated context across iterations. ' +
         'Execute PLAN → ACT → EVAL cycle automatically. Repeat until Critical/High issues = 0 or max iterations reached. ' +
-        'Update session at each phase transition to maintain context across iterations.',
+        '📝 MANDATORY AT EACH PHASE: Call update_session to record progress. Decisions and notes are APPENDED. ' +
+        'This maintains full context history across iterations.',
       rules: ['rules/core.md', 'rules/project.md', 'rules/augmented-coding.md'],
       agent: MODE_AGENTS[3], // 'auto-mode'
       defaultSpecialists: [

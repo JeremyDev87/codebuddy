@@ -26,6 +26,7 @@ describe('SessionService', () => {
 
     mockConfigService = {
       getProjectRoot: vi.fn().mockReturnValue(mockProjectRoot),
+      getLanguage: vi.fn().mockResolvedValue('en'),
     } as unknown as ConfigService;
 
     service = new SessionService(mockConfigService);
@@ -446,6 +447,468 @@ Implement feature
         'test-strategy',
       ]);
       expect(planSection?.decisions).toEqual(['Use JWT', 'Add refresh tokens']);
+    });
+  });
+
+  describe('section merging (decisions/notes accumulation)', () => {
+    const mockSessionWithSection = `# Session: test
+
+**Created**: 2026-01-11T00:00:00Z
+**Updated**: 2026-01-11T00:00:00Z
+**Status**: active
+
+---
+
+## PLAN (02:00)
+
+**Primary Agent**: architect
+
+### Decisions
+- Decision 1
+- Decision 2
+
+### Notes
+- Note 1
+
+---
+`;
+
+    it('should append new decisions to existing decisions', async () => {
+      vi.mocked(fs.readFile).mockResolvedValue(mockSessionWithSection);
+      vi.mocked(fs.writeFile).mockResolvedValue();
+
+      await service.updateSession({
+        sessionId: 'test',
+        section: {
+          mode: 'PLAN',
+          decisions: ['Decision 3', 'Decision 4'],
+        },
+      });
+
+      const writtenContent = vi.mocked(fs.writeFile).mock.calls[0][1] as string;
+      expect(writtenContent).toContain('- Decision 1');
+      expect(writtenContent).toContain('- Decision 2');
+      expect(writtenContent).toContain('- Decision 3');
+      expect(writtenContent).toContain('- Decision 4');
+    });
+
+    it('should append new notes to existing notes', async () => {
+      vi.mocked(fs.readFile).mockResolvedValue(mockSessionWithSection);
+      vi.mocked(fs.writeFile).mockResolvedValue();
+
+      await service.updateSession({
+        sessionId: 'test',
+        section: {
+          mode: 'PLAN',
+          notes: ['Note 2', 'Note 3'],
+        },
+      });
+
+      const writtenContent = vi.mocked(fs.writeFile).mock.calls[0][1] as string;
+      expect(writtenContent).toContain('- Note 1');
+      expect(writtenContent).toContain('- Note 2');
+      expect(writtenContent).toContain('- Note 3');
+    });
+
+    it('should deduplicate decisions when appending', async () => {
+      vi.mocked(fs.readFile).mockResolvedValue(mockSessionWithSection);
+      vi.mocked(fs.writeFile).mockResolvedValue();
+
+      await service.updateSession({
+        sessionId: 'test',
+        section: {
+          mode: 'PLAN',
+          decisions: ['Decision 1', 'Decision 3'], // Decision 1 is duplicate
+        },
+      });
+
+      const writtenContent = vi.mocked(fs.writeFile).mock.calls[0][1] as string;
+      // Count occurrences of "Decision 1"
+      const matches = writtenContent.match(/- Decision 1/g);
+      expect(matches).toHaveLength(1); // Should appear only once
+      expect(writtenContent).toContain('- Decision 2');
+      expect(writtenContent).toContain('- Decision 3');
+    });
+
+    it('should deduplicate notes when appending', async () => {
+      vi.mocked(fs.readFile).mockResolvedValue(mockSessionWithSection);
+      vi.mocked(fs.writeFile).mockResolvedValue();
+
+      await service.updateSession({
+        sessionId: 'test',
+        section: {
+          mode: 'PLAN',
+          notes: ['Note 1', 'Note 2'], // Note 1 is duplicate
+        },
+      });
+
+      const writtenContent = vi.mocked(fs.writeFile).mock.calls[0][1] as string;
+      const matches = writtenContent.match(/- Note 1/g);
+      expect(matches).toHaveLength(1); // Should appear only once
+      expect(writtenContent).toContain('- Note 2');
+    });
+
+    it('should update other fields while preserving accumulated arrays', async () => {
+      vi.mocked(fs.readFile).mockResolvedValue(mockSessionWithSection);
+      vi.mocked(fs.writeFile).mockResolvedValue();
+
+      await service.updateSession({
+        sessionId: 'test',
+        section: {
+          mode: 'PLAN',
+          primaryAgent: 'new-agent', // Update field
+          status: 'completed', // New field
+          decisions: ['Decision 3'], // Append
+        },
+      });
+
+      const writtenContent = vi.mocked(fs.writeFile).mock.calls[0][1] as string;
+      expect(writtenContent).toContain('**Primary Agent**: new-agent');
+      expect(writtenContent).toContain('**Status**: completed');
+      expect(writtenContent).toContain('- Decision 1');
+      expect(writtenContent).toContain('- Decision 2');
+      expect(writtenContent).toContain('- Decision 3');
+    });
+
+    it('should handle empty existing arrays', async () => {
+      const sessionWithoutArrays = `# Session: test
+
+**Created**: 2026-01-11T00:00:00Z
+**Updated**: 2026-01-11T00:00:00Z
+**Status**: active
+
+---
+
+## PLAN (02:00)
+
+**Primary Agent**: architect
+
+---
+`;
+      vi.mocked(fs.readFile).mockResolvedValue(sessionWithoutArrays);
+      vi.mocked(fs.writeFile).mockResolvedValue();
+
+      await service.updateSession({
+        sessionId: 'test',
+        section: {
+          mode: 'PLAN',
+          decisions: ['New Decision'],
+          notes: ['New Note'],
+        },
+      });
+
+      const writtenContent = vi.mocked(fs.writeFile).mock.calls[0][1] as string;
+      expect(writtenContent).toContain('- New Decision');
+      expect(writtenContent).toContain('- New Note');
+    });
+
+    it('should handle empty new arrays (no change)', async () => {
+      vi.mocked(fs.readFile).mockResolvedValue(mockSessionWithSection);
+      vi.mocked(fs.writeFile).mockResolvedValue();
+
+      await service.updateSession({
+        sessionId: 'test',
+        section: {
+          mode: 'PLAN',
+          primaryAgent: 'updated-agent',
+          decisions: [], // Empty array - should not affect existing
+        },
+      });
+
+      const writtenContent = vi.mocked(fs.writeFile).mock.calls[0][1] as string;
+      expect(writtenContent).toContain('- Decision 1');
+      expect(writtenContent).toContain('- Decision 2');
+    });
+  });
+
+  describe('localized labels', () => {
+    it('should use Korean labels when language is ko', async () => {
+      vi.mocked(mockConfigService.getLanguage).mockResolvedValue('ko');
+      vi.mocked(existsSync)
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
+      vi.mocked(fs.writeFile).mockResolvedValue();
+
+      await service.createSession({ title: 'korean-test' });
+
+      const writtenContent = vi.mocked(fs.writeFile).mock.calls[0][1] as string;
+      expect(writtenContent).toContain('# 세션:');
+      expect(writtenContent).toContain('**생성일**:');
+      expect(writtenContent).toContain('**수정일**:');
+      expect(writtenContent).toContain('**상태**:');
+    });
+
+    it('should use Japanese labels when language is ja', async () => {
+      vi.mocked(mockConfigService.getLanguage).mockResolvedValue('ja');
+      vi.mocked(existsSync)
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
+      vi.mocked(fs.writeFile).mockResolvedValue();
+
+      await service.createSession({ title: 'japanese-test' });
+
+      const writtenContent = vi.mocked(fs.writeFile).mock.calls[0][1] as string;
+      expect(writtenContent).toContain('# セッション:');
+      expect(writtenContent).toContain('**作成日**:');
+      expect(writtenContent).toContain('**更新日**:');
+      expect(writtenContent).toContain('**状態**:');
+    });
+
+    it('should use Chinese labels when language is zh', async () => {
+      vi.mocked(mockConfigService.getLanguage).mockResolvedValue('zh');
+      vi.mocked(existsSync)
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
+      vi.mocked(fs.writeFile).mockResolvedValue();
+
+      await service.createSession({ title: 'chinese-test' });
+
+      const writtenContent = vi.mocked(fs.writeFile).mock.calls[0][1] as string;
+      expect(writtenContent).toContain('# 会话:');
+      expect(writtenContent).toContain('**创建时间**:');
+      expect(writtenContent).toContain('**更新时间**:');
+      expect(writtenContent).toContain('**状态**:');
+    });
+
+    it('should use English labels as default for unknown language', async () => {
+      vi.mocked(mockConfigService.getLanguage).mockResolvedValue('fr'); // French - not supported
+      vi.mocked(existsSync)
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
+      vi.mocked(fs.writeFile).mockResolvedValue();
+
+      await service.createSession({ title: 'french-test' });
+
+      const writtenContent = vi.mocked(fs.writeFile).mock.calls[0][1] as string;
+      expect(writtenContent).toContain('# Session:');
+      expect(writtenContent).toContain('**Created**:');
+      expect(writtenContent).toContain('**Updated**:');
+      expect(writtenContent).toContain('**Status**:');
+    });
+
+    it('should use localized section labels in updateSession', async () => {
+      vi.mocked(mockConfigService.getLanguage).mockResolvedValue('ko');
+      const mockSession = `# 세션: test
+
+**생성일**: 2026-01-11T00:00:00Z
+**수정일**: 2026-01-11T00:00:00Z
+**상태**: active
+
+---
+`;
+      vi.mocked(fs.readFile).mockResolvedValue(mockSession);
+      vi.mocked(fs.writeFile).mockResolvedValue();
+
+      await service.updateSession({
+        sessionId: 'test',
+        section: {
+          mode: 'PLAN',
+          task: '기능 구현',
+          decisions: ['결정 1'],
+          notes: ['노트 1'],
+        },
+      });
+
+      const writtenContent = vi.mocked(fs.writeFile).mock.calls[0][1] as string;
+      expect(writtenContent).toContain('### 작업');
+      expect(writtenContent).toContain('### 결정 사항');
+      expect(writtenContent).toContain('### 노트');
+    });
+
+    it('should use English labels when getLanguage returns null', async () => {
+      vi.mocked(mockConfigService.getLanguage).mockResolvedValue(
+        null as unknown as string,
+      );
+      vi.mocked(existsSync)
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
+      vi.mocked(fs.writeFile).mockResolvedValue();
+
+      await service.createSession({ title: 'null-language-test' });
+
+      const writtenContent = vi.mocked(fs.writeFile).mock.calls[0][1] as string;
+      expect(writtenContent).toContain('# Session:');
+      expect(writtenContent).toContain('**Created**:');
+      expect(writtenContent).toContain('**Updated**:');
+      expect(writtenContent).toContain('**Status**:');
+    });
+
+    it('should parse Korean document correctly', async () => {
+      const koreanContent = `# 세션: korean-session
+
+**생성일**: 2026-01-11T00:00:00Z
+**수정일**: 2026-01-11T01:00:00Z
+**상태**: active
+
+---
+
+## PLAN (02:00)
+
+**주 에이전트**: architect
+**권장 ACT 에이전트**: backend-developer (confidence: 0.9)
+**전문가**: security-specialist, test-strategy
+
+### 작업
+한국어 작업 설명
+
+### 결정 사항
+- 결정 1
+- 결정 2
+
+### 노트
+- 노트 1
+
+---
+`;
+      vi.mocked(fs.readFile).mockResolvedValue(koreanContent);
+
+      const result = await service.getSession('korean-session');
+
+      expect(result).not.toBeNull();
+      expect(result?.metadata.title).toBe('korean-session');
+      expect(result?.metadata.createdAt).toBe('2026-01-11T00:00:00Z');
+      expect(result?.metadata.updatedAt).toBe('2026-01-11T01:00:00Z');
+      expect(result?.metadata.status).toBe('active');
+      expect(result?.sections).toHaveLength(1);
+      expect(result?.sections[0].mode).toBe('PLAN');
+      expect(result?.sections[0].primaryAgent).toBe('architect');
+      expect(result?.sections[0].recommendedActAgent).toBe('backend-developer');
+      expect(result?.sections[0].recommendedActAgentConfidence).toBe(0.9);
+      expect(result?.sections[0].specialists).toEqual([
+        'security-specialist',
+        'test-strategy',
+      ]);
+      expect(result?.sections[0].task).toBe('한국어 작업 설명');
+      expect(result?.sections[0].decisions).toEqual(['결정 1', '결정 2']);
+      expect(result?.sections[0].notes).toEqual(['노트 1']);
+    });
+
+    it('should parse Japanese document correctly', async () => {
+      const japaneseContent = `# セッション: japanese-session
+
+**作成日**: 2026-01-11T00:00:00Z
+**更新日**: 2026-01-11T01:00:00Z
+**状態**: active
+
+---
+
+## ACT (03:00)
+
+**主エージェント**: frontend-developer
+
+### タスク
+日本語タスク
+
+### 決定事項
+- 決定事項 1
+
+### ノート
+- ノート 1
+
+---
+`;
+      vi.mocked(fs.readFile).mockResolvedValue(japaneseContent);
+
+      const result = await service.getSession('japanese-session');
+
+      expect(result).not.toBeNull();
+      expect(result?.metadata.title).toBe('japanese-session');
+      expect(result?.sections).toHaveLength(1);
+      expect(result?.sections[0].mode).toBe('ACT');
+      expect(result?.sections[0].primaryAgent).toBe('frontend-developer');
+      expect(result?.sections[0].task).toBe('日本語タスク');
+      expect(result?.sections[0].decisions).toEqual(['決定事項 1']);
+      expect(result?.sections[0].notes).toEqual(['ノート 1']);
+    });
+
+    it('should parse Chinese document correctly', async () => {
+      const chineseContent = `# 会话: chinese-session
+
+**创建时间**: 2026-01-11T00:00:00Z
+**更新时间**: 2026-01-11T01:00:00Z
+**状态**: active
+
+---
+
+## EVAL (04:00)
+
+**主代理**: code-reviewer
+**推荐ACT代理**: backend-developer (confidence: 0.85)
+**专家**: security-specialist
+
+### 任务
+中文任务描述
+
+### 决策
+- 决策一
+- 决策二
+
+### 备注
+- 备注一
+
+---
+`;
+      vi.mocked(fs.readFile).mockResolvedValue(chineseContent);
+
+      const result = await service.getSession('chinese-session');
+
+      expect(result).not.toBeNull();
+      expect(result?.metadata.title).toBe('chinese-session');
+      expect(result?.metadata.createdAt).toBe('2026-01-11T00:00:00Z');
+      expect(result?.metadata.updatedAt).toBe('2026-01-11T01:00:00Z');
+      expect(result?.metadata.status).toBe('active');
+      expect(result?.sections).toHaveLength(1);
+      expect(result?.sections[0].mode).toBe('EVAL');
+      expect(result?.sections[0].primaryAgent).toBe('code-reviewer');
+      expect(result?.sections[0].recommendedActAgent).toBe('backend-developer');
+      expect(result?.sections[0].recommendedActAgentConfidence).toBe(0.85);
+      expect(result?.sections[0].specialists).toEqual(['security-specialist']);
+      expect(result?.sections[0].task).toBe('中文任务描述');
+      expect(result?.sections[0].decisions).toEqual(['决策一', '决策二']);
+      expect(result?.sections[0].notes).toEqual(['备注一']);
+    });
+
+    it('should handle language change mid-session (mixed labels)', async () => {
+      // Create session in Korean
+      vi.mocked(mockConfigService.getLanguage).mockResolvedValue('ko');
+      const koreanSession = `# 세션: mixed-test
+
+**생성일**: 2026-01-11T00:00:00Z
+**수정일**: 2026-01-11T00:00:00Z
+**상태**: active
+
+---
+
+## PLAN (02:00)
+
+**주 에이전트**: architect
+
+### 작업
+기존 작업
+
+---
+`;
+      vi.mocked(fs.readFile).mockResolvedValue(koreanSession);
+      vi.mocked(fs.writeFile).mockResolvedValue();
+
+      // Update session in English (language changed)
+      vi.mocked(mockConfigService.getLanguage).mockResolvedValue('en');
+
+      await service.updateSession({
+        sessionId: 'mixed-test',
+        section: {
+          mode: 'ACT',
+          task: 'New task in English',
+          decisions: ['English decision'],
+        },
+      });
+
+      const writtenContent = vi.mocked(fs.writeFile).mock.calls[0][1] as string;
+      // Should use English labels for new content
+      expect(writtenContent).toContain('## ACT');
+      expect(writtenContent).toContain('### Task');
+      expect(writtenContent).toContain('### Decisions');
+      expect(writtenContent).toContain('- English decision');
     });
   });
 
