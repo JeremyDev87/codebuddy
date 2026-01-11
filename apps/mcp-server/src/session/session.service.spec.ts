@@ -159,6 +159,7 @@ Implement feature
   describe('getActiveSession', () => {
     it('should return most recent active session', async () => {
       const mockFiles = ['2026-01-10-old.md', '2026-01-11-new.md'];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(fs.readdir).mockResolvedValue(mockFiles as any);
 
       const mockContent = `# Session: new
@@ -179,6 +180,7 @@ Implement feature
 
     it('should skip completed sessions', async () => {
       const mockFiles = ['2026-01-11-completed.md', '2026-01-10-active.md'];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(fs.readdir).mockResolvedValue(mockFiles as any);
 
       const completedContent = `# Session: completed

@@ -300,6 +300,21 @@ export class ConfigService implements OnModuleInit {
   }
 
   /**
+   * Get context document limits for DoS prevention.
+   * Returns configured values or defaults.
+   */
+  async getContextLimits(): Promise<{
+    maxArrayItems: number;
+    maxItemLength: number;
+  }> {
+    const settings = await this.getSettings();
+    return {
+      maxArrayItems: settings.context?.maxArrayItems ?? 100,
+      maxItemLength: settings.context?.maxItemLength ?? 2000,
+    };
+  }
+
+  /**
    * Reload configuration from disk
    */
   async reload(): Promise<ProjectConfig> {

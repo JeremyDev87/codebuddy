@@ -6,6 +6,7 @@ import { LanguageService } from '../../shared/language.service';
 import { ModelResolverService } from '../../model';
 import { SessionService } from '../../session/session.service';
 import { StateService } from '../../state/state.service';
+import { ContextDocumentService } from '../../context/context-document.service';
 
 describe('ModeHandler', () => {
   let handler: ModeHandler;
@@ -15,6 +16,7 @@ describe('ModeHandler', () => {
   let mockModelResolverService: ModelResolverService;
   let mockSessionService: SessionService;
   let mockStateService: StateService;
+  let mockContextDocService: ContextDocumentService;
 
   const mockParseModeResult = {
     mode: 'PLAN',
@@ -72,6 +74,49 @@ describe('ModeHandler', () => {
       getLastSessionId: vi.fn().mockResolvedValue(null),
     } as unknown as StateService;
 
+    mockContextDocService = {
+      resetContext: vi.fn().mockResolvedValue({
+        success: true,
+        document: {
+          metadata: {
+            title: 'test-task',
+            createdAt: '2024-01-01T00:00:00.000Z',
+            lastUpdatedAt: '2024-01-01T00:00:00.000Z',
+            currentMode: 'PLAN',
+            status: 'active',
+          },
+          sections: [],
+        },
+      }),
+      appendContext: vi.fn().mockResolvedValue({
+        success: true,
+        document: {
+          metadata: {
+            title: 'test-task',
+            createdAt: '2024-01-01T00:00:00.000Z',
+            lastUpdatedAt: '2024-01-01T00:00:00.000Z',
+            currentMode: 'ACT',
+            status: 'active',
+          },
+          sections: [],
+        },
+      }),
+      readContext: vi.fn().mockResolvedValue({
+        exists: true,
+        document: {
+          metadata: {
+            title: 'test-task',
+            createdAt: '2024-01-01T00:00:00.000Z',
+            lastUpdatedAt: '2024-01-01T00:00:00.000Z',
+            currentMode: 'PLAN',
+            status: 'active',
+          },
+          sections: [],
+        },
+      }),
+      contextExists: vi.fn().mockResolvedValue(true),
+    } as unknown as ContextDocumentService;
+
     handler = new ModeHandler(
       mockKeywordService,
       mockConfigService,
@@ -79,6 +124,7 @@ describe('ModeHandler', () => {
       mockModelResolverService,
       mockSessionService,
       mockStateService,
+      mockContextDocService,
     );
   });
 

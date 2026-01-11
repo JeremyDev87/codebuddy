@@ -12,6 +12,11 @@ import { extractRequiredString } from '../../shared/validation.constants';
 import { generateSlug } from '../../shared/slug.utils';
 import { SessionService } from '../../session/session.service';
 import { StateService } from '../../state/state.service';
+import { ContextDocumentService } from '../../context/context-document.service';
+import {
+  CONTEXT_FILE_PATH,
+  type ContextDocument,
+} from '../../context/context-document.types';
 import type {
   SessionContext,
   SessionDocument,
@@ -56,6 +61,20 @@ interface SessionResult {
   sessionContext?: SessionContext;
 }
 
+/** Result type for context document handling */
+interface ContextResult {
+  /** Path to the context file */
+  contextFilePath: string;
+  /** Whether context was found/created */
+  contextExists: boolean;
+  /** The context document content */
+  contextDocument?: ContextDocument;
+  /** Warning message if any */
+  contextWarning?: string;
+  /** Mandatory action for AI */
+  mandatoryAction: string;
+}
+
 /**
  * Handler for mode parsing tool
  * - parse_mode: Parse PLAN/ACT/EVAL workflow mode from user prompt
@@ -71,6 +90,7 @@ export class ModeHandler extends AbstractHandler {
     private readonly modelResolverService: ModelResolverService,
     private readonly sessionService: SessionService,
     private readonly stateService: StateService,
+    private readonly contextDocService: ContextDocumentService,
   ) {
     super();
   }
@@ -134,7 +154,15 @@ export class ModeHandler extends AbstractHandler {
         result.agent,
       );
 
-      // B: Auto-create session for PLAN mode
+      // NEW: Handle context document (mandatory)
+      const contextResult = await this.handleContextDocument(
+        result.mode as Mode,
+        result.originalPrompt,
+        result.agent,
+        result.recommended_act_agent,
+      );
+
+      // B: Auto-create session for PLAN mode (kept for backward compatibility)
       const sessionInfo = await this.handleAutoSession(
         result.mode,
         result.originalPrompt,
@@ -167,12 +195,90 @@ export class ModeHandler extends AbstractHandler {
         languageInstruction: languageInstructionResult.instruction,
         resolvedModel,
         ...sessionInfo,
+        // Include context document info (mandatory)
+        ...contextResult,
       });
     } catch (error) {
       return createErrorResponse(
         `Failed to parse mode: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
+  }
+
+  /**
+   * Handle context document based on mode.
+   * - PLAN: Reset context (fresh start)
+   * - ACT/EVAL: Read existing context (require PLAN first)
+   */
+  private async handleContextDocument(
+    mode: Mode,
+    originalPrompt: string,
+    agent?: string,
+    recommendedActAgent?: { agentName: string; confidence: number },
+  ): Promise<ContextResult> {
+    const title = this.generateSessionTitle(originalPrompt);
+
+    if (mode === 'PLAN' || mode === 'AUTO') {
+      // PLAN/AUTO mode: Reset context document
+      const result = await this.contextDocService.resetContext({
+        title,
+        task: originalPrompt,
+        primaryAgent: agent,
+        recommendedActAgent: recommendedActAgent?.agentName,
+        recommendedActAgentConfidence: recommendedActAgent?.confidence,
+      });
+
+      if (!result.success) {
+        this.logger.warn(`Failed to reset context: ${result.error}`);
+        return {
+          contextFilePath: CONTEXT_FILE_PATH,
+          contextExists: false,
+          contextWarning: `⚠️ Failed to create context document: ${result.error}`,
+          mandatoryAction:
+            '📝 Call update_context tool manually to create context document.',
+        };
+      }
+
+      this.logger.log('Context document reset for PLAN mode');
+      return {
+        contextFilePath: CONTEXT_FILE_PATH,
+        contextExists: true,
+        contextDocument: result.document,
+        mandatoryAction:
+          '📝 MANDATORY: Call update_context before completion to persist decisions and notes.',
+      };
+    }
+
+    // ACT/EVAL mode: Read existing context
+    const readResult = await this.contextDocService.readContext();
+
+    if (!readResult.exists || !readResult.document) {
+      this.logger.warn('No context document found for ACT/EVAL mode');
+      return {
+        contextFilePath: CONTEXT_FILE_PATH,
+        contextExists: false,
+        contextWarning:
+          '⚠️ No context document found. Run PLAN mode first to create context.',
+        mandatoryAction:
+          '📝 Start with PLAN mode to initialize context, then switch to ACT/EVAL.',
+      };
+    }
+
+    // Append mode section to context
+    const appendResult = await this.contextDocService.appendContext({
+      mode,
+      task: originalPrompt || `${mode} mode execution`,
+      primaryAgent: agent,
+      status: 'in_progress',
+    });
+
+    return {
+      contextFilePath: CONTEXT_FILE_PATH,
+      contextExists: true,
+      contextDocument: appendResult.document || readResult.document,
+      mandatoryAction:
+        '📝 MANDATORY: Call update_context before completion to persist progress and notes.',
+    };
   }
 
   /** Empty session result constant for methods returning no session info */
