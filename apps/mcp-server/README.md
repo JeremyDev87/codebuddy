@@ -338,6 +338,76 @@ When you use an AI assistant with this MCP server:
 3. **Architecture**: AI suggests structures following your patterns
 4. **Conventions**: AI follows your naming and style rules
 
+## Architecture Overview
+
+The MCP server follows a modular architecture with clear separation of concerns:
+
+```
+src/
+├── mcp/           # MCP protocol handlers (resources, tools, prompts)
+├── keyword/       # Workflow mode processing (PLAN/ACT/EVAL/AUTO)
+│   ├── strategies/    # Mode-specific agent resolution (Strategy pattern)
+│   └── patterns/      # Intent detection patterns
+├── session/       # Session document management
+│   ├── session.parser.ts      # Document parsing
+│   ├── session.serializer.ts  # Document serialization
+│   └── session.cache.ts       # In-memory caching
+├── context/       # Context document management
+├── config/        # Configuration loading and validation
+├── rules/         # AI rules file management
+├── agent/         # Agent profiles and system prompts
+├── checklist/     # Quality checklists by domain
+├── analyzer/      # Project analysis utilities
+├── skill/         # Skill recommendation engine
+├── cli/           # CLI command handlers
+└── shared/        # Shared utilities (async, security, validation)
+```
+
+### Key Design Patterns
+
+| Pattern | Usage | Location |
+|---------|-------|----------|
+| Strategy | Mode-specific agent resolution | `keyword/strategies/` |
+| Builder | Activation message construction | `keyword/activation-message.builder.ts` |
+| Repository | Session document persistence | `session/session.service.ts` |
+| Factory | Handler creation | `mcp/handlers/` |
+
+### Module Dependencies
+
+```
+mcp/ → keyword/ → config/
+      ↓          ↓
+   session/ → shared/
+      ↓
+   context/
+```
+
+## Code Quality
+
+### Test Coverage Goals
+
+| Metric | Target |
+|--------|--------|
+| Statement coverage | 90%+ |
+| Branch coverage | 85%+ |
+| Function coverage | 90%+ |
+
+### Running Quality Checks
+
+```bash
+# Full test suite with coverage
+yarn workspace codingbuddy test --coverage
+
+# Lint check
+yarn workspace codingbuddy lint
+
+# Type check
+yarn workspace codingbuddy typecheck
+
+# Build
+yarn workspace codingbuddy build
+```
+
 ## Development
 
 ```bash

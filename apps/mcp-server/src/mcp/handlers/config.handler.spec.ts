@@ -224,6 +224,20 @@ describe('ConfigHandler', () => {
         );
         expect(content).toHaveProperty('projectRoot');
       });
+
+      it('should include deprecation warning in response', async () => {
+        const result = await handler.handle('set_project_root', {
+          projectRoot: '/new/project/path',
+        });
+
+        expect(result?.isError).toBeFalsy();
+        const content = JSON.parse(
+          (result?.content[0] as { text: string }).text,
+        );
+        expect(content).toHaveProperty('deprecationWarning');
+        expect(content.deprecationWarning).toContain('DEPRECATED');
+        expect(content.deprecationWarning).toContain('v2.0.0');
+      });
     });
   });
 

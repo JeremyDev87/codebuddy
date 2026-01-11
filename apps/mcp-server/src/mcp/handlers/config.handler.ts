@@ -79,7 +79,7 @@ export class ConfigHandler extends AbstractHandler {
       {
         name: 'set_project_root',
         description:
-          'Set the project root directory. Use this when the MCP server is launched from a different directory than the target project.',
+          '[DEPRECATED - Will be removed in v2.0.0] Set the project root directory. Use this when the MCP server is launched from a different directory than the target project. RECOMMENDED: Configure project root in mcp-servers settings or use --project-root CLI flag instead.',
         inputSchema: {
           type: 'object',
           properties: {
@@ -171,6 +171,8 @@ export class ConfigHandler extends AbstractHandler {
         success: true,
         projectRoot: this.configService.getProjectRoot(),
         message: `Project root set to: ${this.configService.getProjectRoot()}`,
+        deprecationWarning:
+          '[DEPRECATED] set_project_root will be removed in v2.0.0. Configure project root in mcp-servers settings or use --project-root CLI flag instead.',
       });
     } catch (error) {
       return createErrorResponse(
