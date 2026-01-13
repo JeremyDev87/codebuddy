@@ -55,6 +55,7 @@ const DEFAULT_CONFIG: KeywordModesConfig = {
       defaultSpecialists: [
         'architecture-specialist',
         'test-strategy-specialist',
+        'migration-specialist',
       ],
     },
     ACT: {
@@ -89,6 +90,7 @@ const DEFAULT_CONFIG: KeywordModesConfig = {
         'code-quality-specialist',
         'observability-specialist',
         'event-architecture-specialist',
+        'migration-specialist',
       ],
     },
     AUTO: {
@@ -108,6 +110,7 @@ const DEFAULT_CONFIG: KeywordModesConfig = {
         'code-quality-specialist',
         'observability-specialist',
         'event-architecture-specialist',
+        'migration-specialist',
       ],
     },
   },
@@ -220,6 +223,12 @@ export class KeywordService {
       pattern:
         /event[- ]?driven|이벤트\s*기반|message\s*queue|메시지\s*큐|Kafka|RabbitMQ|SQS|Azure\s*Service\s*Bus|event\s*sourc|CQRS|saga\s*pattern|분산\s*트랜잭션|distributed\s*transaction|pub\/?sub|dead\s*letter|DLQ|websocket|SSE|server[- ]?sent|real[- ]?time|실시간|async\s*messag|비동기\s*통신/i,
       specialist: 'event-architecture-specialist',
+    },
+    // Migration keywords → migration-specialist
+    {
+      pattern:
+        /migration|마이그레이션|migrate|이전|legacy\s*(system|code|moderniz)|레거시|upgrade\s*(framework|version|library)|업그레이드|strangler\s*fig|branch\s*by\s*abstraction|blue[- ]?green|canary\s*(deploy|release)|rollback|롤백|api\s*version|deprecat|dual[- ]?write|backward\s*compatib|호환성|zero[- ]?downtime|data\s*migration|데이터\s*마이그레이션|schema\s*migration|스키마\s*변경|cutover|전환/i,
+      specialist: 'migration-specialist',
     },
   ];
 

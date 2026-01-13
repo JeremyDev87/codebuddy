@@ -103,4 +103,14 @@ export const FILE_PATTERN_SPECIALISTS: Record<string, string[]> = {
   websocket: ['event-architecture-specialist', 'performance-specialist'],
   consumer: ['event-architecture-specialist'],
   producer: ['event-architecture-specialist'],
+
+  // Migration-related files
+  migration: ['migration-specialist', 'data-engineer'],
+  migrate: ['migration-specialist'],
+  upgrade: ['migration-specialist'],
+  legacy: ['migration-specialist', 'architecture-specialist'],
+  deprecate: ['migration-specialist', 'documentation-specialist'],
+  rollback: ['migration-specialist'],
+  cutover: ['migration-specialist'],
+  versioning: ['migration-specialist', 'integration-specialist'],
 };
