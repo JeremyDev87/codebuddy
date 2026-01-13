@@ -37,6 +37,17 @@
         "When security review identifies external API integration concerns",
         "When OAuth flow implementation details need verification",
         "When webhook signature verification implementation is needed"
+      ],
+      "to_event_architecture_specialist": [
+        "When webhook processing needs event queue patterns for reliability",
+        "When external API responses need async event-driven processing",
+        "When third-party events need internal event bus integration",
+        "When integration retry logic needs saga pattern coordination"
+      ],
+      "from_event_architecture_specialist": [
+        "When event system needs external webhook delivery endpoints",
+        "When internal events need third-party API notification",
+        "When saga compensation requires external service rollback calls"
       ]
     }
   },

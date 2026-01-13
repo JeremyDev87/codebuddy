@@ -24,7 +24,20 @@
       "Plan and verify edge case testing",
       "Plan and verify test organization",
       "Plan and verify no mocking approach"
-    ]
+    ],
+    "delegation_rules": {
+      "to_event_architecture_specialist": [
+        "When saga pattern tests need choreography/orchestration verification",
+        "When event schema contract tests need compatibility validation",
+        "When event replay tests need idempotency verification",
+        "When distributed transaction tests need compensation logic testing"
+      ],
+      "from_event_architecture_specialist": [
+        "When event consumer test coverage falls below 90%",
+        "When saga test structure needs TDD guidance",
+        "When contract test organization needs standardization"
+      ]
+    }
   },
   "context_files": [
     ".ai-rules/rules/core.md",

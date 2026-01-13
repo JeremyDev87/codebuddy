@@ -24,7 +24,20 @@
       "Plan and assess image optimization",
       "Plan and identify memory leaks",
       "Plan and optimize network requests"
-    ]
+    ],
+    "delegation_rules": {
+      "to_event_architecture_specialist": [
+        "When message queue throughput needs optimization analysis",
+        "When event processing latency impacts application performance",
+        "When consumer group scaling affects system resources",
+        "When event batching strategy needs performance tuning"
+      ],
+      "from_event_architecture_specialist": [
+        "When event handlers cause memory leaks or excessive CPU usage",
+        "When WebSocket connections impact Core Web Vitals",
+        "When real-time event rendering causes performance bottlenecks"
+      ]
+    }
   },
   "context_files": [
     ".ai-rules/rules/core.md",

@@ -35,7 +35,20 @@
       "Follow augmented coding principles (Kent Beck)",
       "Ensure type safety (TypeScript, type hints, generics as applicable)",
       "Apply SOLID principles and Clean Architecture"
-    ]
+    ],
+    "delegation_rules": {
+      "to_event_architecture_specialist": [
+        "When implementing message queue producers or consumers",
+        "When designing event-driven microservices communication",
+        "When implementing saga patterns for distributed transactions",
+        "When event sourcing or CQRS patterns are needed"
+      ],
+      "from_event_architecture_specialist": [
+        "When event handlers need database operations",
+        "When saga steps require API endpoint implementation",
+        "When event consumers need business logic implementation"
+      ]
+    }
   },
 
   "context_files": [

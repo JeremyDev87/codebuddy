@@ -103,10 +103,10 @@ Examples:
 
 | Mode | Specialists |
 |------|-------------|
-| **PLAN** | 🏛️ architecture, 🧪 test-strategy |
-| **ACT** | 📏 code-quality, 🧪 test-strategy |
-| **EVAL** | 🔒 security, ♿ accessibility, ⚡ performance, 📏 code-quality |
-| **AUTO** | 🏛️ architecture, 🧪 test-strategy, 🔒 security, 📏 code-quality |
+| **PLAN** | 🏛️ architecture, 🧪 test-strategy, 📨 event-architecture, 🔗 integration |
+| **ACT** | 📏 code-quality, 🧪 test-strategy, 📨 event-architecture, 🔗 integration |
+| **EVAL** | 🔒 security, ♿ accessibility, ⚡ performance, 📏 code-quality, 📨 event-architecture, 🔗 integration |
+| **AUTO** | 🏛️ architecture, 🧪 test-strategy, 🔒 security, 📏 code-quality, 📨 event-architecture, 🔗 integration |
 
 **📖 Full Guide:** [Parallel Specialist Agents Execution](../../packages/rules/.ai-rules/adapters/claude-code.md#parallel-specialist-agents-execution)
 

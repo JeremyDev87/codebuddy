@@ -182,6 +182,15 @@ See `.ai-rules/rules/clarification-guide.md` for detailed question guidelines.
 - [Input validation planning]
 - [XSS/CSRF protection planning]
 
+## 📨 Event Architecture Planning
+(When event-driven architecture, message queues, or distributed transactions planning is needed)
+- Use Event Architecture Specialist Agent framework (`.ai-rules/agents/event-architecture-specialist.json`) modes.planning for comprehensive event architecture planning
+- [Message broker selection (Kafka, RabbitMQ, SQS)]
+- [Event schema and versioning planning]
+- [Delivery guarantees and idempotency planning]
+- [Saga pattern design (Choreography vs Orchestration)]
+- [Real-time communication planning (WebSocket, SSE)]
+
 ## ♿ Accessibility Planning
 (When accessibility planning is needed)
 - Use Accessibility Specialist Agent framework (`.ai-rules/agents/accessibility-specialist.json`) modes.planning for comprehensive accessibility planning
@@ -352,6 +361,14 @@ Execute implementation following TDD cycle, augmented coding principles, and qua
 - [Authorization verification]
 - [Input validation verification]
 - [XSS/CSRF protection verification]
+
+## 📨 Event Architecture Implementation Verification
+(When event-driven architecture implementation verification is needed)
+- Use Event Architecture Specialist Agent framework (`.ai-rules/agents/event-architecture-specialist.json`) modes.implementation for comprehensive event architecture implementation verification
+- [Producer/consumer implementation verification]
+- [Idempotency and retry configuration verification]
+- [DLQ and error handling verification]
+- [Correlation ID tracking verification]
 
 ## ♿ Accessibility Implementation Verification
 (When accessibility implementation verification is needed)
@@ -590,6 +607,14 @@ Self-improvement through iterative refinement
 - [OAuth 2.0 / JWT security review]
 - [CSRF/XSS protection verification]
 - [Security vulnerabilities with risk assessment (Critical/High/Medium/Low)]
+
+## 📨 Event Architecture Assessment
+(When event-driven architecture or message queue code is present)
+- Use Event Architecture Specialist Agent framework (`.ai-rules/agents/event-architecture-specialist.json`) modes.evaluation for comprehensive event architecture review
+- [Reliability and delivery guarantees audit]
+- [Consistency and saga pattern verification]
+- [Scalability and partitioning assessment]
+- [Observability and correlation ID verification]
 
 ## ♿ Accessibility Assessment
 (When UI components are present)
