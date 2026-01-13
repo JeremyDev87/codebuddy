@@ -36,6 +36,18 @@
         "When authentication/authorization architecture needs security audit",
         "When XSS/CSRF/SQL injection prevention review is needed beyond integration scope",
         "When secrets management requires security policy review"
+      ],
+      "to_observability_specialist": [
+        "When security audit trails need observability infrastructure design",
+        "When security event logging requires structured logging patterns",
+        "When security metrics (failed logins, blocked requests) need monitoring setup",
+        "When security alerting thresholds and SLOs need definition"
+      ],
+      "from_observability_specialist": [
+        "When observability infrastructure needs security review (log access, PII in traces)",
+        "When metrics endpoints require authentication/authorization",
+        "When tracing data contains sensitive information needing protection",
+        "When log retention policies require compliance review"
       ]
     }
   },

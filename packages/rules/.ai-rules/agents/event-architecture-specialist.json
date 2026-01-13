@@ -74,6 +74,18 @@
         "When event schema contract tests need compatibility validation",
         "When event replay tests need idempotency verification",
         "When distributed transaction tests need compensation logic testing"
+      ],
+      "to_observability_specialist": [
+        "When event tracing infrastructure needs design beyond correlation IDs",
+        "When event flow metrics and dashboards need observability expertise",
+        "When SLI/SLO definitions for event processing latency are needed",
+        "When distributed tracing for event chains requires OpenTelemetry setup"
+      ],
+      "from_observability_specialist": [
+        "When observability pipeline uses event streaming (Kafka for logs/metrics)",
+        "When trace data needs event-driven architecture for processing",
+        "When metric collection requires event queue patterns",
+        "When alert routing uses message queue infrastructure"
       ]
     }
   },

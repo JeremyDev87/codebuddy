@@ -84,4 +84,23 @@ export const FILE_PATTERN_SPECIALISTS: Record<string, string[]> = {
   hook: ['test-strategy-specialist', 'performance-specialist'],
   service: ['architecture-specialist', 'test-strategy-specialist'],
   util: ['test-strategy-specialist', 'code-quality-specialist'],
+
+  // Observability-related files
+  metrics: ['observability-specialist', 'performance-specialist'],
+  tracing: ['observability-specialist'],
+  monitoring: ['observability-specialist', 'devops-engineer'],
+  telemetry: ['observability-specialist'],
+  logging: ['observability-specialist'],
+  alert: ['observability-specialist'],
+  sli: ['observability-specialist'],
+  slo: ['observability-specialist'],
+
+  // Event architecture files
+  event: ['event-architecture-specialist'],
+  queue: ['event-architecture-specialist'],
+  message: ['event-architecture-specialist'],
+  saga: ['event-architecture-specialist'],
+  websocket: ['event-architecture-specialist', 'performance-specialist'],
+  consumer: ['event-architecture-specialist'],
+  producer: ['event-architecture-specialist'],
 };

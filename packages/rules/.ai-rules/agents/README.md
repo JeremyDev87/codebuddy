@@ -16,6 +16,9 @@ AI Agent definitions for specialized development roles.
 - [Workflow Modes](#workflow-modes)
 - [Agent Structure](#agent-structure)
 - [Adding New Agents](#adding-new-agents)
+  - [Specialist Integration Checklist (4-Point)](#specialist-integration-checklist-4-point)
+  - [Updating Existing Specialist Integration](#updating-existing-specialist-integration)
+  - [Deprecating a Specialist](#deprecating-a-specialist)
 - [Best Practices](#best-practices)
 
 ---
@@ -44,6 +47,7 @@ AI Agent definitions for specialized development roles.
 | **Documentation** | Documentation Specialist | `documentation-specialist.json` |
 | **Code Quality** | Code Quality Specialist | `code-quality-specialist.json` |
 | **Docker/Monitoring** | DevOps Engineer | `devops-engineer.json` |
+| **Observability/Tracing/SLO** | Observability Specialist | `observability-specialist.json` |
 | **IaC/K8s/Multi-Cloud** | Platform Engineer | `platform-engineer.json` |
 | **Config/Build Tools** | Tooling Engineer | `tooling-engineer.json` |
 | **Agent Management** | Agent Architect | `agent-architect.json` |
@@ -73,6 +77,7 @@ AI Agent definitions for specialized development roles.
 | Documentation Specialist | Code comments, JSDoc, documentation quality assessment |
 | Code Quality Specialist | SOLID, DRY, complexity analysis |
 | DevOps Engineer | Docker, monitoring, deployment optimization |
+| Observability Specialist | OpenTelemetry, distributed tracing, SLI/SLO, structured logging |
 | Platform Engineer | IaC, Kubernetes, multi-cloud, GitOps, cost optimization, DR |
 | Tooling Engineer | Project configuration, build tools, dev environment setup |
 | Agent Architect | AI agent design, validation, checklist auditing |
@@ -102,6 +107,30 @@ Use this matrix to determine which agent to use for infrastructure-related tasks
 **Hybrid Scenarios:**
 - Docker + Kubernetes: Start with Platform Engineer (broader scope), reference DevOps for Docker-specific optimization
 - Monitoring + Multi-cloud: Platform Engineer for infrastructure, DevOps for application-level monitoring
+
+### DevOps Engineer vs Observability Specialist Decision Matrix
+
+Use this matrix to determine which agent to use for monitoring and observability tasks:
+
+| Scenario | Use DevOps Engineer | Use Observability Specialist |
+|----------|--------------------|-----------------------------|
+| **Datadog setup** | ✅ APM, RUM, logs configuration | OTLP export to Datadog |
+| **OpenTelemetry** | Basic trace export | ✅ SDK setup, sampling, exporters |
+| **Distributed tracing** | Datadog APM only | ✅ Jaeger, Zipkin, Tempo patterns |
+| **SLI/SLO definition** | — | ✅ Framework design, error budgets |
+| **Logging strategy** | Datadog log injection | ✅ Structured JSON, PII masking |
+| **Alert design** | Basic Datadog alerts | ✅ Fatigue prevention, runbooks |
+| **Dashboard design** | Datadog dashboards | ✅ Vendor-neutral patterns |
+| **Docker/Build** | ✅ Multi-stage, optimization | — |
+| **Prometheus/Grafana** | — | ✅ Metric collection, visualization |
+
+**Rule of Thumb:**
+- **DevOps Engineer**: Datadog-specific setup, Docker, build optimization
+- **Observability Specialist**: Vendor-neutral observability, OpenTelemetry, SLI/SLO
+
+**Hybrid Scenarios:**
+- Datadog + OpenTelemetry: Start with Observability Specialist for architecture, reference DevOps for Datadog-specific config
+- New monitoring stack: Observability Specialist for Prometheus/Grafana/ELK design
 
 ---
 
@@ -310,6 +339,7 @@ Unified specialist agents organized by domain:
 - **Documentation** (`documentation-specialist.json`)
 - **Integration** (`integration-specialist.json`)
 - **Event Architecture** (`event-architecture-specialist.json`)
+- **Observability** (`observability-specialist.json`)
 - **Performance** (`performance-specialist.json`)
 - **Security** (`security-specialist.json`)
 - **SEO** (`seo-specialist.json`)
@@ -829,6 +859,72 @@ Unified specialist agents organized by domain:
 
 ---
 
+### Observability Specialist (`observability-specialist.json`)
+
+> **Note**: This is a **Domain Specialist** for vendor-neutral observability, covering OpenTelemetry instrumentation, distributed tracing, structured logging, SLI/SLO frameworks, and alerting patterns. Complements DevOps Engineer (Datadog-specific) with vendor-neutral approach.
+
+**Supported Technologies:**
+
+- Tracing: OpenTelemetry, Jaeger, Zipkin, Tempo, AWS X-Ray
+- Metrics: Prometheus, Grafana, InfluxDB, Victoria Metrics
+- Logs: ELK Stack, Loki, Splunk, Fluentd, CloudWatch Logs
+- Standards: W3C Trace Context, OTLP, RED/USE methods
+
+**Expertise:**
+
+- OpenTelemetry instrumentation (traces, metrics, logs)
+- Distributed tracing (Jaeger, Zipkin, Tempo, Grafana Tempo)
+- Structured logging (JSON format, context propagation)
+- Metrics systems (Prometheus, Grafana, InfluxDB)
+- SLI/SLO definition and error budget management
+- Alert fatigue prevention and escalation patterns
+- Correlation ID and W3C Trace Context propagation
+- Dashboard design and visualization best practices
+
+**Development Philosophy:**
+
+- **Three Pillars**: Unified approach to traces, metrics, and logs
+- **Vendor-Neutral**: OpenTelemetry-first instrumentation
+- **SLO-Driven**: Define service level objectives before implementation
+- **Observable by Default**: Every service instrumented from day one
+- **Actionable Alerts**: Alert on symptoms, not causes; require runbooks
+
+**Responsibilities:**
+
+- Plan and review observability architecture implementations
+- Design distributed tracing strategies with proper context propagation
+- Plan structured logging standards with PII masking
+- Define SLI/SLO frameworks and error budget policies
+- Design dashboard templates and alerting strategies
+- Plan log retention and archiving policies
+- Assess observability maturity and recommend improvements
+
+**Workflow:**
+
+- **Planning**: Three pillars architecture, SLI/SLO definition, tracing strategy
+- **Implementation**: OpenTelemetry SDK setup, log format verification, metric naming
+- **Evaluation**: Trace coverage audit, alert quality review, maturity assessment
+
+**Observability Maturity Model:**
+
+| Level | Description | Characteristics |
+|-------|-------------|-----------------|
+| 1 | Reactive | Basic logging only, manual debugging |
+| 2 | Proactive | Structured logs + basic metrics |
+| 3 | Predictive | Distributed tracing + SLIs |
+| 4 | Optimized | Full observability with SLOs and error budgets |
+| 5 | Innovative | Predictive observability with anomaly detection |
+
+**Activation Patterns:**
+
+- Keywords: "observability", "distributed tracing", "OpenTelemetry", "SLI", "SLO", "error budget", "structured logging", "Prometheus", "Grafana", "Jaeger"
+- Korean: "관측 가능성", "분산 추적", "SLI/SLO", "에러 버짓"
+- English: "observability", "distributed tracing", "SLI/SLO", "error budget", "OpenTelemetry"
+
+**Auto-Activation:** Supported via MCP server. Observability Specialist is automatically selected when prompts contain observability-related keywords or when working with tracing/monitoring files.
+
+---
+
 ### Code Reviewer (`code-reviewer.json`)
 
 **Expertise:**
@@ -1188,6 +1284,7 @@ All agent files are located directly in `.ai-rules/agents/` directory without su
 ├── documentation-specialist.json    # Domain specialist
 ├── integration-specialist.json      # Domain specialist
 ├── event-architecture-specialist.json # Domain specialist
+├── observability-specialist.json    # Domain specialist
 ├── performance-specialist.json      # Domain specialist
 ├── security-specialist.json         # Domain specialist
 ├── seo-specialist.json              # Domain specialist
@@ -1353,6 +1450,269 @@ To create a Primary Developer Agent for your tech stack:
 - `workflow`: Framework-specific patterns (e.g., Server Actions vs API routes)
 - `design_system`: UI component library for your project
 - `communication.language`: Team's preferred language
+
+### Specialist Integration Checklist (4-Point)
+
+When creating a new **Domain Specialist** agent (e.g., `{domain}-specialist.json`), you must complete ALL 4 integration points to ensure the agent is properly discovered and recommended by the MCP server:
+
+#### ✅ Integration Checklist
+
+| # | File | Location | Action |
+|---|------|----------|--------|
+| 1 | `keyword.service.ts` | `CONTEXT_SPECIALIST_PATTERNS` | Add keyword regex pattern for prompt-based detection |
+| 2 | `agent.types.ts` | `FILE_PATTERN_SPECIALISTS` | Add file name patterns for file-based detection |
+| 3 | `keyword.service.ts` | `defaultSpecialists` | Add to relevant mode configs (PLAN/ACT/EVAL/AUTO) |
+| 4 | `custom-instructions.md` | Mode-specific Specialists table | Update documentation table |
+
+#### 1. CONTEXT_SPECIALIST_PATTERNS (keyword.service.ts)
+
+Add a regex pattern to detect specialist-relevant keywords in user prompts:
+
+```typescript
+// apps/mcp-server/src/keyword/keyword.service.ts
+{
+  pattern:
+    /keyword1|keyword2|한국어키워드|english\s*pattern/i,
+  specialist: '{domain}-specialist',
+},
+```
+
+**Best Practices:**
+- Include both English and localized keywords (Korean, Japanese, Chinese, Spanish, etc.)
+- Use `\s*` for optional spaces
+- Use `[- ]?` for optional hyphens/spaces
+- Test regex patterns cover common variations
+- **Check for conflicts**: Review existing patterns to avoid overlap (e.g., "log" might match both observability and other specialists)
+
+#### 2. FILE_PATTERN_SPECIALISTS (agent.types.ts)
+
+Add file name patterns that trigger specialist recommendations:
+
+```typescript
+// apps/mcp-server/src/agent/agent.types.ts
+export const FILE_PATTERN_SPECIALISTS: Record<string, string[]> = {
+  // ... existing patterns
+  keyword1: ['{domain}-specialist'],
+  keyword2: ['{domain}-specialist', 'other-specialist'],
+};
+```
+
+**Best Practices:**
+- Use lowercase file name keywords
+- Multiple specialists can share a pattern
+- Consider related file patterns (e.g., `metrics` → `['observability-specialist', 'performance-specialist']`)
+
+#### 3. defaultSpecialists (keyword.service.ts)
+
+Add the specialist to appropriate mode default lists:
+
+```typescript
+// apps/mcp-server/src/keyword/keyword.service.ts
+// In MODE_CONFIGS
+EVAL: {
+  defaultSpecialists: [
+    // ... existing specialists
+    '{domain}-specialist',
+  ],
+},
+```
+
+**Mode Selection Guide:**
+
+| Mode | Include When |
+|------|--------------|
+| PLAN | Specialist provides planning/architecture guidance |
+| ACT | Specialist provides implementation verification |
+| EVAL | Specialist provides quality assessment (most common) |
+| AUTO | Specialist is essential for autonomous quality cycles |
+
+#### 4. Documentation (custom-instructions.md)
+
+Update the Mode-specific Specialists table:
+
+```markdown
+| Mode | Specialists |
+|------|-------------|
+| **EVAL** | ..., 📊 {domain} |
+```
+
+**Icon Selection:**
+- Use relevant emoji that represents the domain
+- Examples: 🔒 security, ♿ accessibility, ⚡ performance, 📊 observability
+
+#### Testing Requirements
+
+After completing all 4 integration points, add tests:
+
+```typescript
+// apps/mcp-server/src/keyword/keyword.service.spec.ts
+describe('{domain}-specialist pattern', () => {
+  it.each([
+    'English keyword 1',
+    'English keyword 2',
+    // ... more English patterns
+  ])('detects {domain}-specialist for English: %s', async prompt => {
+    const result = await service.parseMode(`PLAN ${prompt}`);
+    expect(result.parallelAgentsRecommendation?.specialists).toContain(
+      '{domain}-specialist',
+    );
+  });
+
+  it.each([
+    '한국어 키워드 1',
+    '한국어 키워드 2',
+    // ... more Korean patterns
+  ])('detects {domain}-specialist for Korean: %s', async prompt => {
+    const result = await service.parseMode(`PLAN ${prompt}`);
+    expect(result.parallelAgentsRecommendation?.specialists).toContain(
+      '{domain}-specialist',
+    );
+  });
+
+  it('does not detect {domain}-specialist for unrelated prompts', async () => {
+    const result = await service.parseMode('PLAN create login form');
+    expect(result.parallelAgentsRecommendation?.specialists).not.toContain(
+      '{domain}-specialist',
+    );
+  });
+});
+```
+
+**Test Coverage Requirements:**
+- ✅ English keywords (at least 5 test cases, more for complex domains)
+- ✅ Localized keywords (at least 3 test cases per supported language)
+- ✅ Negative test (at least 1 unrelated prompt that should NOT trigger)
+
+#### 5. Verify Integration
+
+After completing all integration points and tests, verify everything works:
+
+```bash
+# Run specialist pattern tests
+yarn vitest run src/keyword/keyword.service.spec.ts -t "{domain}-specialist pattern"
+
+# Run full test suite to ensure no regressions
+yarn test
+```
+
+**Verification Checklist:**
+- [ ] All new pattern tests pass
+- [ ] No existing tests broken
+- [ ] Specialist appears in `parallelAgentsRecommendation` when keywords match
+- [ ] Specialist appears when target files match `FILE_PATTERN_SPECIALISTS`
+
+---
+
+### Updating Existing Specialist Integration
+
+When modifying an existing specialist's integration:
+
+#### Adding New Keywords
+
+1. Add keywords to the existing pattern in `CONTEXT_SPECIALIST_PATTERNS`
+2. Add corresponding tests (both English and localized)
+3. Run verification to ensure no conflicts
+
+```typescript
+// Before
+pattern: /existing|keywords/i,
+
+// After
+pattern: /existing|keywords|new_keyword|새키워드/i,
+```
+
+#### Adding New File Patterns
+
+1. Add patterns to `FILE_PATTERN_SPECIALISTS`
+2. Check for conflicts with existing patterns
+
+```typescript
+// Adding new pattern
+newpattern: ['{domain}-specialist'],
+// Or extending existing pattern
+existingpattern: ['existing-specialist', '{domain}-specialist'],
+```
+
+#### Changing Mode Assignments
+
+1. Update `defaultSpecialists` in relevant mode configs
+2. Update `custom-instructions.md` table
+3. Document the change rationale
+
+#### Deprecating a Specialist
+
+When removing or deprecating a specialist:
+
+**Common Deprecation Reasons:**
+- Specialist merged into another (e.g., combining overlapping domains)
+- Domain no longer relevant to project
+- Replaced by improved specialist with different approach
+- Simplifying agent ecosystem (reducing noise in recommendations)
+
+**Full Deprecation (Remove Completely):**
+
+1. **Remove from all 4 integration points** (reverse order recommended):
+   - Remove from `custom-instructions.md` Mode-specific Specialists table
+   - Remove from `defaultSpecialists` in `keyword.service.ts`
+   - Remove file patterns from `FILE_PATTERN_SPECIALISTS` in `agent.types.ts`
+   - Remove keyword pattern from `CONTEXT_SPECIALIST_PATTERNS` in `keyword.service.ts`
+
+2. **Clean up tests**:
+   - Remove or update tests in `keyword.service.spec.ts`
+   - Run full test suite to ensure no broken references
+
+3. **Handle the agent JSON file**:
+   - Option A: Delete `{domain}-specialist.json` if no longer needed
+   - Option B: Add `"deprecated": true` field if keeping for reference
+
+4. **Document the deprecation**:
+   - Add note in commit message explaining why specialist was removed
+   - Update any documentation that references the specialist
+
+5. **Support consumer migration** (if specialist has active users):
+   - Announce deprecation in advance (recommend 1-2 sprint cycles)
+   - Provide migration path to replacement specialist (if applicable)
+   - Update prompts/workflows that explicitly reference the deprecated specialist
+
+**Deprecation Timeline Recommendation:**
+- **Announce**: Communicate deprecation intent at least 1 sprint before removal
+- **Soft deprecation**: Mark as deprecated but keep functional (optional)
+- **Hard deprecation**: Complete removal from all integration points
+
+**Partial Deprecation (Mode-Specific Removal):**
+
+To remove a specialist from specific modes only (e.g., keep in EVAL but remove from PLAN):
+
+1. Update `defaultSpecialists` in the relevant mode config only
+2. Update `custom-instructions.md` Mode-specific Specialists table
+3. Keep `CONTEXT_SPECIALIST_PATTERNS` and `FILE_PATTERN_SPECIALISTS` intact
+4. Document which modes still include the specialist
+5. Run `yarn test` to verify partial changes don't break existing functionality
+
+```typescript
+// Example: Remove from PLAN but keep in EVAL
+PLAN: {
+  defaultSpecialists: [
+    // '{domain}-specialist' removed from PLAN
+  ],
+},
+EVAL: {
+  defaultSpecialists: [
+    '{domain}-specialist', // Still included in EVAL
+  ],
+},
+```
+
+**Deprecation Checklist:**
+- [ ] Removed from `CONTEXT_SPECIALIST_PATTERNS` (if full deprecation)
+- [ ] Removed from `FILE_PATTERN_SPECIALISTS` (if full deprecation)
+- [ ] Removed from `defaultSpecialists` (all modes or specific modes)
+- [ ] Removed from `custom-instructions.md`
+- [ ] Tests cleaned up
+- [ ] Agent JSON handled (deleted or marked deprecated)
+- [ ] All tests pass
+
+**See also:** [Specialist Integration Checklist (4-Point)](#specialist-integration-checklist-4-point) for the reverse process (adding specialists)
 
 ---
 
