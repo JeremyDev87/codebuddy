@@ -116,6 +116,62 @@ export const SKILL_KEYWORDS: SkillKeywordConfig[] = [
   },
 
   // ============================================================================
+  // PR REVIEW - Priority 22
+  // Same priority as executing-plans: both are action-oriented execution skills
+  // that guide a specific workflow rather than broad planning/brainstorming
+  // ============================================================================
+  {
+    skillName: 'pr-review',
+    priority: 22, // Matches executing-plans - specific action workflow skill
+    description: 'Systematic PR review with anti-sycophancy principles',
+    concepts: {
+      review: {
+        en: [
+          'PR review',
+          'pull request review',
+          'review pull request',
+          'code review',
+          'review PR',
+          'review MR',
+          'merge request',
+          'review this PR',
+        ],
+        ko: ['PR 리뷰', '풀리퀘스트 리뷰', '코드 리뷰', 'MR 리뷰', '검토해'],
+        ja: ['PRレビュー', 'プルリクエストレビュー', 'コードレビュー'],
+        zh: ['PR审查', '代码审查', '合并请求审查'],
+        es: ['revisar PR', 'revisión de código', 'revisar pull request'],
+      },
+      approve: {
+        en: [
+          'approve PR',
+          'approve merge',
+          'LGTM',
+          'sign off on PR',
+          'merge approval',
+        ],
+        ko: ['PR 승인', 'MR 승인', 'LGTM'],
+        ja: ['PR承認', 'LGTM', 'マージ承認'],
+        zh: ['批准PR', 'LGTM', '同意合并'],
+        es: ['aprobar PR', 'aprobar merge', 'LGTM'],
+      },
+      critique: {
+        en: ['request changes', 'find issues', 'critique', 'feedback on PR'],
+        ko: ['수정 요청', '이슈 찾기', '피드백'],
+        ja: ['修正要求', '問題を見つける', 'フィードバック'],
+        zh: ['请求修改', '找问题', '反馈'],
+        es: ['solicitar cambios', 'encontrar problemas', 'crítica'],
+      },
+      checklist: {
+        en: ['security check', 'code quality check', 'review checklist'],
+        ko: ['보안 점검', '코드 품질 체크', '리뷰 체크리스트'],
+        ja: ['セキュリティチェック', 'コード品質チェック'],
+        zh: ['安全检查', '代码质量检查', '审查清单'],
+        es: ['verificación de seguridad', 'verificación de calidad'],
+      },
+    },
+  },
+
+  // ============================================================================
   // WRITING PLANS - Priority 20
   // ============================================================================
   {

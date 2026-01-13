@@ -10,6 +10,7 @@ Reusable workflows for consistent development practices.
 | dispatching-parallel-agents | Handle 2+ independent tasks without shared state | Parallel task execution |
 | executing-plans | Execute implementation plans with review checkpoints | Following written plans |
 | frontend-design | Create distinctive, production-grade frontend interfaces | Building web components/pages |
+| pr-review | Systematic, evidence-based PR review with anti-sycophancy principles | Conducting manual PR reviews |
 | subagent-driven-development | Execute plans with independent tasks in current session | In-session plan execution |
 | systematic-debugging | Systematic approach before proposing fixes | Encountering bugs or failures |
 | test-driven-development | Write tests first, then minimal code to pass | Before implementing features |
@@ -100,6 +101,8 @@ EOF
 ├── executing-plans/
 │   └── SKILL.md
 ├── frontend-design/
+│   └── SKILL.md
+├── pr-review/
 │   └── SKILL.md
 ├── subagent-driven-development/
 │   └── SKILL.md
