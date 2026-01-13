@@ -390,6 +390,9 @@ describe('skill-triggers', () => {
       const executingPriority = priorities.find(
         p => p.name === 'executing-plans',
       )?.priority;
+      const prReviewPriority = priorities.find(
+        p => p.name === 'pr-review',
+      )?.priority;
       const writingPriority = priorities.find(
         p => p.name === 'writing-plans',
       )?.priority;
@@ -404,10 +407,110 @@ describe('skill-triggers', () => {
       )?.priority;
 
       expect(debuggingPriority).toBeGreaterThan(executingPriority!);
-      expect(executingPriority).toBeGreaterThan(writingPriority!);
+      expect(executingPriority).toBeGreaterThanOrEqual(prReviewPriority!);
+      expect(prReviewPriority).toBeGreaterThanOrEqual(writingPriority!);
       expect(writingPriority).toBeGreaterThan(frontendPriority!);
       expect(frontendPriority).toBeGreaterThan(tddPriority!);
       expect(tddPriority).toBeGreaterThan(brainstormingPriority!);
+    });
+  });
+
+  describe('pr-review skill triggers', () => {
+    let triggers: ReturnType<typeof buildTriggersFromKeywords>;
+
+    beforeAll(() => {
+      triggers = buildTriggersFromKeywords(SKILL_KEYWORDS);
+    });
+
+    it('should have pr-review skill registered', () => {
+      const prReviewTrigger = triggers.find(t => t.skillName === 'pr-review');
+      expect(prReviewTrigger).toBeDefined();
+      expect(prReviewTrigger?.priority).toBe(22);
+    });
+
+    describe('English triggers', () => {
+      it.each([
+        'Review this PR',
+        'PR review please',
+        'code review for this change',
+        'review pull request',
+        'review the merge request',
+        'can you LGTM this',
+        'request changes on this PR',
+      ])('should match: %s', prompt => {
+        const prReviewTrigger = triggers.find(t => t.skillName === 'pr-review');
+        const matched = prReviewTrigger?.patterns.some(p => p.test(prompt));
+        expect(matched).toBe(true);
+      });
+    });
+
+    describe('Korean triggers', () => {
+      it.each([
+        'PR 리뷰 해줘',
+        '코드 리뷰 부탁해',
+        '이 PR 검토해줘',
+        'MR 리뷰 해주세요',
+        '풀리퀘스트 리뷰',
+      ])('should match: %s', prompt => {
+        const prReviewTrigger = triggers.find(t => t.skillName === 'pr-review');
+        const matched = prReviewTrigger?.patterns.some(p => p.test(prompt));
+        expect(matched).toBe(true);
+      });
+    });
+
+    describe('Japanese triggers', () => {
+      it.each([
+        'PRレビューお願いします',
+        'コードレビューしてください',
+        'プルリクエストレビュー依頼',
+        'LGTMで承認して',
+      ])('should match: %s', prompt => {
+        const prReviewTrigger = triggers.find(t => t.skillName === 'pr-review');
+        const matched = prReviewTrigger?.patterns.some(p => p.test(prompt));
+        expect(matched).toBe(true);
+      });
+    });
+
+    describe('Chinese triggers', () => {
+      it.each(['PR审查一下', '代码审查请求', '合并请求审查', 'LGTM批准'])(
+        'should match: %s',
+        prompt => {
+          const prReviewTrigger = triggers.find(
+            t => t.skillName === 'pr-review',
+          );
+          const matched = prReviewTrigger?.patterns.some(p => p.test(prompt));
+          expect(matched).toBe(true);
+        },
+      );
+    });
+
+    describe('Spanish triggers', () => {
+      it.each([
+        'por favor revisar PR',
+        'necesito revisión de código',
+        'revisar pull request ahora',
+        'aprobar PR ahora',
+      ])('should match: %s', prompt => {
+        const prReviewTrigger = triggers.find(t => t.skillName === 'pr-review');
+        const matched = prReviewTrigger?.patterns.some(p => p.test(prompt));
+        expect(matched).toBe(true);
+      });
+    });
+
+    describe('Negative test cases (should NOT match)', () => {
+      it.each([
+        'review my resume',
+        'review the document',
+        'approve my vacation request',
+        'check my homework',
+        'find bugs in my essay',
+        'give me feedback on my presentation',
+        'security checklist for travel',
+      ])('should NOT match: %s', prompt => {
+        const prReviewTrigger = triggers.find(t => t.skillName === 'pr-review');
+        const matched = prReviewTrigger?.patterns.some(p => p.test(prompt));
+        expect(matched).toBe(false);
+      });
     });
   });
 });
