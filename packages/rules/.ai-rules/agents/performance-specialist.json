@@ -36,6 +36,16 @@
         "When event handlers cause memory leaks or excessive CPU usage",
         "When WebSocket connections impact Core Web Vitals",
         "When real-time event rendering causes performance bottlenecks"
+      ],
+      "to_observability_specialist": [
+        "When observability infrastructure for performance metrics is needed",
+        "When custom metric collection for performance analysis is required",
+        "When latency tracing across services is needed"
+      ],
+      "from_observability_specialist": [
+        "When performance optimization requires metric analysis",
+        "When Core Web Vitals monitoring integration is needed",
+        "When application profiling beyond observability is required"
       ]
     }
   },

@@ -87,6 +87,8 @@ const DEFAULT_CONFIG: KeywordModesConfig = {
         'accessibility-specialist',
         'performance-specialist',
         'code-quality-specialist',
+        'observability-specialist',
+        'event-architecture-specialist',
       ],
     },
     AUTO: {
@@ -104,6 +106,8 @@ const DEFAULT_CONFIG: KeywordModesConfig = {
         'test-strategy-specialist',
         'security-specialist',
         'code-quality-specialist',
+        'observability-specialist',
+        'event-architecture-specialist',
       ],
     },
   },
@@ -204,6 +208,18 @@ export class KeywordService {
       pattern:
         /외부\s*서비스|external\s*(api|service)|webhook|웹훅|third-?party|circuit\s*breaker|retry\s*pattern|API\s*integration|서드파티|연동|SDK\s*wrapper/i,
       specialist: 'integration-specialist',
+    },
+    // Observability keywords → observability-specialist
+    {
+      pattern:
+        /observability|관측성|distributed\s*trac|분산\s*추적|SLI|SLO|error\s*budget|OpenTelemetry|otel|Prometheus|Grafana|Jaeger|Zipkin|log\s*aggregat|로그\s*수집|alerting\s*strateg|알림\s*전략|메트릭\s*수집|metric\s*collect|tracing\s*infra|monitoring|대시보드|dashboard|logs?\s*manag/i,
+      specialist: 'observability-specialist',
+    },
+    // Event architecture keywords → event-architecture-specialist
+    {
+      pattern:
+        /event[- ]?driven|이벤트\s*기반|message\s*queue|메시지\s*큐|Kafka|RabbitMQ|SQS|Azure\s*Service\s*Bus|event\s*sourc|CQRS|saga\s*pattern|분산\s*트랜잭션|distributed\s*transaction|pub\/?sub|dead\s*letter|DLQ|websocket|SSE|server[- ]?sent|real[- ]?time|실시간|async\s*messag|비동기\s*통신/i,
+      specialist: 'event-architecture-specialist',
     },
   ];
 

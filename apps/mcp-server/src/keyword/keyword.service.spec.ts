@@ -1759,5 +1759,99 @@ describe('KeywordService', () => {
         );
       });
     });
+
+    describe('observability-specialist pattern', () => {
+      it.each([
+        'implement distributed tracing',
+        'add SLI/SLO monitoring',
+        'setup OpenTelemetry instrumentation',
+        'configure Prometheus metrics',
+        'Grafana dashboard setup',
+        'Jaeger tracing integration',
+        'log aggregation pipeline',
+        'alerting strategy design',
+        'metric collection for API latency',
+        'error budget tracking',
+        'setup monitoring for services',
+        'create dashboard for metrics',
+        'logs management system',
+      ])('detects observability-specialist for English: %s', async prompt => {
+        const result = await service.parseMode(`PLAN ${prompt}`);
+        expect(result.parallelAgentsRecommendation?.specialists).toContain(
+          'observability-specialist',
+        );
+      });
+
+      it.each([
+        '관측성 인프라 구축',
+        '분산 추적 시스템 설계',
+        '로그 수집 파이프라인 구현',
+        '메트릭 수집 설정',
+        '알림 전략 수립',
+        '대시보드 구축',
+      ])('detects observability-specialist for Korean: %s', async prompt => {
+        const result = await service.parseMode(`PLAN ${prompt}`);
+        expect(result.parallelAgentsRecommendation?.specialists).toContain(
+          'observability-specialist',
+        );
+      });
+
+      it('does not detect observability-specialist for unrelated prompts', async () => {
+        const result = await service.parseMode('PLAN create login form');
+        expect(result.parallelAgentsRecommendation?.specialists).not.toContain(
+          'observability-specialist',
+        );
+      });
+    });
+
+    describe('event-architecture-specialist pattern', () => {
+      it.each([
+        'implement event-driven architecture',
+        'add Kafka message queue',
+        'design saga pattern for order processing',
+        'RabbitMQ consumer implementation',
+        'CQRS pattern for read/write separation',
+        'SQS queue integration',
+        'distributed transaction handling',
+        'dead letter queue configuration',
+        'WebSocket real-time updates',
+        'SSE for live notifications',
+        'pub/sub messaging system',
+        'event sourcing implementation',
+        'real-time data synchronization',
+        'async messaging between services',
+      ])(
+        'detects event-architecture-specialist for English: %s',
+        async prompt => {
+          const result = await service.parseMode(`PLAN ${prompt}`);
+          expect(result.parallelAgentsRecommendation?.specialists).toContain(
+            'event-architecture-specialist',
+          );
+        },
+      );
+
+      it.each([
+        '이벤트 기반 아키텍처 설계',
+        '메시지 큐 도입',
+        '분산 트랜잭션 처리',
+        '실시간 데이터 동기화',
+        '비동기 통신 구현',
+      ])(
+        'detects event-architecture-specialist for Korean: %s',
+        async prompt => {
+          const result = await service.parseMode(`PLAN ${prompt}`);
+          expect(result.parallelAgentsRecommendation?.specialists).toContain(
+            'event-architecture-specialist',
+          );
+        },
+      );
+
+      it('does not detect event-architecture-specialist for unrelated prompts', async () => {
+        const result = await service.parseMode('PLAN create login form');
+        expect(result.parallelAgentsRecommendation?.specialists).not.toContain(
+          'event-architecture-specialist',
+        );
+      });
+    });
   });
 });

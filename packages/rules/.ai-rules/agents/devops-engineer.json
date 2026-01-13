@@ -23,7 +23,30 @@
       "Optimize build performance and memory usage",
       "Debug production issues with source maps and Datadog",
       "Monitor and improve application performance"
-    ]
+    ],
+    "delegation_rules": {
+      "to_observability_specialist": [
+        "When vendor-neutral observability strategy is needed",
+        "When distributed tracing architecture design is required",
+        "When SLI/SLO framework definition is needed",
+        "When OpenTelemetry instrumentation guidance is required"
+      ],
+      "from_observability_specialist": [
+        "When Datadog-specific configuration is needed",
+        "When Docker/container monitoring setup is required",
+        "When APM/RUM implementation uses Datadog specifically"
+      ],
+      "to_platform_engineer": [
+        "When Kubernetes deployment strategies are needed",
+        "When Infrastructure as Code design is required",
+        "When multi-cloud strategies are needed"
+      ],
+      "from_platform_engineer": [
+        "When Docker image optimization is needed",
+        "When application-level monitoring setup is required",
+        "When container health checks are needed"
+      ]
+    }
   },
 
   "context_files": [".ai-rules/rules/core.md", ".ai-rules/rules/project.md"],
