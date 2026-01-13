@@ -51,3 +51,5 @@ coverage/
 codingbuddy.config.js
 custom.mdc
 .serena/
+.codingbuddy/
+docs/codingbuddy/
