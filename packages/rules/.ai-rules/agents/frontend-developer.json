@@ -24,7 +24,20 @@
       "Follow augmented coding principles (Kent Beck)",
       "Ensure type safety with TypeScript strict mode",
       "Apply SOLID principles and code quality standards"
-    ]
+    ],
+    "delegation_rules": {
+      "to_event_architecture_specialist": [
+        "When implementing WebSocket connections for real-time features",
+        "When building Server-Sent Events (SSE) for live updates",
+        "When designing optimistic UI with event-driven state sync",
+        "When implementing real-time collaborative features"
+      ],
+      "from_event_architecture_specialist": [
+        "When event consumers need React component rendering",
+        "When WebSocket message handlers need UI state updates",
+        "When real-time events need user notification components"
+      ]
+    }
   },
 
   "context_files": [

@@ -24,7 +24,20 @@
       "Plan and verify pure/impure function separation",
       "Plan and verify import/export patterns",
       "Identify and prevent circular dependencies"
-    ]
+    ],
+    "delegation_rules": {
+      "to_event_architecture_specialist": [
+        "When event sourcing affects aggregate boundaries and layer placement",
+        "When CQRS pattern requires command/query separation architecture",
+        "When event-driven microservices need service boundary definition",
+        "When saga patterns affect cross-service dependencies"
+      ],
+      "from_event_architecture_specialist": [
+        "When event handlers violate layer architecture boundaries",
+        "When event consumers create circular dependencies",
+        "When event-driven design needs overall system architecture review"
+      ]
+    }
   },
   "context_files": [
     ".ai-rules/rules/core.md",

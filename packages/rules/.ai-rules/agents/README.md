@@ -40,6 +40,7 @@ AI Agent definitions for specialized development roles.
 | **UI/UX Design** | UI/UX Designer | `ui-ux-designer.json` |
 | **Internationalization** | i18n Specialist | `i18n-specialist.json` |
 | **External Service Integration** | Integration Specialist | `integration-specialist.json` |
+| **Event-Driven Architecture** | Event Architecture Specialist | `event-architecture-specialist.json` |
 | **Documentation** | Documentation Specialist | `documentation-specialist.json` |
 | **Code Quality** | Code Quality Specialist | `code-quality-specialist.json` |
 | **Docker/Monitoring** | DevOps Engineer | `devops-engineer.json` |
@@ -68,6 +69,7 @@ AI Agent definitions for specialized development roles.
 | UI/UX Designer | Visual hierarchy, UX laws, interaction patterns |
 | i18n Specialist | Internationalization, translation key structure, RTL support |
 | Integration Specialist | API integration patterns, webhooks, OAuth, circuit breakers, failure isolation |
+| Event Architecture Specialist | Message queues, Event Sourcing/CQRS, Saga patterns, real-time communication |
 | Documentation Specialist | Code comments, JSDoc, documentation quality assessment |
 | Code Quality Specialist | SOLID, DRY, complexity analysis |
 | DevOps Engineer | Docker, monitoring, deployment optimization |
@@ -307,6 +309,7 @@ Unified specialist agents organized by domain:
 - **UI/UX Design** (`ui-ux-designer.json`)
 - **Documentation** (`documentation-specialist.json`)
 - **Integration** (`integration-specialist.json`)
+- **Event Architecture** (`event-architecture-specialist.json`)
 - **Performance** (`performance-specialist.json`)
 - **Security** (`security-specialist.json`)
 - **SEO** (`seo-specialist.json`)
@@ -770,6 +773,62 @@ Unified specialist agents organized by domain:
 
 ---
 
+### Event Architecture Specialist (`event-architecture-specialist.json`)
+
+> **Note**: This is a **Domain Specialist** for event-driven architecture, covering message queues, event sourcing, CQRS, distributed transactions, real-time communication, and event schema management.
+
+**Supported Technologies:**
+
+- Message Queues: Apache Kafka, RabbitMQ, AWS SQS/SNS, Azure Service Bus, Google Pub/Sub
+- Event Stores: EventStoreDB, PostgreSQL, MongoDB, DynamoDB
+- Real-Time: WebSocket, Server-Sent Events (SSE), Long Polling
+- Schema: Avro, Protobuf, JSON Schema, Confluent Schema Registry
+
+**Expertise:**
+
+- Message Queue Selection and Configuration (ordering, durability, throughput tradeoffs)
+- Event Sourcing and Event Store Design (projections, snapshots, replay)
+- CQRS Pattern Implementation (command/query separation, read models)
+- Distributed Transaction Patterns (Saga Choreography/Orchestration, Outbox pattern)
+- Real-Time Communication (WebSocket lifecycle, SSE, reconnection strategies)
+- Event Schema Management (versioning, backward/forward compatibility)
+- Event Tracing and Debugging (correlation IDs, distributed tracing, DLQ handling)
+- Idempotency and Exactly-Once Processing Strategies
+
+**Development Philosophy:**
+
+- **Reliability-First**: Every event flow must have defined delivery guarantees and error handling
+- **Consistency-Aware**: Document and handle eventual consistency explicitly
+- **Observable**: Correlation IDs and distributed tracing for debugging event chains
+- **Scalable**: Design for horizontal scaling with proper partitioning and consumer groups
+- **Evolvable**: Schema versioning and compatibility testing for safe evolution
+
+**Responsibilities:**
+
+- Plan and review event-driven architecture implementations
+- Design message broker selection criteria and configuration
+- Plan and verify event sourcing and CQRS implementations
+- Design saga patterns for distributed transactions
+- Plan event schema evolution and compatibility strategies
+- Design event tracing and debugging approaches
+- Review real-time communication implementations
+
+**Workflow:**
+
+- **Planning**: Broker selection, schema design, delivery guarantees, saga pattern design
+- **Implementation**: Producer/consumer verification, idempotency, retry/DLQ configuration
+- **Evaluation**: Reliability audit, consistency audit, scalability audit, observability audit
+
+**Activation Patterns:**
+
+- Files: `**/events/**`, `**/kafka/**`, `**/rabbitmq/**`, `**/sqs/**`, `**/eventgrid/**`, `**/pubsub/**`, `**/eventbridge/**`, `**/*producer*.ts`, `**/*consumer*.ts`, `**/*saga*.ts`, `**/*event-store*.ts`, `**/websocket/**`
+- Korean: "이벤트 아키텍처", "메시지 큐", "카프카", "사가 패턴", "이벤트 소싱"
+- English: "event-driven", "message queue", "kafka", "rabbitmq", "saga pattern", "event sourcing", "CQRS", "websocket"
+
+**Auto-Activation:** Supported via MCP server. Event Architecture Specialist is automatically selected when prompts contain event-driven architecture keywords or when working with message queue/event sourcing files.
+
+---
+
 ### Code Reviewer (`code-reviewer.json`)
 
 **Expertise:**
@@ -1128,6 +1187,7 @@ All agent files are located directly in `.ai-rules/agents/` directory without su
 ├── ui-ux-designer.json              # Domain specialist
 ├── documentation-specialist.json    # Domain specialist
 ├── integration-specialist.json      # Domain specialist
+├── event-architecture-specialist.json # Domain specialist
 ├── performance-specialist.json      # Domain specialist
 ├── security-specialist.json         # Domain specialist
 ├── seo-specialist.json              # Domain specialist
@@ -1162,18 +1222,28 @@ Some specialist agents define **delegation rules** to clarify when work should b
 
 ```json
 {
-  "delegation_rules": {
-    "to_{specialist}": [
-      "When condition X requires specialist expertise",
-      "When condition Y is beyond current agent scope"
-    ],
-    "from_{specialist}": [
-      "When specialist identifies work for this agent",
-      "When specialist review triggers this agent's domain"
-    ]
+  "role": {
+    "title": "Specialist Title",
+    "expertise": [...],
+    "responsibilities": [...],
+    "delegation_rules": {
+      "to_{specialist}": [
+        "When condition X requires specialist expertise",
+        "When condition Y is beyond current agent scope"
+      ],
+      "from_{specialist}": [
+        "When specialist identifies work for this agent",
+        "When specialist review triggers this agent's domain"
+      ]
+    }
   }
 }
 ```
+
+**Placement Standard:**
+- `delegation_rules` MUST be placed inside the `role` object, after `responsibilities`
+- This ensures consistent structure across all agent files
+- All 8 agents with delegation rules follow this pattern
 
 **Example (Integration Specialist ↔ Security Specialist):**
 
@@ -1191,15 +1261,20 @@ Some specialist agents define **delegation rules** to clarify when work should b
 **Currently Implemented:**
 
 - `integration-specialist.json` ↔ `security-specialist.json` (bidirectional delegation rules)
+- `integration-specialist.json` ↔ `event-architecture-specialist.json` (webhook ↔ event queue patterns)
+- `backend-developer.json` ↔ `event-architecture-specialist.json` (API ↔ message queue patterns)
+- `architecture-specialist.json` ↔ `event-architecture-specialist.json` (layer boundaries ↔ event-driven design)
+- `frontend-developer.json` ↔ `event-architecture-specialist.json` (UI ↔ real-time event patterns)
+- `performance-specialist.json` ↔ `event-architecture-specialist.json` (optimization ↔ event throughput)
+- `test-strategy-specialist.json` ↔ `event-architecture-specialist.json` (testing ↔ saga/contract tests)
 
 **Potential Future Delegation Patterns:**
 
 | Specialists | Use Case |
 |-------------|----------|
-| Performance ↔ Frontend | Bundle optimization, lazy loading, rendering performance |
 | Accessibility ↔ UI/UX | ARIA implementation, color contrast, interaction design |
 | Security ↔ DevOps | Secrets management, CI/CD security, infrastructure hardening |
-| Architecture ↔ Test Strategy | Testability design, mock boundaries, integration testing |
+| Performance ↔ Frontend | Bundle optimization, lazy loading, rendering performance |
 
 > **Note**: Add delegation_rules when specialists have clear handoff scenarios. Avoid unnecessary rules for specialists with minimal overlap.
 
