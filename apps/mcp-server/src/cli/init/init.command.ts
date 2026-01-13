@@ -12,6 +12,8 @@ import { findExistingConfig, writeConfig } from './config.writer';
 import { createConsoleUtils } from '../utils/console';
 import { renderConfigObjectAsJs, renderConfigObjectAsJson } from './templates';
 import { runInitWizard, wizardDataToConfig } from './init.wizard';
+import { ensureGitignoreEntries } from './gitignore.utils';
+import { CODINGBUDDY_GITIGNORE_ENTRIES } from './init.constants';
 import type { InitOptions, InitResult } from '../cli.types';
 
 /**
@@ -106,6 +108,18 @@ async function runTemplateInit(
 
   console.log.success(`Configuration saved to ${configPath}`);
 
+  // Step 5: Update .gitignore
+  const gitignoreResult = await ensureGitignoreEntries(
+    options.projectRoot,
+    CODINGBUDDY_GITIGNORE_ENTRIES,
+  );
+  if (gitignoreResult.added.length > 0) {
+    console.log.step(
+      '📝',
+      `Updated .gitignore: ${gitignoreResult.added.join(', ')}`,
+    );
+  }
+
   // Success message
   console.log.success('');
   console.log.step('✅', `codingbuddy.config.${options.format} created!`);
@@ -169,6 +183,18 @@ async function runAiInit(
   });
 
   console.log.success(`Configuration saved to ${configPath}`);
+
+  // Step 4: Update .gitignore
+  const gitignoreResult = await ensureGitignoreEntries(
+    options.projectRoot,
+    CODINGBUDDY_GITIGNORE_ENTRIES,
+  );
+  if (gitignoreResult.added.length > 0) {
+    console.log.step(
+      '📝',
+      `Updated .gitignore: ${gitignoreResult.added.join(', ')}`,
+    );
+  }
 
   // Success message
   console.log.success('');

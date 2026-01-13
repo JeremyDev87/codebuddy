@@ -14,6 +14,7 @@ const {
   mockWizardDataToConfig,
   mockRenderConfigObjectAsJs,
   mockRenderConfigObjectAsJson,
+  mockEnsureGitignoreEntries,
 } = vi.hoisted(() => ({
   mockAnalyzeProject: vi.fn(),
   mockGenerate: vi.fn(),
@@ -23,6 +24,7 @@ const {
   mockWizardDataToConfig: vi.fn(),
   mockRenderConfigObjectAsJs: vi.fn(),
   mockRenderConfigObjectAsJson: vi.fn(),
+  mockEnsureGitignoreEntries: vi.fn(),
 }));
 
 // Mock all modules
@@ -51,6 +53,10 @@ vi.mock('./templates', () => ({
 vi.mock('./init.wizard', () => ({
   runInitWizard: mockRunInitWizard,
   wizardDataToConfig: mockWizardDataToConfig,
+}));
+
+vi.mock('./gitignore.utils', () => ({
+  ensureGitignoreEntries: mockEnsureGitignoreEntries,
 }));
 
 vi.mock('../utils/console', () => ({
@@ -147,6 +153,10 @@ describe('init.command', () => {
     mockWizardDataToConfig.mockReturnValue(mockConfig);
     mockRenderConfigObjectAsJs.mockReturnValue('// rendered config');
     mockRenderConfigObjectAsJson.mockReturnValue('{}');
+    mockEnsureGitignoreEntries.mockResolvedValue({
+      added: [],
+      alreadyExists: [],
+    });
   });
 
   describe('getApiKey', () => {

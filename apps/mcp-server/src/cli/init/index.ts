@@ -7,3 +7,10 @@ export {
   CONFIG_FILE_NAMES,
 } from './config.writer';
 export type { ConfigFormat, WriteConfigOptions } from './config.writer';
+export {
+  ensureGitignoreEntries,
+  GitignoreReadError,
+  GitignoreWriteError,
+} from './gitignore.utils';
+export type { GitignoreEntry, EnsureGitignoreResult } from './gitignore.utils';
+export { CODINGBUDDY_GITIGNORE_ENTRIES } from './init.constants';
