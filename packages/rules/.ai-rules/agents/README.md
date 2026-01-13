@@ -48,6 +48,7 @@ AI Agent definitions for specialized development roles.
 | **Code Quality** | Code Quality Specialist | `code-quality-specialist.json` |
 | **Docker/Monitoring** | DevOps Engineer | `devops-engineer.json` |
 | **Observability/Tracing/SLO** | Observability Specialist | `observability-specialist.json` |
+| **Migration/Legacy Modernization** | Migration Specialist | `migration-specialist.json` |
 | **IaC/K8s/Multi-Cloud** | Platform Engineer | `platform-engineer.json` |
 | **Config/Build Tools** | Tooling Engineer | `tooling-engineer.json` |
 | **Agent Management** | Agent Architect | `agent-architect.json` |
@@ -78,6 +79,7 @@ AI Agent definitions for specialized development roles.
 | Code Quality Specialist | SOLID, DRY, complexity analysis |
 | DevOps Engineer | Docker, monitoring, deployment optimization |
 | Observability Specialist | OpenTelemetry, distributed tracing, SLI/SLO, structured logging |
+| Migration Specialist | Strangler Fig, Branch by Abstraction, legacy modernization, zero-downtime migration |
 | Platform Engineer | IaC, Kubernetes, multi-cloud, GitOps, cost optimization, DR |
 | Tooling Engineer | Project configuration, build tools, dev environment setup |
 | Agent Architect | AI agent design, validation, checklist auditing |
@@ -340,6 +342,7 @@ Unified specialist agents organized by domain:
 - **Integration** (`integration-specialist.json`)
 - **Event Architecture** (`event-architecture-specialist.json`)
 - **Observability** (`observability-specialist.json`)
+- **Migration** (`migration-specialist.json`)
 - **Performance** (`performance-specialist.json`)
 - **Security** (`security-specialist.json`)
 - **SEO** (`seo-specialist.json`)
@@ -925,6 +928,83 @@ Unified specialist agents organized by domain:
 
 ---
 
+### Migration Specialist (`migration-specialist.json`)
+
+> **Note**: This is a **Cross-Cutting Specialist** for legacy system modernization, framework upgrades, database migrations, and API versioning. Coordinates with Data Engineer (database), Platform Engineer (infrastructure), Architecture Specialist (layers), and Integration Specialist (APIs) for domain-specific implementation.
+
+**Supported Patterns:**
+
+- Strangler Fig: Gradual legacy replacement with traffic routing
+- Branch by Abstraction: Refactoring with abstraction layer and feature toggles
+- Blue-Green: Zero-downtime deployment with instant rollback
+- Canary: Risk mitigation through gradual traffic routing
+- Dual-Write: Database migration with zero data loss
+
+**Expertise:**
+
+- Legacy system modernization (Strangler Fig pattern)
+- Framework upgrade strategies with compatibility handling
+- Database migration with zero-downtime patterns
+- Rollback planning and execution
+- API versioning and deprecation management
+- Feature flag-based cutover strategies
+- Dual-write pattern implementation
+- Migration risk assessment and mitigation
+
+**Development Philosophy:**
+
+- **Verification-Driven Migration (VDM)**: Pre-migration validation → Execution → Post-migration validation → Rollback verification
+- **Phase-Based**: Every migration broken into independently reversible phases
+- **Rollback-First**: Rollback procedure defined and tested before any production migration
+- **SLI-Triggered Rollback**: Automatic rollback on defined threshold breaches
+- **Data Integrity**: Continuous verification at every checkpoint
+
+**Responsibilities:**
+
+- Orchestrate multi-phase migration strategies
+- Design and verify rollback procedures
+- Plan pre/post-migration validation checkpoints
+- Coordinate migration SLIs for automatic rollback triggers
+- Manage API version coexistence and deprecation
+- Guide incremental migration with feature flags
+- Ensure data integrity during migrations
+- Coordinate with specialist agents for domain-specific implementation
+
+**Workflow:**
+
+- **Planning**: Pattern selection, phase breakdown, rollback design, SLI definition
+- **Implementation**: Pre-migration validation, execution with monitoring, checkpoint verification
+- **Evaluation**: Completeness verification, performance comparison, cleanup audit
+
+**Migration SLI Thresholds:**
+
+| SLI | Baseline | Rollback Trigger |
+|-----|----------|------------------|
+| Error Rate | Pre-migration rate | >1% increase |
+| Latency (p95) | Pre-migration latency | >20% degradation |
+| Data Consistency | Zero difference | Any inconsistency |
+| Throughput | Pre-migration capacity | <80% of baseline |
+
+**Delegation Rules:**
+
+| Delegate To | When |
+|-------------|------|
+| Data Engineer | Database schema migrations, data transformation logic |
+| Platform Engineer | Infrastructure blue-green deployment, Kubernetes rollouts |
+| Architecture Specialist | Layer boundary changes, module restructuring |
+| Integration Specialist | External API migrations, API contract changes |
+| Observability Specialist | Migration dashboards, SLI/SLO framework |
+
+**Activation Patterns:**
+
+- Keywords: "migration", "migrate", "legacy", "upgrade", "strangler fig", "rollback", "cutover", "deprecation", "backward compatibility"
+- Korean: "마이그레이션", "이전", "레거시", "업그레이드", "롤백", "호환성", "전환"
+- English: "migration", "legacy modernization", "framework upgrade", "zero-downtime", "api versioning"
+
+**Auto-Activation:** Supported via MCP server. Migration Specialist is automatically selected when prompts contain migration-related keywords or when working with migration/upgrade files.
+
+---
+
 ### Code Reviewer (`code-reviewer.json`)
 
 **Expertise:**
@@ -1285,6 +1365,7 @@ All agent files are located directly in `.ai-rules/agents/` directory without su
 ├── integration-specialist.json      # Domain specialist
 ├── event-architecture-specialist.json # Domain specialist
 ├── observability-specialist.json    # Domain specialist
+├── migration-specialist.json        # Cross-cutting specialist
 ├── performance-specialist.json      # Domain specialist
 ├── security-specialist.json         # Domain specialist
 ├── seo-specialist.json              # Domain specialist

@@ -326,5 +326,82 @@ describe('AgentService', () => {
       ).length;
       expect(securityCount).toBe(1);
     });
+
+    describe('migration file patterns', () => {
+      it('should recommend migration-specialist for migration files', () => {
+        const result = service.getRecommendedAgents(
+          [],
+          ['src/migrations/001_init.ts'],
+        );
+
+        expect(result).toContain('migration-specialist');
+      });
+
+      it('should recommend migration-specialist and data-engineer for migration files', () => {
+        const result = service.getRecommendedAgents(
+          [],
+          ['db/migration/add-users-table.ts'],
+        );
+
+        expect(result).toContain('migration-specialist');
+        expect(result).toContain('data-engineer');
+      });
+
+      it('should recommend migration-specialist for legacy files', () => {
+        const result = service.getRecommendedAgents(
+          [],
+          ['src/legacy/old-service.ts'],
+        );
+
+        expect(result).toContain('migration-specialist');
+        expect(result).toContain('architecture-specialist');
+      });
+
+      it('should recommend migration-specialist for upgrade scripts', () => {
+        const result = service.getRecommendedAgents(
+          [],
+          ['scripts/upgrade-v2.ts'],
+        );
+
+        expect(result).toContain('migration-specialist');
+      });
+
+      it('should recommend migration-specialist for deprecation files', () => {
+        const result = service.getRecommendedAgents(
+          [],
+          ['src/deprecated/old-api.ts'],
+        );
+
+        expect(result).toContain('migration-specialist');
+      });
+
+      it('should recommend migration-specialist for rollback scripts', () => {
+        const result = service.getRecommendedAgents(
+          [],
+          ['scripts/rollback-migration.ts'],
+        );
+
+        expect(result).toContain('migration-specialist');
+      });
+
+      it('should recommend migration-specialist for cutover files', () => {
+        const result = service.getRecommendedAgents(
+          [],
+          ['scripts/cutover-to-new-system.ts'],
+        );
+
+        expect(result).toContain('migration-specialist');
+      });
+
+      it('should recommend migration-specialist for versioning files', () => {
+        const result = service.getRecommendedAgents(
+          [],
+          ['src/api/versioning/v2-handler.ts'],
+        );
+
+        expect(result).toContain('migration-specialist');
+        expect(result).toContain('integration-specialist');
+      });
+    });
   });
 });

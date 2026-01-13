@@ -44,6 +44,9 @@ const mockConfig: KeywordModesConfig = {
         'accessibility-specialist',
         'performance-specialist',
         'code-quality-specialist',
+        'observability-specialist',
+        'event-architecture-specialist',
+        'migration-specialist',
       ],
     },
     AUTO: {
@@ -957,6 +960,9 @@ describe('KeywordService', () => {
       expect(result.parallelAgentsRecommendation?.specialists).toContain(
         'code-quality-specialist',
       );
+      expect(result.parallelAgentsRecommendation?.specialists).toContain(
+        'migration-specialist',
+      );
     });
 
     it('returns specialists as a copy (not reference)', async () => {
@@ -1850,6 +1856,73 @@ describe('KeywordService', () => {
         const result = await service.parseMode('PLAN create login form');
         expect(result.parallelAgentsRecommendation?.specialists).not.toContain(
           'event-architecture-specialist',
+        );
+      });
+    });
+
+    describe('migration-specialist pattern', () => {
+      it.each([
+        'database migration strategy',
+        'migrate legacy system to microservices',
+        'legacy code modernization',
+        'upgrade framework to latest version',
+        'strangler fig pattern implementation',
+        'branch by abstraction for refactoring',
+        'blue-green deployment migration',
+        'canary release strategy',
+        'rollback plan for database changes',
+        'api versioning strategy',
+        'deprecate old endpoints',
+        'dual-write pattern for data sync',
+        'backward compatibility check',
+        'zero-downtime migration',
+        'data migration to new schema',
+        'schema migration plan',
+        'cutover strategy for new system',
+      ])('detects migration-specialist for English: %s', async prompt => {
+        const result = await service.parseMode(`PLAN ${prompt}`);
+        expect(result.parallelAgentsRecommendation?.specialists).toContain(
+          'migration-specialist',
+        );
+      });
+
+      it.each([
+        '데이터베이스 마이그레이션 전략',
+        '레거시 시스템 이전 계획',
+        '프레임워크 업그레이드',
+        '롤백 계획 수립',
+        '하위 호환성 검증',
+        '데이터 마이그레이션 실행',
+        '스키마 변경 적용',
+        '시스템 전환 전략',
+      ])('detects migration-specialist for Korean: %s', async prompt => {
+        const result = await service.parseMode(`PLAN ${prompt}`);
+        expect(result.parallelAgentsRecommendation?.specialists).toContain(
+          'migration-specialist',
+        );
+      });
+
+      it('does not detect migration-specialist for unrelated prompts', async () => {
+        const result = await service.parseMode('PLAN create login form');
+        expect(result.parallelAgentsRecommendation?.specialists).not.toContain(
+          'migration-specialist',
+        );
+      });
+
+      it('includes both default and migration specialists for complex prompts', async () => {
+        const result = await service.parseMode(
+          'PLAN strangler fig pattern with observability monitoring',
+        );
+        // Default PLAN specialists
+        expect(result.parallelAgentsRecommendation?.specialists).toContain(
+          'architecture-specialist',
+        );
+        // Context-aware specialists
+        expect(result.parallelAgentsRecommendation?.specialists).toContain(
+          'migration-specialist',
+        );
+        expect(result.parallelAgentsRecommendation?.specialists).toContain(
+          'observability-specialist',
         );
       });
     });

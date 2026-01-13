@@ -322,4 +322,107 @@ describe('parseAgentProfile', () => {
       expect(result.role.type).toBe('primary');
     });
   });
+
+  describe('migration-specialist agent validation', () => {
+    it('should validate migration-specialist unified specialist structure', () => {
+      // Test the core structure of migration-specialist.json
+      const migrationSpecialist = {
+        name: 'Migration Specialist',
+        description:
+          'Cross-cutting migration coordinator for legacy system modernization',
+        role: {
+          title: 'Migration Engineer',
+          type: 'specialist',
+          expertise: [
+            'Legacy system modernization (Strangler Fig pattern)',
+            'Framework upgrade strategies',
+            'Database migration with zero-downtime patterns',
+            'Rollback planning and execution',
+          ],
+          responsibilities: [
+            'Orchestrate multi-phase migration strategies',
+            'Design and verify rollback procedures',
+          ],
+          delegation_rules: {
+            to_data_engineer: [
+              'When database schema migrations require up/down methods',
+            ],
+            from_data_engineer: ['When migration orchestration is needed'],
+          },
+        },
+        modes: {
+          planning: {
+            mandatory_checklist: {
+              rollback_plan: 'Rollback strategy defined',
+            },
+          },
+          implementation: {
+            mandatory_checklist: {
+              rollback_sli_definition: 'Rollback triggers defined',
+            },
+          },
+          evaluation: {
+            mandatory_checklist: {
+              rollback_verification: 'Rollback procedures verified',
+            },
+          },
+        },
+      };
+
+      const result = parseAgentProfile(migrationSpecialist);
+      expect(result.name).toBe('Migration Specialist');
+      expect(result.role.type).toBe('specialist');
+      expect(result.role.delegation_rules).toBeDefined();
+      expect(result.modes).toBeDefined();
+    });
+
+    it('should accept delegation_rules in role object', () => {
+      const agentWithDelegation = {
+        name: 'Delegating Agent',
+        description: 'Agent with delegation rules',
+        role: {
+          title: 'Coordinator',
+          type: 'specialist',
+          expertise: ['Coordination'],
+          delegation_rules: {
+            to_other_agent: ['When specific conditions are met'],
+            from_other_agent: ['When coordination is needed'],
+          },
+        },
+      };
+
+      const result = parseAgentProfile(agentWithDelegation);
+      expect(result.role.delegation_rules).toBeDefined();
+      const delegationRules = result.role.delegation_rules as Record<
+        string,
+        string[]
+      >;
+      expect(delegationRules.to_other_agent).toHaveLength(1);
+      expect(delegationRules.from_other_agent).toHaveLength(1);
+    });
+
+    it('should accept modes object with planning/implementation/evaluation', () => {
+      const unifiedSpecialist = {
+        name: 'Unified Specialist',
+        description: 'Specialist with unified modes',
+        role: {
+          title: 'Specialist',
+          type: 'specialist',
+          expertise: ['Specialization'],
+        },
+        modes: {
+          planning: { mandatory_checklist: { item1: 'Check 1' } },
+          implementation: { mandatory_checklist: { item2: 'Check 2' } },
+          evaluation: { mandatory_checklist: { item3: 'Check 3' } },
+        },
+      };
+
+      const result = parseAgentProfile(unifiedSpecialist);
+      expect(result.modes).toBeDefined();
+      const modes = result.modes as Record<string, unknown>;
+      expect(modes.planning).toBeDefined();
+      expect(modes.implementation).toBeDefined();
+      expect(modes.evaluation).toBeDefined();
+    });
+  });
 });
