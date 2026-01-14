@@ -11,6 +11,7 @@ Reusable workflows for consistent development practices.
 | executing-plans | Execute implementation plans with review checkpoints | Following written plans |
 | frontend-design | Create distinctive, production-grade frontend interfaces | Building web components/pages |
 | pr-review | Systematic, evidence-based PR review with anti-sycophancy principles | Conducting manual PR reviews |
+| refactoring | Structured, test-driven refactoring workflow with Tidy First principles | Improving code structure without changing behavior |
 | subagent-driven-development | Execute plans with independent tasks in current session | In-session plan execution |
 | systematic-debugging | Systematic approach before proposing fixes | Encountering bugs or failures |
 | test-driven-development | Write tests first, then minimal code to pass | Before implementing features |
@@ -104,6 +105,9 @@ EOF
 │   └── SKILL.md
 ├── pr-review/
 │   └── SKILL.md
+├── refactoring/
+│   ├── SKILL.md
+│   └── refactoring-catalog.md
 ├── subagent-driven-development/
 │   └── SKILL.md
 ├── systematic-debugging/

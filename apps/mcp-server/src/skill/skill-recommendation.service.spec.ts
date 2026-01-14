@@ -200,6 +200,58 @@ describe('SkillRecommendationService', () => {
         expect(next).toBeDefined();
       }
     });
+
+    it('should recommend refactoring before writing-plans when "refactor" matches both', () => {
+      // Both refactoring (21) and writing-plans (20) have "refactor" keyword
+      // refactoring should appear first due to higher priority
+      const result = service.recommendSkills('I want to refactor this code');
+
+      const refactoringIdx = result.recommendations.findIndex(
+        r => r.skillName === 'refactoring',
+      );
+      const writingPlansIdx = result.recommendations.findIndex(
+        r => r.skillName === 'writing-plans',
+      );
+
+      // Both skills should be recommended
+      expect(refactoringIdx).toBeGreaterThanOrEqual(0);
+      expect(writingPlansIdx).toBeGreaterThanOrEqual(0);
+
+      // refactoring (priority 21) should appear before writing-plans (priority 20)
+      expect(refactoringIdx).toBeLessThan(writingPlansIdx);
+    });
+
+    it('should recommend only refactoring for code smell (not writing-plans)', () => {
+      // "code smell" is unique to refactoring skill
+      const result = service.recommendSkills('this code has a code smell');
+
+      const hasRefactoring = result.recommendations.some(
+        r => r.skillName === 'refactoring',
+      );
+      const hasWritingPlans = result.recommendations.some(
+        r => r.skillName === 'writing-plans',
+      );
+
+      expect(hasRefactoring).toBe(true);
+      expect(hasWritingPlans).toBe(false);
+    });
+
+    it('should recommend only writing-plans for architecture planning (not refactoring)', () => {
+      // "architecture plan" is unique to writing-plans skill
+      const result = service.recommendSkills(
+        'I need to plan the architecture for this project',
+      );
+
+      const hasWritingPlans = result.recommendations.some(
+        r => r.skillName === 'writing-plans',
+      );
+      const hasRefactoring = result.recommendations.some(
+        r => r.skillName === 'refactoring',
+      );
+
+      expect(hasWritingPlans).toBe(true);
+      expect(hasRefactoring).toBe(false);
+    });
   });
 
   describe('example prompts for each skill', () => {
