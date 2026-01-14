@@ -399,6 +399,9 @@ describe('skill-triggers', () => {
       const frontendPriority = priorities.find(
         p => p.name === 'frontend-design',
       )?.priority;
+      const refactoringPriority = priorities.find(
+        p => p.name === 'refactoring',
+      )?.priority;
       const tddPriority = priorities.find(
         p => p.name === 'test-driven-development',
       )?.priority;
@@ -408,7 +411,8 @@ describe('skill-triggers', () => {
 
       expect(debuggingPriority).toBeGreaterThan(executingPriority!);
       expect(executingPriority).toBeGreaterThanOrEqual(prReviewPriority!);
-      expect(prReviewPriority).toBeGreaterThanOrEqual(writingPriority!);
+      expect(prReviewPriority).toBeGreaterThan(refactoringPriority!);
+      expect(refactoringPriority).toBeGreaterThan(writingPriority!);
       expect(writingPriority).toBeGreaterThan(frontendPriority!);
       expect(frontendPriority).toBeGreaterThan(tddPriority!);
       expect(tddPriority).toBeGreaterThan(brainstormingPriority!);
@@ -511,6 +515,274 @@ describe('skill-triggers', () => {
         const matched = prReviewTrigger?.patterns.some(p => p.test(prompt));
         expect(matched).toBe(false);
       });
+    });
+  });
+
+  describe('refactoring skill triggers', () => {
+    let triggers: ReturnType<typeof buildTriggersFromKeywords>;
+
+    beforeAll(() => {
+      triggers = buildTriggersFromKeywords(SKILL_KEYWORDS);
+    });
+
+    it('should have refactoring skill registered', () => {
+      const refactoringTrigger = triggers.find(
+        t => t.skillName === 'refactoring',
+      );
+      expect(refactoringTrigger).toBeDefined();
+      expect(refactoringTrigger?.priority).toBe(21);
+    });
+
+    describe('English triggers', () => {
+      it.each([
+        'refactor this code',
+        'I need to refactoring this method',
+        'clean up code please',
+        'tidy up this function',
+        'this is a code smell',
+        'there is duplicate code here',
+        'extract method from this',
+        'extract function please',
+        'we have technical debt',
+        'this is legacy code',
+        'improve code structure',
+        'restructure this class',
+      ])('should match: %s', prompt => {
+        const refactoringTrigger = triggers.find(
+          t => t.skillName === 'refactoring',
+        );
+        const matched = refactoringTrigger?.patterns.some(p => p.test(prompt));
+        expect(matched).toBe(true);
+      });
+    });
+
+    describe('Korean triggers', () => {
+      it.each([
+        '이 코드 리팩토링 해줘',
+        '리팩터링 부탁해',
+        '코드 정리 해줘',
+        '코드 개선 해주세요',
+        '구조 개선이 필요해',
+        '정리해줘',
+        '깔끔하게 만들어줘',
+        '중복 코드가 있어',
+        '기술 부채 정리',
+        '레거시 코드 개선',
+        '메서드 추출해줘',
+        '함수 추출 부탁',
+      ])('should match: %s', prompt => {
+        const refactoringTrigger = triggers.find(
+          t => t.skillName === 'refactoring',
+        );
+        const matched = refactoringTrigger?.patterns.some(p => p.test(prompt));
+        expect(matched).toBe(true);
+      });
+    });
+
+    describe('Japanese triggers', () => {
+      it.each([
+        'リファクタリングして',
+        'コード整理お願い',
+        'コード改善してください',
+        '構造改善が必要',
+        '整理してほしい',
+        '重複コードがある',
+        'メソッド抽出して',
+        '技術的負債を解消',
+        'レガシーコード改善',
+      ])('should match: %s', prompt => {
+        const refactoringTrigger = triggers.find(
+          t => t.skillName === 'refactoring',
+        );
+        const matched = refactoringTrigger?.patterns.some(p => p.test(prompt));
+        expect(matched).toBe(true);
+      });
+    });
+
+    describe('Chinese triggers', () => {
+      it.each([
+        '重构这段代码',
+        '代码重构一下',
+        '代码整理',
+        '结构优化',
+        '代码改进',
+        '整理代码',
+        '重复代码',
+        '提取方法',
+        '技术债务',
+        '遗留代码',
+      ])('should match: %s', prompt => {
+        const refactoringTrigger = triggers.find(
+          t => t.skillName === 'refactoring',
+        );
+        const matched = refactoringTrigger?.patterns.some(p => p.test(prompt));
+        expect(matched).toBe(true);
+      });
+    });
+
+    describe('Spanish triggers', () => {
+      it.each([
+        'refactorizar este código',
+        'refactoring please',
+        'reorganizar código',
+        'limpiar código',
+        'mejorar estructura',
+        'código duplicado aquí',
+        'extraer método',
+        'deuda técnica',
+        'código legacy',
+      ])('should match: %s', prompt => {
+        const refactoringTrigger = triggers.find(
+          t => t.skillName === 'refactoring',
+        );
+        const matched = refactoringTrigger?.patterns.some(p => p.test(prompt));
+        expect(matched).toBe(true);
+      });
+    });
+
+    describe('priority order with related skills', () => {
+      it('should have higher priority than writing-plans (20)', () => {
+        const refactoringTrigger = triggers.find(
+          t => t.skillName === 'refactoring',
+        );
+        const writingPlansTrigger = triggers.find(
+          t => t.skillName === 'writing-plans',
+        );
+        // Refactoring (21) should win over writing-plans (20) for "refactor" keyword
+        expect(refactoringTrigger?.priority).toBeGreaterThan(
+          writingPlansTrigger!.priority,
+        );
+      });
+
+      it('should have higher priority than frontend-design (18)', () => {
+        const refactoringTrigger = triggers.find(
+          t => t.skillName === 'refactoring',
+        );
+        const frontendTrigger = triggers.find(
+          t => t.skillName === 'frontend-design',
+        );
+        expect(refactoringTrigger?.priority).toBeGreaterThan(
+          frontendTrigger!.priority,
+        );
+      });
+
+      it('should have higher priority than test-driven-development (15)', () => {
+        const refactoringTrigger = triggers.find(
+          t => t.skillName === 'refactoring',
+        );
+        const tddTrigger = triggers.find(
+          t => t.skillName === 'test-driven-development',
+        );
+        expect(refactoringTrigger?.priority).toBeGreaterThan(
+          tddTrigger!.priority,
+        );
+      });
+    });
+
+    describe('differentiating keywords', () => {
+      it.each([
+        'execute refactor on this code',
+        'apply refactoring to this method',
+        'do refactoring here',
+        'perform refactoring on this class',
+      ])('should match differentiating keyword: %s', prompt => {
+        const refactoringTrigger = triggers.find(
+          t => t.skillName === 'refactoring',
+        );
+        const matched = refactoringTrigger?.patterns.some(p => p.test(prompt));
+        expect(matched).toBe(true);
+      });
+
+      it.each(['리팩토링 실행해줘', '리팩토링 적용해'])(
+        'should match Korean differentiating keyword: %s',
+        prompt => {
+          const refactoringTrigger = triggers.find(
+            t => t.skillName === 'refactoring',
+          );
+          const matched = refactoringTrigger?.patterns.some(p =>
+            p.test(prompt),
+          );
+          expect(matched).toBe(true);
+        },
+      );
+
+      it.each(['リファクタリング実行してください', 'リファクタリング適用して'])(
+        'should match Japanese differentiating keyword: %s',
+        prompt => {
+          const refactoringTrigger = triggers.find(
+            t => t.skillName === 'refactoring',
+          );
+          const matched = refactoringTrigger?.patterns.some(p =>
+            p.test(prompt),
+          );
+          expect(matched).toBe(true);
+        },
+      );
+
+      it.each(['执行重构这段代码', '应用重构到这个方法'])(
+        'should match Chinese differentiating keyword: %s',
+        prompt => {
+          const refactoringTrigger = triggers.find(
+            t => t.skillName === 'refactoring',
+          );
+          const matched = refactoringTrigger?.patterns.some(p =>
+            p.test(prompt),
+          );
+          expect(matched).toBe(true);
+        },
+      );
+
+      it.each([
+        'ejecutar refactorización en este código',
+        'aplicar refactorización aquí',
+      ])('should match Spanish differentiating keyword: %s', prompt => {
+        const refactoringTrigger = triggers.find(
+          t => t.skillName === 'refactoring',
+        );
+        const matched = refactoringTrigger?.patterns.some(p => p.test(prompt));
+        expect(matched).toBe(true);
+      });
+    });
+
+    describe('casual language variations', () => {
+      it.each(['リファクタリングして', 'コード整理して', '整理してください'])(
+        'should match casual Japanese: %s',
+        prompt => {
+          const refactoringTrigger = triggers.find(
+            t => t.skillName === 'refactoring',
+          );
+          const matched = refactoringTrigger?.patterns.some(p =>
+            p.test(prompt),
+          );
+          expect(matched).toBe(true);
+        },
+      );
+
+      it.each(['重构一下', '代码整理下', '整理代码'])(
+        'should match casual Chinese: %s',
+        prompt => {
+          const refactoringTrigger = triggers.find(
+            t => t.skillName === 'refactoring',
+          );
+          const matched = refactoringTrigger?.patterns.some(p =>
+            p.test(prompt),
+          );
+          expect(matched).toBe(true);
+        },
+      );
+
+      it.each(['refactorizar esto', 'limpiar código'])(
+        'should match casual Spanish: %s',
+        prompt => {
+          const refactoringTrigger = triggers.find(
+            t => t.skillName === 'refactoring',
+          );
+          const matched = refactoringTrigger?.patterns.some(p =>
+            p.test(prompt),
+          );
+          expect(matched).toBe(true);
+        },
+      );
     });
   });
 });
