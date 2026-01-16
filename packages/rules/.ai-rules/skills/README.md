@@ -6,10 +6,13 @@ Reusable workflows for consistent development practices.
 
 | Skill | Description | When to Use |
 |-------|-------------|-------------|
+| api-design | REST/GraphQL API design with OpenAPI spec, versioning, and documentation | Designing new APIs |
 | brainstorming | Explores user intent, requirements and design before implementation | Before any creative work |
+| dependency-management | Systematic dependency updates, CVE response, and license compliance | Security vulnerabilities, major upgrades, license audits |
 | dispatching-parallel-agents | Handle 2+ independent tasks without shared state | Parallel task execution |
 | executing-plans | Execute implementation plans with review checkpoints | Following written plans |
 | frontend-design | Create distinctive, production-grade frontend interfaces | Building web components/pages |
+| incident-response | Systematic organizational response to production incidents | Production incidents, alerts, service degradation |
 | pr-review | Systematic, evidence-based PR review with anti-sycophancy principles | Conducting manual PR reviews |
 | refactoring | Structured, test-driven refactoring workflow with Tidy First principles | Improving code structure without changing behavior |
 | subagent-driven-development | Execute plans with independent tasks in current session | In-session plan execution |
@@ -95,14 +98,28 @@ EOF
 ```
 .ai-rules/skills/
 ├── README.md                       # This file
+├── api-design/
+│   └── SKILL.md
 ├── brainstorming/
 │   └── SKILL.md
+├── dependency-management/
+│   ├── SKILL.md
+│   ├── security-vulnerability-response.md
+│   ├── major-upgrade-guide.md
+│   ├── lock-file-management.md
+│   └── license-compliance.md
 ├── dispatching-parallel-agents/
 │   └── SKILL.md
 ├── executing-plans/
 │   └── SKILL.md
 ├── frontend-design/
 │   └── SKILL.md
+├── incident-response/
+│   ├── SKILL.md
+│   ├── communication-templates.md
+│   ├── escalation-matrix.md
+│   ├── postmortem-template.md
+│   └── severity-classification.md
 ├── pr-review/
 │   └── SKILL.md
 ├── refactoring/
