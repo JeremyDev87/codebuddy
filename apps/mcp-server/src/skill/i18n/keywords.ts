@@ -245,6 +245,127 @@ export const SKILL_KEYWORDS: SkillKeywordConfig[] = [
   },
 
   // ============================================================================
+  // DATABASE MIGRATION - Priority 23
+  // Just below incident-response: systematic database changes require planning
+  // ============================================================================
+  {
+    skillName: 'database-migration',
+    priority: 23,
+    description: 'Systematic database migration with zero-downtime patterns',
+    concepts: {
+      migration: {
+        en: [
+          'migration',
+          'migrate',
+          'schema change',
+          'database migration',
+          'data migration',
+          'table migration',
+        ],
+        ko: [
+          '마이그레이션',
+          '스키마 변경',
+          '데이터 마이그레이션',
+          'DB 마이그레이션',
+          '테이블 이전',
+        ],
+        ja: ['マイグレーション', 'スキーマ変更', 'データ移行', 'テーブル移行'],
+        zh: ['迁移', '数据库迁移', '模式变更', '数据迁移', '表迁移'],
+        es: ['migración', 'migrar', 'cambio de esquema', 'migración de datos'],
+      },
+      schema: {
+        en: [
+          'alter table',
+          'add column',
+          'drop column',
+          'modify column',
+          'rename column',
+          'change type',
+          'DDL',
+        ],
+        ko: [
+          '컬럼 추가',
+          '컬럼 삭제',
+          '컬럼 수정',
+          '컬럼 이름 변경',
+          '타입 변경',
+        ],
+        ja: ['カラム追加', 'カラム削除', 'カラム変更', 'タイプ変更'],
+        zh: ['添加列', '删除列', '修改列', '重命名列', '类型变更'],
+        es: ['agregar columna', 'eliminar columna', 'modificar columna'],
+      },
+      zero_downtime: {
+        en: [
+          'zero downtime',
+          'online migration',
+          'expand contract',
+          'rolling migration',
+          'blue green database',
+          'shadow table',
+        ],
+        ko: [
+          '무중단',
+          '온라인 마이그레이션',
+          '확장 수축 패턴',
+          '롤링 마이그레이션',
+        ],
+        ja: ['ゼロダウンタイム', 'オンライン移行', '拡張収縮パターン'],
+        zh: ['零停机', '在线迁移', '扩展收缩模式', '滚动迁移'],
+        es: ['cero tiempo de inactividad', 'migración en línea'],
+      },
+      large_scale: {
+        en: [
+          'large table',
+          'millions of rows',
+          'batch migration',
+          'bulk update',
+          'backfill',
+        ],
+        ko: [
+          '대용량 테이블',
+          '수백만 행',
+          '배치 마이그레이션',
+          '대량 업데이트',
+        ],
+        ja: ['大規模テーブル', '数百万行', 'バッチ移行', '一括更新'],
+        zh: ['大表', '百万行', '批量迁移', '批量更新', '回填'],
+        es: ['tabla grande', 'millones de filas', 'migración por lotes'],
+      },
+      rollback: {
+        en: [
+          'rollback migration',
+          'revert migration',
+          'undo migration',
+          'migration rollback',
+          'down migration',
+        ],
+        ko: ['롤백', '마이그레이션 롤백', '되돌리기', '마이그레이션 취소'],
+        ja: ['ロールバック', '移行ロールバック', '元に戻す'],
+        zh: ['回滚', '迁移回滚', '撤销迁移', '还原'],
+        es: ['rollback', 'revertir migración', 'deshacer migración'],
+      },
+      validation: {
+        en: [
+          'data validation',
+          'integrity check',
+          'pre migration',
+          'post migration',
+          'verify migration',
+        ],
+        ko: [
+          '데이터 검증',
+          '무결성 검사',
+          '마이그레이션 전 검증',
+          '마이그레이션 후 검증',
+        ],
+        ja: ['データ検証', '整合性チェック', '移行前検証', '移行後検証'],
+        zh: ['数据验证', '完整性检查', '迁移前验证', '迁移后验证'],
+        es: ['validación de datos', 'verificación de integridad'],
+      },
+    },
+  },
+
+  // ============================================================================
   // EXECUTING PLANS - Priority 22
   // ============================================================================
   {

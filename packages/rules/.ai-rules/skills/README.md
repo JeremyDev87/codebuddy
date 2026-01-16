@@ -8,6 +8,7 @@ Reusable workflows for consistent development practices.
 |-------|-------------|-------------|
 | api-design | REST/GraphQL API design with OpenAPI spec, versioning, and documentation | Designing new APIs |
 | brainstorming | Explores user intent, requirements and design before implementation | Before any creative work |
+| database-migration | Zero-downtime schema changes, large-scale data migrations, rollback planning | Schema changes, data migrations, production database modifications |
 | dependency-management | Systematic dependency updates, CVE response, and license compliance | Security vulnerabilities, major upgrades, license audits |
 | dispatching-parallel-agents | Handle 2+ independent tasks without shared state | Parallel task execution |
 | executing-plans | Execute implementation plans with review checkpoints | Following written plans |
@@ -102,6 +103,12 @@ EOF
 │   └── SKILL.md
 ├── brainstorming/
 │   └── SKILL.md
+├── database-migration/
+│   ├── SKILL.md
+│   ├── expand-contract-patterns.md
+│   ├── large-scale-migration.md
+│   ├── rollback-strategies.md
+│   └── validation-procedures.md
 ├── dependency-management/
 │   ├── SKILL.md
 │   ├── security-vulnerability-response.md
