@@ -13,6 +13,49 @@ Systematic, evidence-based pull request review with anti-sycophancy principles. 
 
 **Violating the letter of this process is violating the spirit of code review.**
 
+## Table of Contents
+
+- [When to Use](#when-to-use)
+- [The Iron Law](#the-iron-law)
+- [Quick Reference](#quick-reference)
+- [Review Efficiency Framework](#review-efficiency-framework)
+- [Change-Type Quick Guides](#change-type-quick-guides)
+- [Review Process](#review-process)
+- [Review Dimensions](#review-dimensions)
+- [Security Quick Scan](#security-quick-scan)
+- [Accessibility Quick Scan](#accessibility-quick-scan)
+- [Devil's Advocate Analysis](#devils-advocate-analysis)
+- [Impact Radius Analysis](#impact-radius-analysis)
+- [Refactoring Verification](#refactoring-verification)
+- [Anti-Sycophancy Guide](#anti-sycophancy-guide)
+- [Constructive Feedback Patterns](#constructive-feedback-patterns)
+- [Output Format](#output-format)
+- [Common Rationalizations](#common-rationalizations)
+- [Red Flags - STOP](#red-flags---stop)
+- [When Stuck](#when-stuck)
+- [Verification Checklist](#verification-checklist)
+- [Knowledge Sharing](#knowledge-sharing)
+- [Review Metrics](#review-metrics)
+- [Specialist Escalation](#specialist-escalation)
+
+## When to Use
+
+**Always use for:**
+- New feature PRs
+- Bug fix PRs
+- Refactoring PRs
+- Security-related changes
+- API changes
+- Database schema changes
+
+**Lighter review acceptable for:**
+- Documentation-only changes
+- Configuration tweaks (still check security)
+- Dependency updates (still check security + breaking changes)
+
+**Never skip:**
+- Security Quick Scan (4 critical items, ~2 min)
+
 ## The Iron Law
 
 ```
@@ -55,23 +98,104 @@ Security, Correctness, and Test Coverage must ALWAYS be reviewed. No exceptions.
 | Only Medium/Low issues | **Approve with Comments** |
 | No issues, all Critical dimensions reviewed | **Approve** |
 
-## When to Use
+## Review Efficiency Framework
 
-**Always use for:**
-- New feature PRs
-- Bug fix PRs
-- Refactoring PRs
-- Security-related changes
-- API changes
-- Database schema changes
+Efficient reviews are thorough reviews. Time pressure causes shortcuts that miss issues.
 
-**Lighter review acceptable for:**
-- Documentation-only changes
-- Configuration tweaks (still check security)
-- Dependency updates (still check security + breaking changes)
+### Time-Boxing Guidelines
 
-**Never skip:**
-- Security Quick Scan (4 critical items, ~2 min)
+| PR Size | Target Time | Max Time | If Exceeded |
+|---------|-------------|----------|-------------|
+| XS (1-10 lines) | 5-10 min | 15 min | Document blockers |
+| S (11-50 lines) | 15-30 min | 45 min | Request clarification |
+| M (51-200 lines) | 30-60 min | 90 min | Split focus areas |
+| L (201-500 lines) | 60-120 min | 180 min | Request smaller PR |
+| XL (500+ lines) | **Request split** | - | Don't review as-is |
+
+**Time exceeded?** You're either:
+1. Missing context → Ask author before continuing
+2. Finding too many issues → Request changes early, don't exhaust yourself
+3. Scope creeping → Stay focused on what changed, not what could be better
+
+### Efficiency Anti-Patterns
+
+| Anti-Pattern | Why It Wastes Time | Instead |
+|--------------|-------------------|---------|
+| Reviewing file-by-file | Misses cross-file relationships | Review by logical change |
+| Style nitpicking first | Depletes attention on low-value | Critical dimensions first |
+| Rewriting in comments | You're doing their work | Describe what's wrong; brief suggestions OK (see Constructive Feedback) |
+| Reviewing draft PRs | Premature feedback changes | Wait for "Ready for Review" |
+| Multiple review passes | Tiring for both parties | One thorough pass |
+
+### When to Request Smaller PRs
+
+**Immediately request split if:**
+- 500+ lines changed (excluding generated files)
+- Multiple unrelated features bundled
+- "While I was here..." changes included
+- You can't hold the full change in your head
+
+**How to request:**
+> This PR combines [X] and [Y]. Could you split into separate PRs? Review will be faster and more thorough for each.
+
+## Change-Type Quick Guides
+
+Different PR types require different focus areas. Use these guides to prioritize your review.
+
+### Feature PRs
+
+| Focus | Why | Key Checks |
+|-------|-----|------------|
+| Requirements alignment | New code must solve the right problem | Does implementation match ticket/spec? |
+| API design | New interfaces are hard to change | Clean contracts? Versioning considered? |
+| Test coverage | New behavior needs verification | Happy path + edge cases + errors tested? |
+| Performance baseline | New features set expectations | Acceptable load? Indexed queries? |
+
+**Time allocation:** 40% correctness, 30% architecture, 20% tests, 10% docs
+
+### Bug Fix PRs
+
+| Focus | Why | Key Checks |
+|-------|-----|------------|
+| Root cause | Fixes that mask problems return | Does fix address cause, not symptom? |
+| Regression test | Same bug shouldn't reappear | Test proves bug existed AND is fixed? |
+| Related code | Similar bugs often cluster | Other code with same pattern? |
+| Minimal change | Bug fixes shouldn't refactor | Only changes necessary for fix? |
+
+**Time allocation:** 50% correctness, 30% tests, 15% impact radius, 5% docs
+
+### Refactoring PRs
+
+| Focus | Why | Key Checks |
+|-------|-----|------------|
+| Behavior preservation | Refactoring ≠ new behavior | Tests unchanged? Same inputs → same outputs? |
+| Incremental steps | Big refactors hide bugs | Each commit independently valid? |
+| No feature creep | "While I'm here..." is a trap | Scope matches stated goal? |
+| Test coverage before/after | Can't verify what you can't test | Coverage same or better? |
+
+**Time allocation:** 50% behavior preservation, 30% architecture, 15% tests, 5% docs
+
+### Dependency Update PRs
+
+| Focus | Why | Key Checks |
+|-------|-----|------------|
+| Security advisories | Main reason for updates | CVE addressed? New vulnerabilities? |
+| Breaking changes | Changelog often buried | Migration guide followed? |
+| Transitive deps | Your dep's deps matter | Lock file changes reviewed? |
+| Build verification | Updates can break builds | CI passing? Bundle size acceptable? |
+
+**Time allocation:** 40% security, 30% breaking changes, 20% build verification, 10% changelog
+
+### API Change PRs
+
+| Focus | Why | Key Checks |
+|-------|-----|------------|
+| Contract compatibility | Callers depend on stable interfaces | Backward compatible? Deprecation path? |
+| Versioning strategy | Breaking changes need coordination | Version bump appropriate? |
+| Documentation | API users need to know what changed | Changelog updated? Migration guide? |
+| Consumer impact | Changes ripple through dependents | Who calls this? Are they updated? |
+
+**Time allocation:** 40% compatibility, 25% consumer impact, 20% documentation, 15% versioning
 
 ## Review Process
 
@@ -366,6 +490,59 @@ Every observation must include:
 - **Finding**: What you observed
 - **Impact**: Why it matters (or doesn't)
 
+## Constructive Feedback Patterns
+
+Anti-sycophancy prevents false praise. This section ensures feedback that's both honest AND helpful.
+
+**Note:** Brief suggestions are fine ("Consider using X"). Avoid rewriting entire implementations in comments—that's doing their work for them (see Efficiency Anti-Patterns).
+
+### Feedback Tone Spectrum
+
+| Tone | Example | When to Use |
+|------|---------|-------------|
+| **Blocking** | "This will cause data loss. Must fix before merge." | Critical issues, security, data integrity |
+| **Requesting** | "Please add null check here—crash possible." | High issues requiring change |
+| **Suggesting** | "Consider extracting this to a helper—readability." | Medium issues, optional improvements |
+| **Noting** | "FYI: Similar pattern in utils/helpers.ts" | Knowledge sharing, not requiring change |
+| **Questioning** | "What happens if X is empty? I might be missing context." | Uncertain findings, seeking clarification |
+
+### Constructive Phrasing
+
+| Instead Of | Use |
+|------------|-----|
+| "This is wrong" | "This will cause [specific problem] because [reason]" |
+| "Why did you do this?" | "What was the reasoning for [approach]? I want to understand the context." |
+| "This doesn't make sense" | "I'm having trouble following [specific part]. Could you add a comment?" |
+| "You should have..." | "For future reference, [pattern] helps with [benefit]" |
+| "Obviously..." | Remove. If it were obvious, it wouldn't need saying. |
+| "Just do X" | "One option: [X]. This would [benefit]." |
+
+### Mentoring Through Reviews
+
+**For junior developers:**
+- Explain the "why" behind requests, not just the "what"
+- Link to documentation, patterns, or prior PRs as examples
+- Distinguish blocking issues from learning opportunities
+- Acknowledge good decisions explicitly (with evidence, per anti-sycophancy)
+
+**For senior developers:**
+- Be direct—they don't need hand-holding
+- Focus on architectural concerns over style
+- Ask questions about design decisions you don't understand
+- Trust their judgment on implementation details
+
+### Disagreement Protocol
+
+When author pushes back on feedback:
+
+1. **Re-read your comment** — Is it clear? Is the impact obvious?
+2. **Provide evidence** — Code, docs, benchmarks, not opinions
+3. **Acknowledge tradeoffs** — "Your approach is faster to implement, mine is more maintainable"
+4. **Escalate appropriately** — Tech lead for architecture, security team for vulnerabilities
+5. **Accept disagreement** — Not every hill is worth dying on. Document and move on.
+
+**Never:** Make it personal. Attack the code, not the coder.
+
 ## Output Format
 
 **Section order is mandatory. Critique-first.**
@@ -471,6 +648,111 @@ Before submitting your review:
 - [ ] Critical Findings section appears BEFORE positives
 
 **Cannot check all boxes? Do not submit approval.**
+
+## Knowledge Sharing
+
+Reviews are learning opportunities. Capture and propagate valuable patterns.
+
+### What to Capture
+
+| Discovery | Action |
+|-----------|--------|
+| Reusable pattern found | Add to team's pattern library or wiki |
+| Common mistake identified | Create linting rule or add to onboarding docs |
+| Unclear API discovered | Request/add documentation in that PR |
+| Performance insight gained | Share in team channel with benchmark |
+| Security vulnerability pattern | Add to security checklist, alert security team |
+
+### How to Share
+
+**In the PR itself:**
+- Tag team members who'd benefit: "FYI @alice - this pattern solves the issue you hit last week"
+- Add explanatory comments for non-obvious code
+- Link to relevant ADRs, RFCs, or documentation
+
+**Beyond the PR:**
+- Post noteworthy patterns in team Slack/channel with context
+- Update team wiki with new patterns discovered
+- Propose linting rules for recurring issues
+- Add to interview question bank if it reveals important concepts
+
+### Learning from Reviews
+
+**After each review, ask:**
+- Did I learn something new about the codebase?
+- Did I learn something new about the domain?
+- Did I see a pattern I should adopt?
+- Did I see a mistake I've made before?
+
+**Track your own growth:**
+- Keep a "TIL" (Today I Learned) log from reviews
+- Note patterns you want to adopt in your own code
+- Revisit your old PRs after learning new patterns
+
+## Review Metrics
+
+Measure review effectiveness to improve the process.
+
+### Key Metrics to Track
+
+| Metric | How to Measure | Target |
+|--------|----------------|--------|
+| **Review turnaround** | Time from "Ready" to first review | < 4 hours |
+| **Review cycles** | Number of review → change → review loops | ≤ 2 |
+| **Escapees** | Bugs found in prod that reviews missed | 0 |
+| **False positives** | Requested changes that weren't actually issues | < 10% |
+| **Review coverage** | PRs merged without review | 0% |
+
+### Issue Categorization
+
+Tag findings for pattern analysis:
+
+| Category | Examples |
+|----------|----------|
+| `security` | Auth bypass, injection, secrets |
+| `correctness` | Logic errors, missing cases |
+| `performance` | N+1, memory leaks, blocking |
+| `maintainability` | Complexity, duplication, naming |
+| `testing` | Missing tests, flaky tests |
+| `documentation` | Missing/outdated docs |
+
+### Using Metrics
+
+**Weekly:**
+- Review turnaround times — Are PRs waiting too long?
+- Cycle counts — Are requirements unclear? Are reviewers too picky?
+
+**Monthly:**
+- Escapee analysis — What did we miss? Why?
+- Category trends — Are certain issue types increasing?
+
+**Quarterly:**
+- Process retrospective — Is our review process effective?
+- Training needs — Do specific categories need team education?
+
+**Don't:**
+- Use metrics punitively (reviewer found issues = good, not bad)
+- Optimize for speed over quality
+- Compare reviewers to each other
+
+### Tooling {#review-tooling}
+
+| Platform | Metric Source | Notes |
+|----------|---------------|-------|
+| **GitHub** | Insights → Pulse | Review activity, cycle time |
+| **GitHub** | GraphQL API | Custom queries for turnaround |
+| **GitLab** | Analytics → Code Review | Built-in review metrics |
+| **Bitbucket** | Reports → Commits | PR activity tracking |
+| **Third-party** | LinearB, Sleuth, Haystack | Cross-platform analytics |
+
+**CLI quick checks:**
+```bash
+# GitHub: Recent PR review times (requires gh CLI)
+gh pr list --state merged --json number,mergedAt,createdAt --limit 20
+
+# Git: Author-reviewer pairs (local analysis)
+git log --format='%an reviewed by %cn' --merges --since='1 month ago'
+```
 
 ## Specialist Escalation
 
