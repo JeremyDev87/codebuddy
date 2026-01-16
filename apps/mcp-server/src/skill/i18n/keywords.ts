@@ -245,12 +245,85 @@ export const SKILL_KEYWORDS: SkillKeywordConfig[] = [
   },
 
   // ============================================================================
-  // DATABASE MIGRATION - Priority 23
-  // Just below incident-response: systematic database changes require planning
+  // PERFORMANCE OPTIMIZATION - Priority 23
+  // Just below incident-response: systematic profiling before optimization
+  // ============================================================================
+  {
+    skillName: 'performance-optimization',
+    priority: 23,
+    description:
+      'Systematic performance optimization with profiling-first workflow',
+    concepts: {
+      performance: {
+        en: [
+          'slow',
+          'performance',
+          'optimize',
+          'speed up',
+          'faster',
+          'latency',
+          'throughput',
+        ],
+        ko: ['느려', '성능', '최적화', '빠르게', '지연', '처리량'],
+        ja: ['遅い', 'パフォーマンス', '最適化', '高速化', 'レイテンシ'],
+        zh: ['慢', '性能', '优化', '加速', '延迟', '吞吐量'],
+        es: ['lento', 'rendimiento', 'optimizar', 'acelerar', 'latencia'],
+      },
+      profiling: {
+        en: [
+          'profile',
+          'profiler',
+          'profiling',
+          'benchmark',
+          'measure',
+          'bottleneck',
+          'hot path',
+        ],
+        ko: ['프로파일', '프로파일링', '벤치마크', '측정', '병목', '핫패스'],
+        ja: ['プロファイル', 'ベンチマーク', '測定', 'ボトルネック'],
+        zh: ['分析', '基准测试', '测量', '瓶颈', '热点路径'],
+        es: ['perfilar', 'benchmark', 'medir', 'cuello de botella'],
+      },
+      metrics: {
+        en: [
+          'p95',
+          'p99',
+          'response time',
+          'load time',
+          'render time',
+          'memory usage',
+        ],
+        ko: ['응답 시간', '로드 시간', '렌더 시간', '메모리 사용량'],
+        ja: ['応答時間', 'ロード時間', 'レンダリング時間', 'メモリ使用量'],
+        zh: ['响应时间', '加载时间', '渲染时间', '内存使用'],
+        es: ['tiempo de respuesta', 'tiempo de carga', 'uso de memoria'],
+      },
+      regression: {
+        en: [
+          'performance regression',
+          'performance budget',
+          'performance test',
+          'perf test',
+        ],
+        ko: ['성능 회귀', '성능 예산', '성능 테스트'],
+        ja: [
+          'パフォーマンス回帰',
+          'パフォーマンスバジェット',
+          'パフォーマンステスト',
+        ],
+        zh: ['性能回归', '性能预算', '性能测试'],
+        es: ['regresión de rendimiento', 'presupuesto de rendimiento'],
+      },
+    },
+  },
+
+  // ============================================================================
+  // DATABASE MIGRATION - Priority 22
+  // Below performance-optimization: systematic database changes require planning
   // ============================================================================
   {
     skillName: 'database-migration',
-    priority: 23,
+    priority: 22,
     description: 'Systematic database migration with zero-downtime patterns',
     concepts: {
       migration: {
