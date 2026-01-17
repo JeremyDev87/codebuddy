@@ -8,6 +8,7 @@ on:
     paths:
       - 'apps/mcp-server/**'
       - 'packages/rules/**'
+      - 'packages/claude-code-plugin/**'
       - '.antigravity/**'
       - '.claude/**'
       - '.codex/**'
@@ -23,14 +24,26 @@ jobs:
   publish-canary:
     if: github.repository == 'JeremyDev87/codingbuddy'
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
 
       - name: Setup node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
         with:
           node-version: '24'
+
+      - name: Restore dependencies from cache
+        uses: actions/cache@a7833574556fa59680c1b7cb190c1735db73ebf0 # v5.0.0
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
 
       - name: Install dependencies
         run: yarn install --immutable
@@ -71,11 +84,32 @@ jobs:
         env:
           YARN_NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Output canary version number
+      - name: Output mcp-server canary version
         working-directory: apps/mcp-server
         run: |
           name=$(jq -r .name package.json)
           version=$(jq -r .version package.json)
-          yarn dlx action-status --context "Published $name" --state success --description $version --url "https://unpkg.com/$name@$version/"
+          yarn dlx action-status@0.1.1 --context "Published $name" --state success --description $version --url "https://unpkg.com/$name@$version/"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build plugin
+        run: yarn workspace codingbuddy-claude-plugin build
+
+      - name: Publish plugin canary
+        working-directory: packages/claude-code-plugin
+        run: |
+          VERSION="${{ env.CANARY_VERSION }}"
+          cat <<< "$( jq --arg v "$VERSION" '.version = $v' package.json )" > package.json
+          yarn npm publish --tag canary
+        env:
+          YARN_NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Output plugin canary version
+        working-directory: packages/claude-code-plugin
+        run: |
+          name=$(jq -r .name package.json)
+          version=$(jq -r .version package.json)
+          yarn dlx action-status@0.1.1 --context "Published $name" --state success --description $version --url "https://unpkg.com/$name@$version/"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

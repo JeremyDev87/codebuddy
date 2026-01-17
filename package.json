@@ -30,6 +30,9 @@
   "scripts": {
     "postinstall": "node scripts/link-workspace-bins.js",
     "build": "yarn workspace codingbuddy build && yarn postinstall",
+    "build:plugin": "yarn workspace codingbuddy-claude-plugin build",
+    "build:plugin:dev": "yarn workspace codingbuddy-claude-plugin build:dev",
+    "build:all": "yarn build && yarn build:plugin",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",

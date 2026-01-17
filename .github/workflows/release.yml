@@ -4,20 +4,36 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: read
+
 env:
   NODE_OPTIONS: --max_old_space_size=4096
 
 jobs:
   publish:
+    if: github.repository == 'JeremyDev87/codingbuddy'
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
 
       - name: Setup node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
         with:
           node-version: '24'
+
+      - name: Restore dependencies from cache
+        uses: actions/cache@a7833574556fa59680c1b7cb190c1735db73ebf0 # v5.0.0
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
 
       - name: Install dependencies
         run: yarn install --immutable
@@ -50,8 +66,30 @@ jobs:
           YARN_NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_REF: ${{ github.ref }}
 
-      - name: Output version number
+      - name: Output mcp-server version
         working-directory: apps/mcp-server
+        run: |
+          name=$(jq -r .name package.json)
+          version=$(jq -r .version package.json)
+          echo "Published $name@$version"
+
+      - name: Build plugin
+        run: yarn workspace codingbuddy-claude-plugin build
+
+      - name: Publish plugin
+        working-directory: packages/claude-code-plugin
+        run: |
+          TAG_NAME="${GITHUB_REF#refs/tags/}"
+          TAG_NAME="${TAG_NAME#v}"
+          echo "Publishing codingbuddy-claude-plugin version: $TAG_NAME"
+          cat <<< "$( jq --arg v "$TAG_NAME" '.version = $v' package.json )" > package.json
+          yarn npm publish
+        env:
+          YARN_NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_REF: ${{ github.ref }}
+
+      - name: Output plugin version
+        working-directory: packages/claude-code-plugin
         run: |
           name=$(jq -r .name package.json)
           version=$(jq -r .version package.json)

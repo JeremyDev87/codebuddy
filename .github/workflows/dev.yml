@@ -8,6 +8,7 @@ on:
     paths:
       - 'apps/mcp-server/**'
       - 'packages/rules/**'
+      - 'packages/claude-code-plugin/**'
       - '.antigravity/**'
       - '.claude/**'
       - '.codex/**'
@@ -24,18 +25,19 @@ jobs:
   install-dependencies:
     if: github.repository == 'JeremyDev87/codingbuddy'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
 
       - name: Setup node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
         with:
           node-version: '24'
 
       - name: Restore dependencies from cache
         id: cache
-        uses: actions/cache@v5
+        uses: actions/cache@a7833574556fa59680c1b7cb190c1735db73ebf0 # v5.0.0
         with:
           path: |
             node_modules
@@ -53,23 +55,10 @@ jobs:
   lint-check:
     needs: install-dependencies
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Setup node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-
-      - name: Restore dependencies from cache
-        uses: actions/cache@v5
-        with:
-          path: |
-            node_modules
-            apps/*/node_modules
-            packages/*/node_modules
-          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: ./.github/actions/setup
 
       - name: Lint
         run: yarn workspace codingbuddy lint
@@ -77,23 +66,10 @@ jobs:
   prettier-check:
     needs: install-dependencies
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Setup node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-
-      - name: Restore dependencies from cache
-        uses: actions/cache@v5
-        with:
-          path: |
-            node_modules
-            apps/*/node_modules
-            packages/*/node_modules
-          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: ./.github/actions/setup
 
       - name: Format check
         run: yarn workspace codingbuddy format:check
@@ -101,23 +77,10 @@ jobs:
   type-check:
     needs: install-dependencies
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Setup node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-
-      - name: Restore dependencies from cache
-        uses: actions/cache@v5
-        with:
-          path: |
-            node_modules
-            apps/*/node_modules
-            packages/*/node_modules
-          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: ./.github/actions/setup
 
       - name: Type check
         run: yarn workspace codingbuddy typecheck
@@ -125,23 +88,10 @@ jobs:
   unit-test-check:
     needs: install-dependencies
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Setup node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-
-      - name: Restore dependencies from cache
-        uses: actions/cache@v5
-        with:
-          path: |
-            node_modules
-            apps/*/node_modules
-            packages/*/node_modules
-          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: ./.github/actions/setup
 
       - name: Test with coverage
         run: yarn workspace codingbuddy test:coverage
@@ -149,23 +99,10 @@ jobs:
   circular-check:
     needs: install-dependencies
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Setup node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-
-      - name: Restore dependencies from cache
-        uses: actions/cache@v5
-        with:
-          path: |
-            node_modules
-            apps/*/node_modules
-            packages/*/node_modules
-          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: ./.github/actions/setup
 
       - name: Circular dependency check
         run: yarn workspace codingbuddy circular
@@ -173,23 +110,10 @@ jobs:
   build-check:
     needs: install-dependencies
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Setup node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-
-      - name: Restore dependencies from cache
-        uses: actions/cache@v5
-        with:
-          path: |
-            node_modules
-            apps/*/node_modules
-            packages/*/node_modules
-          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: ./.github/actions/setup
 
       - name: Build
         run: yarn workspace codingbuddy build
@@ -198,23 +122,19 @@ jobs:
   rules-validation:
     needs: install-dependencies
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Setup node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '24'
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: ./.github/actions/setup
 
       - name: Validate AI Rules
         run: |
           echo "📋 Validating JSON Schema..."
-          yarn dlx ajv-cli validate -s packages/rules/.ai-rules/schemas/agent.schema.json -d "packages/rules/.ai-rules/agents/*.json" --spec=draft7
+          yarn dlx ajv-cli@5.0.0 validate -s packages/rules/.ai-rules/schemas/agent.schema.json -d "packages/rules/.ai-rules/agents/*.json" --spec=draft7
 
           echo ""
           echo "📝 Linting Markdown files..."
-          yarn dlx markdownlint-cli2 "packages/rules/.ai-rules/**/*.md"
+          yarn dlx markdownlint-cli2@0.20.0 "packages/rules/.ai-rules/**/*.md"
 
           echo ""
           echo "✅ All rules validation passed!"
@@ -223,24 +143,88 @@ jobs:
   security-check:
     needs: install-dependencies
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Setup node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-
-      - name: Restore dependencies from cache
-        uses: actions/cache@v5
-        with:
-          path: |
-            node_modules
-            apps/*/node_modules
-            packages/*/node_modules
-          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: ./.github/actions/setup
 
       - name: Security audit
         run: yarn workspace codingbuddy npm audit --severity high
-        continue-on-error: true
+
+  # ─────────────── Plugin CI Jobs ───────────────
+  plugin-lint:
+    needs: install-dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: ./.github/actions/setup
+
+      - name: Lint
+        run: yarn workspace codingbuddy-claude-plugin lint
+
+  plugin-type-check:
+    needs: install-dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: ./.github/actions/setup
+
+      - name: Type check
+        run: yarn workspace codingbuddy-claude-plugin typecheck
+
+  plugin-test:
+    needs: install-dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: ./.github/actions/setup
+
+      - name: Test with coverage
+        run: yarn workspace codingbuddy-claude-plugin test:coverage
+
+  plugin-build:
+    needs: install-dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: ./.github/actions/setup
+
+      - name: Build plugin
+        run: yarn workspace codingbuddy-claude-plugin build
+
+  plugin-circular-check:
+    needs: install-dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: ./.github/actions/setup
+
+      - name: Circular dependency check
+        run: yarn workspace codingbuddy-claude-plugin circular
+
+  plugin-format-check:
+    needs: install-dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: ./.github/actions/setup
+
+      - name: Format check
+        run: yarn workspace codingbuddy-claude-plugin format:check
+
+  plugin-security-check:
+    needs: install-dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: ./.github/actions/setup
+
+      - name: Security audit
+        run: yarn workspace codingbuddy-claude-plugin npm audit --severity high
