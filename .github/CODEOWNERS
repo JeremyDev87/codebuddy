@@ -16,6 +16,9 @@ packages/rules/ @JeremyDev87
 # AI Rules (single source of truth)
 packages/rules/.ai-rules/ @JeremyDev87
 
+# Claude Code Plugin
+packages/claude-code-plugin/ @JeremyDev87
+
 # Build scripts
 scripts/ @JeremyDev87
 

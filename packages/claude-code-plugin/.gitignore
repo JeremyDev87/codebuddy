@@ -1,0 +1,12 @@
+# Build artifacts
+/dist/
+*.tsbuildinfo
+
+# Dependencies
+node_modules/
+
+# IDE
+.idea/
+*.swp
+*.swo
+.DS_Store
