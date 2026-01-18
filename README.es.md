@@ -53,6 +53,16 @@ Añade a la configuración de Claude Desktop (`~/Library/Application Support/Cla
 }
 ```
 
+### Plugin de Claude Code (Opcional)
+
+Para invocación nativa de habilidades en Claude Code:
+
+```bash
+npm install codingbuddy-claude-plugin
+```
+
+El plugin proporciona acceso directo a los flujos de trabajo PLAN/ACT/EVAL y agentes especialistas sin configuración MCP.
+
 [Guía completa de inicio →](docs/es/getting-started.md)
 
 ## Herramientas de IA compatibles
@@ -84,10 +94,10 @@ Añade a la configuración de Claude Desktop (`~/Library/Application Support/Cla
 
 Consulta el diagrama de arquitectura de arriba para una visión general del sistema de agentes de 3 capas:
 
-- **Layer 1 (Agentes de Modo)**: Ciclo de flujo de trabajo PLAN → ACT → EVAL
-- **Layer 2 (Agentes Principales)**: Solution Architect, Technical Planner, Frontend/Backend/Mobile/Data Developer, Tooling Engineer, Agent Architect, Code Reviewer, DevOps
-- **Layer 3 (Especialistas)**: 10 expertos de dominio (Seguridad, Rendimiento, Accesibilidad, i18n, etc.)
-- **Habilidades**: Capacidades reutilizables (TDD, Depuración, Brainstorming, etc.)
+- **Layer 1 (Agentes de Modo)**: Ciclo de flujo de trabajo PLAN → ACT → EVAL → AUTO
+- **Layer 2 (Agentes Principales)**: Solution Architect, Technical Planner, Frontend/Backend/Mobile/Data Developer, Platform Engineer, Tooling Engineer, AI/ML Engineer, Agent Architect, Code Reviewer, DevOps
+- **Layer 3 (Especialistas)**: 14 expertos de dominio (Seguridad, Rendimiento, Accesibilidad, i18n, Observabilidad, Migración, Arquitectura de Eventos, Integración, etc.)
+- **Habilidades**: 14 capacidades reutilizables (TDD, Depuración, Brainstorming, Migración de Base de Datos, Respuesta a Incidentes, etc.)
 
 Todas las configuraciones de herramientas de IA referencian el mismo directorio `packages/rules/.ai-rules/`. Cambia las reglas una vez, y todas las herramientas siguen los estándares actualizados.
 

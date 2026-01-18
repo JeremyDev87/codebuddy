@@ -1,6 +1,6 @@
 {
   "name": "codingbuddy-claude-plugin",
-  "version": "2.4.1",
+  "version": "3.0.0",
   "description": "Claude Code Plugin for CodingBuddy - PLAN/ACT/EVAL workflow, specialist agents, and reusable skills",
   "author": "JeremyDev87",
   "license": "MIT",
@@ -46,7 +46,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "peerDependencies": {
-    "codingbuddy": "^2.4.0"
+    "codingbuddy": "^3.0.0"
   },
   "peerDependenciesMeta": {
     "codingbuddy": {

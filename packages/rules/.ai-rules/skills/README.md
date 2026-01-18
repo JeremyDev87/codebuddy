@@ -19,6 +19,7 @@ Reusable workflows for consistent development practices.
 | subagent-driven-development | Execute plans with independent tasks in current session | In-session plan execution |
 | systematic-debugging | Systematic approach before proposing fixes | Encountering bugs or failures |
 | test-driven-development | Write tests first, then minimal code to pass | Before implementing features |
+| performance-optimization | Profiling-first performance optimization workflow | Performance issues, bottleneck analysis, optimization |
 | writing-plans | Create implementation plans before coding | Multi-step tasks with specs |
 
 ## Skill Format
@@ -127,6 +128,9 @@ EOF
 │   ├── escalation-matrix.md
 │   ├── postmortem-template.md
 │   └── severity-classification.md
+├── performance-optimization/
+│   ├── SKILL.md
+│   └── documentation-template.md
 ├── pr-review/
 │   └── SKILL.md
 ├── refactoring/

@@ -34,7 +34,9 @@ This command analyzes your project and creates a `codingbuddy.config.js` file wi
 
 #### AI Model Selection
 
-During initialization, you'll be prompted to select a default AI model (Claude Sonnet 4, Opus 4, or Haiku 3.5 - not recommended). Your selection is saved to `ai.defaultModel` in the config file.
+During initialization, you'll be prompted to select a default AI model (Claude Sonnet 4, Opus 4, or Haiku 3.5). Your selection is saved to `ai.defaultModel` in the config file.
+
+> **Note**: Haiku 3.5 is not recommended for complex coding tasks due to its smaller context window and reduced capability for multi-step reasoning. Use Sonnet 4 or Opus 4 for best results.
 
 See [AI Configuration](./config-schema.md#ai-configuration-ai) for detailed model options and characteristics.
 
@@ -89,6 +91,16 @@ Add Codingbuddy to your AI assistant. Here's an example for Claude Desktop:
 ```
 
 For other AI tools, see [Supported Tools](./supported-tools.md).
+
+### Alternative: Claude Code Plugin
+
+For native skill invocation in Claude Code without MCP configuration:
+
+```bash
+npm install codingbuddy-claude-plugin
+```
+
+The plugin provides direct access to PLAN/ACT/EVAL workflows and specialist agents.
 
 ### Step 3: Start Coding
 
@@ -253,6 +265,10 @@ Available specialists:
 - `ui-ux-designer` - UI/UX design
 - `documentation-specialist` - Documentation
 - `code-quality-specialist` - Code standards
+- `integration-specialist` - External API integrations
+- `event-architecture-specialist` - Message queues, Event Sourcing
+- `observability-specialist` - Distributed tracing, SLI/SLO
+- `migration-specialist` - Legacy modernization, zero-downtime migrations
 - See [full agent list](../packages/rules/.ai-rules/agents/README.md)
 
 ## Next Steps

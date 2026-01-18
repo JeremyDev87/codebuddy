@@ -53,6 +53,16 @@ npx codingbuddy init
 }
 ```
 
+### Claude Code 插件（可选）
+
+在 Claude Code 中使用原生技能调用：
+
+```bash
+npm install codingbuddy-claude-plugin
+```
+
+该插件提供无需 MCP 配置即可直接访问 PLAN/ACT/EVAL 工作流和专家代理的功能。
+
 [完整入门指南 →](docs/zh-CN/getting-started.md)
 
 ## 支持的 AI 工具
@@ -84,10 +94,10 @@ npx codingbuddy init
 
 请参阅上方架构图，了解三层代理系统的完整概览：
 
-- **Layer 1（模式代理）**：PLAN → ACT → EVAL 工作流程循环
-- **Layer 2（主要代理）**：Solution Architect、Technical Planner、Frontend/Backend/Mobile/Data Developer、Tooling Engineer、Agent Architect、Code Reviewer、DevOps
-- **Layer 3（专家）**：10位领域专家（安全、性能、可访问性、i18n等）
-- **技能**：可复用功能（TDD、调试、头脑风暴等）
+- **Layer 1（模式代理）**：PLAN → ACT → EVAL → AUTO 工作流程循环
+- **Layer 2（主要代理）**：Solution Architect、Technical Planner、Frontend/Backend/Mobile/Data Developer、Platform Engineer、Tooling Engineer、AI/ML Engineer、Agent Architect、Code Reviewer、DevOps
+- **Layer 3（专家）**：14位领域专家（安全、性能、可访问性、i18n、可观测性、迁移、事件架构、集成等）
+- **技能**：14个可复用功能（TDD、调试、头脑风暴、数据库迁移、事件响应等）
 
 所有 AI 工具配置都引用同一个 `packages/rules/.ai-rules/` 目录。只需修改一次规则，所有工具都会遵循更新后的标准。
 

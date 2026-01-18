@@ -53,6 +53,16 @@ Add to Claude Desktop config (`~/Library/Application Support/Claude/claude_deskt
 }
 ```
 
+### Claude Code Plugin (Optional)
+
+For native skill invocation in Claude Code:
+
+```bash
+npm install codingbuddy-claude-plugin
+```
+
+The plugin provides direct access to PLAN/ACT/EVAL workflows and specialist agents without MCP configuration.
+
 [Full Getting Started Guide →](docs/getting-started.md)
 
 ## Supported AI Tools
@@ -84,10 +94,10 @@ Add to Claude Desktop config (`~/Library/Application Support/Claude/claude_deskt
 
 See the architecture diagram above for a visual overview of the 3-layer agent system:
 
-- **Layer 1 (Mode Agents)**: PLAN → ACT → EVAL workflow cycle
-- **Layer 2 (Primary Agents)**: Solution Architect, Technical Planner, Frontend/Backend/Mobile/Data Developer, Tooling Engineer, Agent Architect, Code Reviewer, DevOps
-- **Layer 3 (Specialists)**: 10 domain experts (Security, Performance, Accessibility, i18n, etc.)
-- **Skills**: Reusable capabilities (TDD, Debugging, Brainstorming, etc.)
+- **Layer 1 (Mode Agents)**: PLAN → ACT → EVAL → AUTO workflow cycle
+- **Layer 2 (Primary Agents)**: Solution Architect, Technical Planner, Frontend/Backend/Mobile/Data Developer, Platform Engineer, Tooling Engineer, AI/ML Engineer, Agent Architect, Code Reviewer, DevOps
+- **Layer 3 (Specialists)**: 14 domain experts (Security, Performance, Accessibility, i18n, Observability, Migration, Event Architecture, Integration, etc.)
+- **Skills**: 14 reusable capabilities (TDD, Debugging, Brainstorming, Database Migration, Incident Response, etc.)
 
 All AI tool configurations reference the same `packages/rules/.ai-rules/` directory. Change the rules once, and every tool follows the updated standards.
 

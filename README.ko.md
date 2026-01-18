@@ -53,6 +53,16 @@ Claude Desktop 설정 파일에 추가 (`~/Library/Application Support/Claude/cl
 }
 ```
 
+### Claude Code 플러그인 (선택)
+
+Claude Code에서 네이티브 스킬 호출을 위해:
+
+```bash
+npm install codingbuddy-claude-plugin
+```
+
+이 플러그인은 MCP 설정 없이 PLAN/ACT/EVAL 워크플로우와 전문가 에이전트에 직접 접근할 수 있게 해줍니다.
+
 [전체 시작 가이드 →](docs/ko/getting-started.md)
 
 ## 지원 AI 도구
@@ -84,10 +94,10 @@ Claude Desktop 설정 파일에 추가 (`~/Library/Application Support/Claude/cl
 
 위 아키텍처 다이어그램에서 3계층 에이전트 시스템의 전체 구조를 확인하세요:
 
-- **Layer 1 (모드 에이전트)**: PLAN → ACT → EVAL 워크플로우 사이클
-- **Layer 2 (주요 에이전트)**: Solution Architect, Technical Planner, Frontend/Backend/Mobile/Data Developer, Tooling Engineer, Agent Architect, Code Reviewer, DevOps
-- **Layer 3 (전문가)**: 10명의 도메인 전문가 (보안, 성능, 접근성, i18n 등)
-- **스킬**: 재사용 가능한 기능 (TDD, 디버깅, 브레인스토밍 등)
+- **Layer 1 (모드 에이전트)**: PLAN → ACT → EVAL → AUTO 워크플로우 사이클
+- **Layer 2 (주요 에이전트)**: Solution Architect, Technical Planner, Frontend/Backend/Mobile/Data Developer, Platform Engineer, Tooling Engineer, AI/ML Engineer, Agent Architect, Code Reviewer, DevOps
+- **Layer 3 (전문가)**: 14명의 도메인 전문가 (보안, 성능, 접근성, i18n, 관측 가능성, 마이그레이션, 이벤트 아키텍처, 통합 등)
+- **스킬**: 14개의 재사용 가능한 기능 (TDD, 디버깅, 브레인스토밍, 데이터베이스 마이그레이션, 인시던트 대응 등)
 
 모든 AI 도구 설정이 동일한 `packages/rules/.ai-rules/` 디렉토리를 참조합니다. 규칙을 한 번 수정하면 모든 도구가 업데이트된 표준을 따릅니다.
 
