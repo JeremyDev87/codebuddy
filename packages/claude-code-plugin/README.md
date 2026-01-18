@@ -72,6 +72,15 @@ This architecture ensures:
 
 ## Documentation
 
+### Plugin Guides
+- [Installation & Setup](https://github.com/JeremyDev87/codingbuddy/blob/master/docs/plugin-guide.md) - Detailed installation and configuration
+- [Quick Reference](https://github.com/JeremyDev87/codingbuddy/blob/master/docs/plugin-quick-reference.md) - Commands and modes at a glance
+- [Architecture](https://github.com/JeremyDev87/codingbuddy/blob/master/docs/plugin-architecture.md) - How plugin and MCP work together
+- [Usage Examples](https://github.com/JeremyDev87/codingbuddy/blob/master/docs/plugin-examples.md) - Real-world workflow examples
+- [Troubleshooting](https://github.com/JeremyDev87/codingbuddy/blob/master/docs/plugin-troubleshooting.md) - Common issues and solutions
+- [FAQ](https://github.com/JeremyDev87/codingbuddy/blob/master/docs/plugin-faq.md) - Frequently asked questions
+
+### Rules & Agents
 - [Core Rules](https://github.com/JeremyDev87/codingbuddy/tree/master/packages/rules/.ai-rules/rules)
 - [Agents Guide](https://github.com/JeremyDev87/codingbuddy/tree/master/packages/rules/.ai-rules/agents)
 - [Skills Guide](https://github.com/JeremyDev87/codingbuddy/tree/master/packages/rules/.ai-rules/skills)

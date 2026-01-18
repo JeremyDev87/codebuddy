@@ -94,13 +94,29 @@ For other AI tools, see [Supported Tools](./supported-tools.md).
 
 ### Alternative: Claude Code Plugin
 
-For native skill invocation in Claude Code without MCP configuration:
+For enhanced integration with Claude Code, install the dedicated plugin:
 
 ```bash
-npm install codingbuddy-claude-plugin
+# Install the plugin
+claude plugin add codingbuddy
+
+# Install MCP server for full functionality
+npm install -g codingbuddy
 ```
 
-The plugin provides direct access to PLAN/ACT/EVAL workflows and specialist agents.
+The plugin provides:
+- **Workflow Modes**: PLAN/ACT/EVAL/AUTO structured development
+- **Specialist Agents**: 12+ domain experts (security, performance, accessibility)
+- **Skills**: Reusable workflows (TDD, debugging, API design)
+- **Context Persistence**: Decisions survive conversation compaction
+
+**Plugin Documentation:**
+- [Plugin Setup Guide](./plugin-guide.md) - Detailed installation and configuration
+- [Quick Reference](./plugin-quick-reference.md) - Commands and modes at a glance
+- [Architecture](./plugin-architecture.md) - How plugin and MCP work together
+- [Usage Examples](./plugin-examples.md) - Real-world workflow examples
+- [Troubleshooting](./plugin-troubleshooting.md) - Common issues and solutions
+- [FAQ](./plugin-faq.md) - Frequently asked questions
 
 ### Step 3: Start Coding
 

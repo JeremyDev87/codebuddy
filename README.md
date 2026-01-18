@@ -55,13 +55,30 @@ Add to Claude Desktop config (`~/Library/Application Support/Claude/claude_deskt
 
 ### Claude Code Plugin (Optional)
 
-For native skill invocation in Claude Code:
+For enhanced integration with Claude Code:
 
 ```bash
-npm install codingbuddy-claude-plugin
+# Install the plugin
+claude plugin add codingbuddy
+
+# Install MCP server for full functionality
+npm install -g codingbuddy
 ```
 
-The plugin provides direct access to PLAN/ACT/EVAL workflows and specialist agents without MCP configuration.
+The plugin provides:
+- **Workflow Modes**: PLAN/ACT/EVAL/AUTO structured development
+- **Specialist Agents**: 12+ domain experts (security, performance, accessibility)
+- **Skills**: Reusable workflows (TDD, debugging, API design)
+- **Context Persistence**: Decisions survive conversation compaction
+
+| Documentation | Description |
+|---------------|-------------|
+| [Plugin Setup Guide](docs/plugin-guide.md) | Installation and configuration |
+| [Quick Reference](docs/plugin-quick-reference.md) | Commands and modes at a glance |
+| [Architecture](docs/plugin-architecture.md) | How plugin and MCP work together |
+| [Usage Examples](docs/plugin-examples.md) | Real-world workflow examples |
+| [Troubleshooting](docs/plugin-troubleshooting.md) | Common issues and solutions |
+| [FAQ](docs/plugin-faq.md) | Frequently asked questions |
 
 [Full Getting Started Guide →](docs/getting-started.md)
 
