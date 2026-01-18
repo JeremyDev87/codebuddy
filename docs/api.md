@@ -26,7 +26,7 @@ Codingbuddy implements the [Model Context Protocol (MCP)](https://modelcontextpr
 ```json
 {
   "name": "codingbuddy-rules-server",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "capabilities": {
     "resources": {},
     "tools": {},
@@ -156,6 +156,12 @@ Specialist agent definitions.
 | `rules://agents/ui-ux-designer.json` | UI/UX Designer |
 | `rules://agents/documentation-specialist.json` | Documentation Specialist |
 | `rules://agents/code-quality-specialist.json` | Code Quality Specialist |
+| `rules://agents/integration-specialist.json` | Integration Specialist |
+| `rules://agents/event-architecture-specialist.json` | Event Architecture Specialist |
+| `rules://agents/observability-specialist.json` | Observability Specialist |
+| `rules://agents/migration-specialist.json` | Migration Specialist |
+| `rules://agents/platform-engineer.json` | Platform Engineer |
+| `rules://agents/ai-ml-engineer.json` | AI/ML Engineer |
 
 **MIME Type**: `application/json`
 
@@ -886,6 +892,215 @@ Analyze a task to provide contextual recommendations including risk assessment, 
 
 ---
 
+### read_context
+
+Read the current context document from `docs/codingbuddy/context.md`.
+
+**Input Schema**:
+
+```json
+{
+  "type": "object",
+  "properties": {},
+  "required": []
+}
+```
+
+**Response Example**:
+
+```json
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\"metadata\": {\"title\": \"Feature Implementation\", \"currentMode\": \"ACT\"}, \"sections\": [{\"mode\": \"PLAN\", \"decisions\": [...], \"notes\": [...]}]}"
+    }
+  ]
+}
+```
+
+---
+
+### update_context
+
+Update the context document at `docs/codingbuddy/context.md`. PLAN mode resets the document, ACT/EVAL modes append.
+
+**Input Schema**:
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "mode": {
+      "type": "string",
+      "enum": ["PLAN", "ACT", "EVAL", "AUTO"],
+      "description": "Current workflow mode. PLAN resets document, others append."
+    },
+    "title": {
+      "type": "string",
+      "description": "Task title (required for PLAN mode)"
+    },
+    "task": {
+      "type": "string",
+      "description": "Task description"
+    },
+    "decisions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Key decisions made"
+    },
+    "notes": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Implementation notes"
+    },
+    "progress": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Progress items (ACT mode)"
+    },
+    "findings": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Evaluation findings (EVAL mode)"
+    },
+    "recommendations": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Recommendations (EVAL mode)"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["in_progress", "completed", "blocked"],
+      "description": "Status of this mode section"
+    }
+  },
+  "required": ["mode"]
+}
+```
+
+**Request Example**:
+
+```json
+{
+  "name": "update_context",
+  "arguments": {
+    "mode": "PLAN",
+    "title": "User Authentication",
+    "task": "Implement OAuth login",
+    "decisions": ["Use OAuth 2.0 with PKCE"],
+    "notes": ["Check existing auth patterns"],
+    "status": "in_progress"
+  }
+}
+```
+
+---
+
+### create_session
+
+Create a new session document to track PLAN/ACT/EVAL workflow.
+
+**Input Schema**:
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Session title/slug (e.g., 'auth-feature')"
+    },
+    "task": {
+      "type": "string",
+      "description": "Initial task description"
+    }
+  },
+  "required": ["title"]
+}
+```
+
+---
+
+### get_session
+
+Get a session document by ID.
+
+**Input Schema**:
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "sessionId": {
+      "type": "string",
+      "description": "Session ID (filename without .md extension)"
+    }
+  },
+  "required": ["sessionId"]
+}
+```
+
+---
+
+### get_active_session
+
+Get the most recent active session.
+
+**Input Schema**:
+
+```json
+{
+  "type": "object",
+  "properties": {},
+  "required": []
+}
+```
+
+---
+
+### update_session
+
+Update a session document with new section data.
+
+**Input Schema**:
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "sessionId": {
+      "type": "string",
+      "description": "Session ID to update"
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["PLAN", "ACT", "EVAL", "AUTO"],
+      "description": "Current workflow mode"
+    },
+    "task": {
+      "type": "string",
+      "description": "Task description"
+    },
+    "decisions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "notes": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["in_progress", "completed", "blocked"]
+    }
+  },
+  "required": ["sessionId", "mode"]
+}
+```
+
+---
+
 ## Prompts
 
 Prompts provide pre-defined message templates for common workflows.
@@ -962,7 +1177,7 @@ Activate a specific specialist agent with project context.
 | `Invalid URI scheme` | URI doesn't start with `rules://` or `config://` | Use correct URI scheme |
 | `Resource not found: {uri}` | Requested rule file doesn't exist | Check file path in `packages/rules/.ai-rules/` |
 | `Agent '{name}' not found` | Invalid agent name | Use valid agent name from list |
-| `Tool not found: {name}` | Invalid tool name | Use one of: `search_rules`, `get_agent_details`, `parse_mode`, `get_project_config`, `suggest_config_updates`, `recommend_skills`, `list_skills`, `get_agent_system_prompt`, `prepare_parallel_agents`, `generate_checklist`, `analyze_task` |
+| `Tool not found: {name}` | Invalid tool name | Use one of: `search_rules`, `get_agent_details`, `parse_mode`, `get_project_config`, `suggest_config_updates`, `recommend_skills`, `list_skills`, `get_agent_system_prompt`, `prepare_parallel_agents`, `generate_checklist`, `analyze_task`, `read_context`, `update_context`, `create_session`, `get_session`, `get_active_session`, `update_session` |
 | `Failed to load project configuration` | Missing or invalid `codingbuddy.config.js` | Run `npx codingbuddy init` |
 
 ---

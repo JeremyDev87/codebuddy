@@ -53,6 +53,16 @@ Claude Desktop設定に追加（`~/Library/Application Support/Claude/claude_des
 }
 ```
 
+### Claude Code プラグイン（オプション）
+
+Claude Codeでネイティブスキル呼び出しを使用する場合：
+
+```bash
+npm install codingbuddy-claude-plugin
+```
+
+このプラグインは、MCP設定なしでPLAN/ACT/EVALワークフローとスペシャリストエージェントに直接アクセスできます。
+
 [詳細なセットアップガイド →](docs/ja/getting-started.md)
 
 ## 対応AIツール
@@ -84,10 +94,10 @@ Claude Desktop設定に追加（`~/Library/Application Support/Claude/claude_des
 
 上記のアーキテクチャ図で3層エージェントシステムの全体像をご確認ください：
 
-- **Layer 1（モードエージェント）**：PLAN → ACT → EVAL ワークフローサイクル
-- **Layer 2（主要エージェント）**：Solution Architect、Technical Planner、Frontend/Backend/Mobile/Data Developer、Tooling Engineer、Agent Architect、Code Reviewer、DevOps
-- **Layer 3（スペシャリスト）**：10名のドメイン専門家（セキュリティ、パフォーマンス、アクセシビリティ、i18nなど）
-- **スキル**：再利用可能な機能（TDD、デバッグ、ブレインストーミングなど）
+- **Layer 1（モードエージェント）**：PLAN → ACT → EVAL → AUTO ワークフローサイクル
+- **Layer 2（主要エージェント）**：Solution Architect、Technical Planner、Frontend/Backend/Mobile/Data Developer、Platform Engineer、Tooling Engineer、AI/ML Engineer、Agent Architect、Code Reviewer、DevOps
+- **Layer 3（スペシャリスト）**：14名のドメイン専門家（セキュリティ、パフォーマンス、アクセシビリティ、i18n、オブザーバビリティ、マイグレーション、イベントアーキテクチャ、インテグレーションなど）
+- **スキル**：14個の再利用可能な機能（TDD、デバッグ、ブレインストーミング、データベースマイグレーション、インシデント対応など）
 
 すべてのAIツール設定が同じ`packages/rules/.ai-rules/`ディレクトリを参照します。ルールを一度変更すれば、すべてのツールが更新された標準に従います。
 

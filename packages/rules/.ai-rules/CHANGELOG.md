@@ -5,6 +5,128 @@ All notable changes to the Multi-AI Coding Assistant Common Rules System will be
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2026-01-17
+
+### Added
+
+- **Claude Code Plugin** (`codingbuddy-claude-plugin`)
+  - Native skill invocation for Claude Code
+  - PLAN/ACT/EVAL workflow integration
+  - Specialist agents support
+  - Install via `npm install codingbuddy-claude-plugin`
+
+- **New Skills (6 skills)**
+  - `performance-optimization`: Profiling-first optimization workflow
+  - `database-migration`: Zero-downtime schema changes with expand-contract patterns
+  - `dependency-management`: Systematic package updates, CVE response, license compliance
+  - `incident-response`: Organizational incident handling with severity classification
+  - `pr-review`: Systematic, evidence-based PR review with anti-sycophancy principles
+  - `refactoring`: Tidy First structured refactoring workflow
+
+- **New Domain Specialists (4 agents)**
+  - `migration-specialist`: Strangler Fig, legacy modernization, zero-downtime migrations
+  - `observability-specialist`: OpenTelemetry, distributed tracing, SLI/SLO frameworks
+  - `event-architecture-specialist`: Message queues, Saga patterns, real-time communication
+  - `integration-specialist`: External API integrations, retry strategies, circuit breakers
+
+- **Context Document System**
+  - Fixed file `docs/codingbuddy/context.md` persists PLAN → ACT → EVAL context
+  - Survives context compaction in long conversations
+  - `read_context` / `update_context` MCP tools
+  - Automatic PLAN mode reset, ACT/EVAL mode append behavior
+
+- **Session Document Feature**
+  - `create_session` / `get_session` / `get_active_session` / `update_session` MCP tools
+  - i18n support for session documents
+  - Auto-session creation for PLAN/AUTO modes
+
+- **MCP Server Improvements**
+  - Auto-detect project root via `roots/list` MCP capability
+  - Auto-update `.gitignore` during `codingbuddy init`
+  - AUTO mode keyword recognition across all AI tools
+  - Improved async utilities and slug generation
+
+### Changed
+
+- **Architecture Refactoring**
+  - Strategy pattern for agent resolution (ADR-001)
+  - Session module decomposition (ADR-002)
+  - Context Document System design (ADR-003)
+  - Extracted shared test utilities to common files
+  - Keyword, session, and pattern strategy module extraction
+
+- **Test Coverage Improvements**
+  - CLI prompt test coverage: 60% → 90%
+  - Comprehensive ContextDocumentService tests
+  - Shared test utilities for reusability
+
+- **Primary Agent Resolution**
+  - Bug fixes for resolution priority
+  - Agent language now follows project config
+
+### Fixed
+
+- Context loss after conversation compaction (Context Document System)
+- `parse_mode` language configuration not applied
+- AUTO mode keyword recognition bug
+- Primary agent resolution priority bugs
+
+### Breaking Changes
+
+- **Context Document System**: Previous session-based context is replaced with fixed-file approach
+- Requires `docs/codingbuddy/context.md` for cross-mode persistence
+
+---
+
+## [2.4.1] - 2026-01-15
+
+### Fixed
+
+- Canary deployment timestamp mismatch
+
+---
+
+## [2.4.0] - 2026-01-14
+
+### Added
+
+- Integration Specialist Agent pipeline activation
+- Delegation rules for specialist agents
+
+---
+
+## [2.3.0] - 2026-01-12
+
+### Added
+
+- File-based state persistence (hybrid approach)
+- Auto-session creation for PLAN/AUTO modes
+- Session caching improvements
+
+---
+
+## [2.2.0] - 2026-01-10
+
+### Added
+
+- Session document feature for PLAN → ACT agent recommendation persistence
+- i18n support for session documents
+
+### Fixed
+
+- `parse_mode` language configuration issues
+
+---
+
+## [2.1.0] - 2026-01-08
+
+### Added
+
+- AUTO mode keyword recognition across all AI tools
+- Agent language follows project config setting
+
+---
+
 ## [2.0.0] - 2026-01-06
 
 ### Added
