@@ -1,8 +1,11 @@
 {
   "name": "codingbuddy",
-  "description": "PLAN/ACT/EVAL workflow, specialist agents, and reusable skills for systematic TDD development",
+  "description": "PLAN/ACT/EVAL workflow with auto-detection, specialist agents, and reusable skills for systematic TDD development",
   "author": {
     "name": "JeremyDev87",
     "email": "soundbrokaz@kakao.com"
+  },
+  "hooks": {
+    "SessionStart": "hooks/session-start.py"
   }
 }
