@@ -37,11 +37,13 @@ claude --version
 
 ```bash
 # 1. マーケットプレイスを追加
-claude marketplace add https://jeremydev87.github.io/codingbuddy
+claude marketplace add JeremyDev87/codingbuddy
 
 # 2. プラグインをインストール
 claude plugin install codingbuddy@jeremydev87
 ```
+
+> **移行に関する注意**: 以前 `claude marketplace add https://jeremydev87.github.io/codingbuddy` を使用していた場合は、古いマーケットプレイスを削除し、上記の GitHub リポジトリ形式を使用してください。URL 形式は非推奨です。
 
 これにより自動的に：
 - 最新バージョンのプラグインをダウンロード

@@ -169,8 +169,8 @@ jobs:
 
           echo "🎉 Marketplace deployed!"
           echo ""
-          echo "Marketplace URL: $PAGE_URL"
+          echo "Landing page URL: $PAGE_URL"
           echo ""
           echo "To use this marketplace:"
-          echo "  claude marketplace add $PAGE_URL"
+          echo "  claude marketplace add JeremyDev87/codingbuddy"
           echo "  claude plugin install codingbuddy@jeremydev87"

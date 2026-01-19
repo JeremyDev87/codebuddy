@@ -37,11 +37,13 @@ claude --version
 
 ```bash
 # 1. 마켓플레이스 추가
-claude marketplace add https://jeremydev87.github.io/codingbuddy
+claude marketplace add JeremyDev87/codingbuddy
 
 # 2. 플러그인 설치
 claude plugin install codingbuddy@jeremydev87
 ```
+
+> **마이그레이션 안내**: 이전에 `claude marketplace add https://jeremydev87.github.io/codingbuddy` 명령을 사용하셨다면, 기존 마켓플레이스를 제거하고 위에 표시된 GitHub 저장소 형식을 사용해 주세요. URL 형식은 더 이상 지원되지 않습니다.
 
 이 명령어는 자동으로:
 - 최신 플러그인 버전 다운로드

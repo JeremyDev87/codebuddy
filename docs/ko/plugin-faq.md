@@ -63,7 +63,7 @@ CodingBuddy는 AI 어시스턴트 전반에 걸쳐 일관된 코딩 관행을 �
 
 ```bash
 # 1. 마켓플레이스 추가
-claude marketplace add https://jeremydev87.github.io/codingbuddy
+claude marketplace add JeremyDev87/codingbuddy
 
 # 2. 플러그인 설치
 claude plugin install codingbuddy@jeremydev87

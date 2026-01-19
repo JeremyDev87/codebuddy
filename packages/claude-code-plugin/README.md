@@ -7,8 +7,8 @@ Multi-AI Rules for consistent coding practices - PLAN/ACT/EVAL workflow, special
 ## Installation
 
 ```bash
-# 1. Add the self-hosted marketplace
-claude marketplace add https://github.com/JeremyDev87/codingbuddy
+# 1. Add the marketplace
+claude marketplace add JeremyDev87/codingbuddy
 
 # 2. Install the plugin
 claude plugin install codingbuddy@jeremydev87
