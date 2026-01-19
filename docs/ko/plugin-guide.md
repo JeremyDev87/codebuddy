@@ -31,12 +31,16 @@ claude --version
 
 ## 설치 방법
 
-### 방법 1: Claude Code를 통한 설치 (권장)
+### 방법 1: Claude Code 마켓플레이스를 통한 설치 (권장)
 
 가장 간단한 설치 방법입니다:
 
 ```bash
-claude plugin add codingbuddy
+# 1. 마켓플레이스 추가
+claude marketplace add https://jeremydev87.github.io/codingbuddy
+
+# 2. 플러그인 설치
+claude plugin install codingbuddy@jeremydev87
 ```
 
 이 명령어는 자동으로:
@@ -155,8 +159,8 @@ Claude Code에서 사용 가능한 도구 확인:
 **해결 방법**:
 1. 플러그인 재설치:
    ```bash
-   claude plugin remove codingbuddy
-   claude plugin add codingbuddy
+   claude plugin uninstall codingbuddy@jeremydev87
+   claude plugin install codingbuddy@jeremydev87
    ```
 
 2. Claude Code 버전 확인:

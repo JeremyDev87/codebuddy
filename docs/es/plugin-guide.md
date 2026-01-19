@@ -31,12 +31,16 @@ claude --version
 
 ## Métodos de Instalación
 
-### Método 1: Mediante Claude Code (Recomendado)
+### Método 1: Mediante Claude Code Marketplace (Recomendado)
 
 La forma más sencilla de instalar el plugin:
 
 ```bash
-claude plugin add codingbuddy
+# 1. Agregar el marketplace
+claude marketplace add https://jeremydev87.github.io/codingbuddy
+
+# 2. Instalar el plugin
+claude plugin install codingbuddy@jeremydev87
 ```
 
 Esto automáticamente:
@@ -155,8 +159,8 @@ Debería ver herramientas de CodingBuddy como:
 **Soluciones**:
 1. Reinstale el plugin:
    ```bash
-   claude plugin remove codingbuddy
-   claude plugin add codingbuddy
+   claude plugin uninstall codingbuddy@jeremydev87
+   claude plugin install codingbuddy@jeremydev87
    ```
 
 2. Verifique la versión de Claude Code:

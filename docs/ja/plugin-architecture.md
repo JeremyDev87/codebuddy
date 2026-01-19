@@ -288,9 +288,10 @@ module.exports = {
 ### 推奨セットアップ
 
 完全な機能を利用するには：
-1. プラグインをインストール: `claude plugin add codingbuddy`
-2. MCP サーバーをインストール: `npm install -g codingbuddy`
-3. Claude 設定で MCP を構成
+1. マーケットプレイスを追加: `claude marketplace add https://jeremydev87.github.io/codingbuddy`
+2. プラグインをインストール: `claude plugin install codingbuddy@jeremydev87`
+3. MCP サーバーをインストール: `npm install -g codingbuddy`
+4. Claude 設定で MCP を構成
 
 ## バージョニング
 

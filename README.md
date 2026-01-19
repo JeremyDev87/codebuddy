@@ -58,10 +58,13 @@ Add to Claude Desktop config (`~/Library/Application Support/Claude/claude_deskt
 For enhanced integration with Claude Code:
 
 ```bash
-# Install the plugin
-claude plugin add codingbuddy
+# 1. Add the marketplace
+claude marketplace add https://jeremydev87.github.io/codingbuddy
 
-# Install MCP server for full functionality
+# 2. Install the plugin
+claude plugin install codingbuddy@jeremydev87
+
+# 3. Install MCP server for full functionality
 npm install -g codingbuddy
 ```
 

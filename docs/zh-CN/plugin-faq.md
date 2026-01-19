@@ -62,10 +62,13 @@ CodingBuddy 是一个多 AI 规则系统，为 AI 助手提供一致的编码实
 ### 如何安装插件？
 
 ```bash
-# 最简单的方法
-claude plugin add codingbuddy
+# 1. 添加市场
+claude marketplace add https://jeremydev87.github.io/codingbuddy
 
-# 然后安装 MCP 服务器
+# 2. 安装插件
+claude plugin install codingbuddy@jeremydev87
+
+# 3. 安装 MCP 服务器
 npm install -g codingbuddy
 ```
 

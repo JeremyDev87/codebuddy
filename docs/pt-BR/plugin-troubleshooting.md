@@ -27,8 +27,8 @@ Soluções para problemas comuns ao usar o Plugin CodingBuddy para Claude Code.
 
 2. **Reinstalar o plugin**
    ```bash
-   claude plugin remove codingbuddy
-   claude plugin add codingbuddy
+   claude plugin uninstall codingbuddy@jeremydev87
+   claude plugin install codingbuddy@jeremydev87
    ```
 
 3. **Verificar versão do Claude Code**

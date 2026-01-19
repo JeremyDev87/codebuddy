@@ -27,8 +27,8 @@
 
 2. **重新安装插件**
    ```bash
-   claude plugin remove codingbuddy
-   claude plugin add codingbuddy
+   claude plugin uninstall codingbuddy@jeremydev87
+   claude plugin install codingbuddy@jeremydev87
    ```
 
 3. **检查 Claude Code 版本**

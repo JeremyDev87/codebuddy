@@ -31,12 +31,16 @@ claude --version
 
 ## インストール方法
 
-### 方法 1: Claude Code 経由（推奨）
+### 方法 1: Claude Code マーケットプレイス経由（推奨）
 
 プラグインをインストールする最も簡単な方法：
 
 ```bash
-claude plugin add codingbuddy
+# 1. マーケットプレイスを追加
+claude marketplace add https://jeremydev87.github.io/codingbuddy
+
+# 2. プラグインをインストール
+claude plugin install codingbuddy@jeremydev87
 ```
 
 これにより自動的に：
@@ -155,8 +159,8 @@ Claude Code で利用可能なツールを確認します：
 **解決策**:
 1. プラグインを再インストール：
    ```bash
-   claude plugin remove codingbuddy
-   claude plugin add codingbuddy
+   claude plugin uninstall codingbuddy@jeremydev87
+   claude plugin install codingbuddy@jeremydev87
    ```
 
 2. Claude Code のバージョンを確認：
