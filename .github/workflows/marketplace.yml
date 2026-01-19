@@ -1,0 +1,174 @@
+name: marketplace-deploy
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - '.claude-plugin/**'
+      - 'packages/claude-code-plugin/.claude-plugin/**'
+  release:
+    types: [published]
+  workflow_dispatch:
+
+# Workflow-level condition for defense-in-depth
+# Prevents execution on forked repositories
+run-name: Marketplace Deploy (${{ github.repository }})
+
+permissions:
+  contents: read
+  pages: write
+  # Required for GitHub's OIDC-based Pages authentication
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: false
+
+# Shared environment variables to avoid hardcoded paths (DRY)
+# Note: Repository name 'JeremyDev87/codingbuddy' is hardcoded in job conditions
+# because GitHub Actions env vars are not available in job-level 'if' expressions
+env:
+  MARKETPLACE_JSON: .claude-plugin/marketplace.json
+  SITE_DIR: _site
+
+jobs:
+  validate:
+    # Primary repository restriction - prevents forks from deploying
+    if: github.repository == 'JeremyDev87/codingbuddy'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+      - name: Validate marketplace.json
+        run: |
+          set -euo pipefail
+
+          echo "Validating marketplace.json..."
+
+          # Check if file exists
+          if [ ! -f "$MARKETPLACE_JSON" ]; then
+            echo "Error: $MARKETPLACE_JSON not found"
+            exit 1
+          fi
+
+          # Validate JSON syntax
+          if ! jq empty "$MARKETPLACE_JSON" 2>/dev/null; then
+            echo "Error: Invalid JSON syntax in $MARKETPLACE_JSON"
+            exit 1
+          fi
+
+          # Validate required fields
+          NAME=$(jq -r '.name' "$MARKETPLACE_JSON")
+          if [ "$NAME" == "null" ] || [ -z "$NAME" ]; then
+            echo "Error: 'name' field is required"
+            exit 1
+          fi
+
+          PLUGINS=$(jq -r '.plugins' "$MARKETPLACE_JSON")
+          if [ "$PLUGINS" == "null" ]; then
+            echo "Error: 'plugins' array is required"
+            exit 1
+          fi
+
+          # Source shared utility functions
+          source .github/scripts/marketplace-utils.sh
+
+          # Validate each plugin
+          PLUGIN_COUNT=$(get_plugin_count)
+          echo "Found $PLUGIN_COUNT plugin(s)"
+
+          for ((i=0; i<PLUGIN_COUNT; i++)); do
+            if ! validate_plugin "$i"; then
+              exit 1
+            fi
+            PLUGIN_NAME=$(get_plugin_name "$i")
+            echo "✓ Plugin '$PLUGIN_NAME' validated"
+          done
+
+          echo ""
+          echo "✅ Marketplace validation passed!"
+
+  build:
+    # Defense-in-depth: Additional repository check
+    if: github.repository == 'JeremyDev87/codingbuddy'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+      - name: Setup Pages
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
+
+      - name: Prepare marketplace directory
+        run: |
+          set -euo pipefail
+
+          mkdir -p "$SITE_DIR/.claude-plugin"
+
+          # Copy marketplace.json
+          cp "$MARKETPLACE_JSON" "$SITE_DIR/.claude-plugin/"
+
+          # Source shared utility functions
+          source .github/scripts/marketplace-utils.sh
+
+          # Copy each plugin's .claude-plugin directory
+          PLUGIN_COUNT=$(get_plugin_count)
+
+          for ((i=0; i<PLUGIN_COUNT; i++)); do
+            PLUGIN_NAME=$(get_plugin_name "$i")
+            PLUGIN_SOURCE=$(get_plugin_source "$i")
+
+            # Create plugin directory structure
+            mkdir -p "$SITE_DIR/$PLUGIN_SOURCE/.claude-plugin"
+
+            # Copy plugin files
+            cp -r "$PLUGIN_SOURCE/.claude-plugin/"* "$SITE_DIR/$PLUGIN_SOURCE/.claude-plugin/"
+
+            echo "✓ Copied plugin '$PLUGIN_NAME' from '$PLUGIN_SOURCE'"
+          done
+
+          # Copy index.html for human visitors
+          cp .github/templates/marketplace-index.html "$SITE_DIR/index.html"
+
+          echo ""
+          echo "📦 Marketplace build complete!"
+          echo "Contents of $SITE_DIR:"
+          find "$SITE_DIR" -type f
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
+        with:
+          path: '_site'
+
+  deploy:
+    # Defense-in-depth: Additional repository check
+    if: github.repository == 'JeremyDev87/codingbuddy'
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
+
+      - name: Output deployment info
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          set -euo pipefail
+
+          echo "🎉 Marketplace deployed!"
+          echo ""
+          echo "Marketplace URL: $PAGE_URL"
+          echo ""
+          echo "To use this marketplace:"
+          echo "  claude marketplace add $PAGE_URL"
+          echo "  claude plugin install codingbuddy@jeremydev87"

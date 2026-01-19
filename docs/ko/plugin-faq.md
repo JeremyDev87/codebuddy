@@ -62,10 +62,13 @@ CodingBuddy는 AI 어시스턴트 전반에 걸쳐 일관된 코딩 관행을 �
 ### 플러그인을 어떻게 설치하나요?
 
 ```bash
-# 가장 쉬운 방법
-claude plugin add codingbuddy
+# 1. 마켓플레이스 추가
+claude marketplace add https://jeremydev87.github.io/codingbuddy
 
-# 그런 다음 MCP 서버 설치
+# 2. 플러그인 설치
+claude plugin install codingbuddy@jeremydev87
+
+# 3. MCP 서버 설치
 npm install -g codingbuddy
 ```
 

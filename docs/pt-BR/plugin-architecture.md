@@ -288,9 +288,10 @@ Se o CLI `codingbuddy` não está instalado:
 ### Configuração Recomendada
 
 Para funcionalidade completa:
-1. Instalar plugin: `claude plugin add codingbuddy`
-2. Instalar servidor MCP: `npm install -g codingbuddy`
-3. Configurar MCP nas configurações do Claude
+1. Adicionar marketplace: `claude marketplace add https://jeremydev87.github.io/codingbuddy`
+2. Instalar plugin: `claude plugin install codingbuddy@jeremydev87`
+3. Instalar servidor MCP: `npm install -g codingbuddy`
+4. Configurar MCP nas configurações do Claude
 
 ## Versionamento
 

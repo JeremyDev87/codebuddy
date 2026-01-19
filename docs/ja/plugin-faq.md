@@ -62,10 +62,13 @@ CodingBuddy は、AI アシスタント間で一貫したコーディングプ�
 ### プラグインをインストールするには？
 
 ```bash
-# 最も簡単な方法
-claude plugin add codingbuddy
+# 1. マーケットプレイスを追加
+claude marketplace add https://jeremydev87.github.io/codingbuddy
 
-# 次に MCP サーバーをインストール
+# 2. プラグインをインストール
+claude plugin install codingbuddy@jeremydev87
+
+# 3. MCP サーバーをインストール
 npm install -g codingbuddy
 ```
 

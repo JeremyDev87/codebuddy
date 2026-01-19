@@ -288,9 +288,10 @@ module.exports = {
 ### 推荐设置
 
 要获得完整功能：
-1. 安装插件：`claude plugin add codingbuddy`
-2. 安装 MCP 服务器：`npm install -g codingbuddy`
-3. 在 Claude 设置中配置 MCP
+1. 添加市场：`claude marketplace add https://jeremydev87.github.io/codingbuddy`
+2. 安装插件：`claude plugin install codingbuddy@jeremydev87`
+3. 安装 MCP 服务器：`npm install -g codingbuddy`
+4. 在 Claude 设置中配置 MCP
 
 ## 版本管理
 

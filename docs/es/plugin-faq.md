@@ -62,10 +62,13 @@ Todas las herramientas comparten las mismas reglas de `packages/rules/.ai-rules/
 ### ¿Cómo instalo el plugin?
 
 ```bash
-# Método más fácil
-claude plugin add codingbuddy
+# 1. Agregar el marketplace
+claude marketplace add https://jeremydev87.github.io/codingbuddy
 
-# Luego instale el servidor MCP
+# 2. Instalar el plugin
+claude plugin install codingbuddy@jeremydev87
+
+# 3. Instalar el servidor MCP
 npm install -g codingbuddy
 ```
 

@@ -31,12 +31,16 @@ claude --version
 
 ## 安装方法
 
-### 方法 1：通过 Claude Code（推荐）
+### 方法 1：通过 Claude Code 市场（推荐）
 
 最简单的插件安装方式：
 
 ```bash
-claude plugin add codingbuddy
+# 1. 添加市场
+claude marketplace add https://jeremydev87.github.io/codingbuddy
+
+# 2. 安装插件
+claude plugin install codingbuddy@jeremydev87
 ```
 
 此命令会自动：
@@ -155,8 +159,8 @@ PLAN implement a user login feature
 **解决方案**：
 1. 重新安装插件：
    ```bash
-   claude plugin remove codingbuddy
-   claude plugin add codingbuddy
+   claude plugin uninstall codingbuddy@jeremydev87
+   claude plugin install codingbuddy@jeremydev87
    ```
 
 2. 检查 Claude Code 版本：

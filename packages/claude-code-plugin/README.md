@@ -1,18 +1,42 @@
 # CodingBuddy Claude Code Plugin
 
-> Version 2.4.1
+> Version 3.0.0
 
 Multi-AI Rules for consistent coding practices - PLAN/ACT/EVAL workflow, specialist agents, and reusable skills for systematic development.
 
 ## Installation
 
 ```bash
-# Via npm
-npm install codingbuddy-claude-plugin
+# 1. Add the self-hosted marketplace
+claude marketplace add https://github.com/JeremyDev87/codingbuddy
 
-# Or via Claude Code
-claude plugin add codingbuddy
+# 2. Install the plugin
+claude plugin install codingbuddy@jeremydev87
 ```
+
+### Alternative: Via npm
+
+```bash
+npm install codingbuddy-claude-plugin
+```
+
+### Uninstall
+
+```bash
+# Remove the plugin
+claude plugin uninstall codingbuddy@jeremydev87
+
+# Optionally remove the marketplace
+claude marketplace remove jeremydev87
+```
+
+### Upgrading from 2.x
+
+If upgrading from version 2.x:
+
+1. The installation method has changed from `claude plugin add` to marketplace-based installation
+2. Remove old installation: `claude plugin uninstall codingbuddy` (if applicable)
+3. Follow the new installation steps above
 
 ## Features
 
@@ -30,7 +54,7 @@ claude plugin add codingbuddy
 - `/checklist` - Generate contextual checklists
 
 ### Specialist Agents
-29 specialist agents for different domains:
+26 specialist agents for different domains:
 - Security, Performance, Accessibility
 - Architecture, Testing, Code Quality
 - Frontend, Backend, DevOps

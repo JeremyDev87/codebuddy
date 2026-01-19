@@ -1,23 +1,8 @@
 {
-  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "codingbuddy",
-  "version": "2.4.1",
-  "description": "Multi-AI Rules for consistent coding practices - PLAN/ACT/EVAL workflow, specialist agents, and reusable skills for systematic development",
+  "description": "PLAN/ACT/EVAL workflow, specialist agents, and reusable skills for systematic TDD development",
   "author": {
     "name": "JeremyDev87",
-    "url": "https://github.com/JeremyDev87"
-  },
-  "homepage": "https://github.com/JeremyDev87/codingbuddy",
-  "repository": "https://github.com/JeremyDev87/codingbuddy",
-  "license": "MIT",
-  "keywords": [
-    "coding-rules",
-    "tdd",
-    "workflow",
-    "plan-act-eval",
-    "agents",
-    "skills",
-    "mcp",
-    "augmented-coding"
-  ]
+    "email": "soundbrokaz@kakao.com"
+  }
 }

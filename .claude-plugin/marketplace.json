@@ -1,0 +1,17 @@
+{
+  "name": "jeremydev87",
+  "description": "JeremyDev87's Claude Code plugins - AI coding assistants for systematic development",
+  "owner": {
+    "name": "JeremyDev87",
+    "email": "soundbrokaz@kakao.com"
+  },
+  "plugins": [
+    {
+      "name": "codingbuddy",
+      "source": "./packages/claude-code-plugin",
+      "description": "PLAN/ACT/EVAL workflow, specialist agents, and reusable skills for systematic TDD development",
+      "version": "3.0.0",
+      "category": "development"
+    }
+  ]
+}

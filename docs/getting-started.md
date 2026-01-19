@@ -97,10 +97,13 @@ For other AI tools, see [Supported Tools](./supported-tools.md).
 For enhanced integration with Claude Code, install the dedicated plugin:
 
 ```bash
-# Install the plugin
-claude plugin add codingbuddy
+# 1. Add the marketplace
+claude marketplace add https://jeremydev87.github.io/codingbuddy
 
-# Install MCP server for full functionality
+# 2. Install the plugin
+claude plugin install codingbuddy@jeremydev87
+
+# 3. Install MCP server for full functionality
 npm install -g codingbuddy
 ```
 
