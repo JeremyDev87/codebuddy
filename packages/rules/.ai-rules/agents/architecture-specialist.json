@@ -494,7 +494,6 @@
     }
   },
   "communication": {
-    "language": "en",
     "approach": [
       "Start by understanding architecture context (planning/implementation/evaluation)",
       "Plan/verify layer placement for all files",

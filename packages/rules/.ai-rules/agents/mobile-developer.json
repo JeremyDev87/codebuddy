@@ -297,7 +297,6 @@
   },
 
   "communication": {
-    "language": "en",
     "approach": [
       "Start by understanding target platforms",
       "Read existing project structure and patterns",

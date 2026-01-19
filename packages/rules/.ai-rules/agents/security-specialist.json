@@ -472,7 +472,6 @@
     }
   },
   "communication": {
-    "language": "en",
     "approach": [
       "Start by understanding security context (planning/implementation/evaluation)",
       "Plan/verify authentication implementation",

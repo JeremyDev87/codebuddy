@@ -368,7 +368,6 @@
     }
   },
   "communication": {
-    "language": "en",
     "approach": [
       "Start by understanding i18n context (planning/implementation/evaluation)",
       "Plan/verify i18n library configuration",

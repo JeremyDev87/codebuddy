@@ -493,7 +493,6 @@
   },
 
   "communication": {
-    "language": "en",
     "approach": [
       "Start by understanding user goals and context",
       "Apply universal design principles (not system-specific)",

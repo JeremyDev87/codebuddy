@@ -13,6 +13,7 @@ import { generateSlug } from '../../shared/slug.utils';
 import { SessionService } from '../../session/session.service';
 import { StateService } from '../../state/state.service';
 import { ContextDocumentService } from '../../context/context-document.service';
+import { DiagnosticLogService } from '../../diagnostic/diagnostic-log.service';
 import {
   CONTEXT_FILE_PATH,
   type ContextDocument,
@@ -91,6 +92,7 @@ export class ModeHandler extends AbstractHandler {
     private readonly sessionService: SessionService,
     private readonly stateService: StateService,
     private readonly contextDocService: ContextDocumentService,
+    private readonly diagnosticLogService: DiagnosticLogService,
   ) {
     super();
   }
@@ -147,9 +149,40 @@ export class ModeHandler extends AbstractHandler {
         ? { recommendedActAgent: recommendedAgent }
         : undefined;
       const result = await this.keywordService.parseMode(prompt, options);
-      const language = await this.configService.getLanguage();
+
+      // Get language with diagnostic logging
+      const configLanguage = await this.configService.getLanguage();
+      const projectRoot = this.configService.getProjectRoot();
+
+      // Log language resolution for debugging config loading issues
+      if (!configLanguage) {
+        this.logger.warn(
+          `No language found in config. Project root: ${projectRoot}. ` +
+            `Please check if codingbuddy.config.js exists and has 'language' field.`,
+        );
+        // File-based diagnostic logging for config loading failures
+        await this.diagnosticLogService.logConfigLoading(
+          false,
+          projectRoot,
+          undefined,
+          'No language found in config',
+        );
+      } else {
+        this.logger.debug(
+          `Language resolved from config: ${configLanguage} (project root: ${projectRoot})`,
+        );
+        // File-based diagnostic logging for successful config loading
+        await this.diagnosticLogService.logConfigLoading(
+          true,
+          projectRoot,
+          configLanguage,
+        );
+      }
+
+      // Use config language, fallback to 'en' only if not configured
+      const language = configLanguage || 'en';
       const languageInstructionResult =
-        this.languageService.getLanguageInstruction(language || 'en');
+        this.languageService.getLanguageInstruction(language);
       const resolvedModel = await this.modelResolverService.resolveForMode(
         result.agent,
       );

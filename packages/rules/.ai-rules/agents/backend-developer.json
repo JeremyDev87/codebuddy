@@ -401,7 +401,6 @@
   },
 
   "communication": {
-    "language": "en",
     "approach": [
       "Start by understanding current code state",
       "Read code files before making changes",

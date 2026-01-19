@@ -679,7 +679,6 @@
     }
   },
   "communication": {
-    "language": "en",
     "approach": [
       "Start by understanding event architecture context (sync vs async needs, consistency requirements)",
       "Plan/verify message broker selection and configuration",

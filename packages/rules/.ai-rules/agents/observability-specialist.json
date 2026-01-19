@@ -718,7 +718,6 @@
     }
   },
   "communication": {
-    "language": "en",
     "approach": [
       "Start by understanding observability context (planning/implementation/evaluation)",
       "Plan/verify distributed tracing strategy",

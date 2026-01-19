@@ -7,6 +7,7 @@ import { LanguageService } from '../shared/language.service';
 import { ModelResolverService } from '../model/model-resolver.service';
 import { StateService } from '../state/state.service';
 import { ContextDocumentService } from '../context/context-document.service';
+import { DiagnosticLogService } from '../diagnostic/diagnostic-log.service';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as os from 'os';
@@ -30,6 +31,7 @@ describe('Session Lifecycle Integration', () => {
   let mockLanguageService: LanguageService;
   let mockModelResolverService: ModelResolverService;
   let mockContextDocService: ContextDocumentService;
+  let mockDiagnosticLogService: DiagnosticLogService;
 
   let tempDir: string;
   let sessionsDir: string;
@@ -118,6 +120,16 @@ describe('Session Lifecycle Integration', () => {
       contextExists: vi.fn().mockResolvedValue(true),
     } as unknown as ContextDocumentService;
 
+    // Mock DiagnosticLogService
+    mockDiagnosticLogService = {
+      logConfigLoading: vi.fn().mockResolvedValue({ success: true }),
+      log: vi.fn().mockResolvedValue({ success: true }),
+      debug: vi.fn().mockResolvedValue({ success: true }),
+      info: vi.fn().mockResolvedValue({ success: true }),
+      warn: vi.fn().mockResolvedValue({ success: true }),
+      error: vi.fn().mockResolvedValue({ success: true }),
+    } as unknown as DiagnosticLogService;
+
     // Create ModeHandler with real SessionService
     modeHandler = new ModeHandler(
       mockKeywordService,
@@ -127,6 +139,7 @@ describe('Session Lifecycle Integration', () => {
       sessionService,
       mockStateService,
       mockContextDocService,
+      mockDiagnosticLogService,
     );
   });
 

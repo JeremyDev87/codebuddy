@@ -690,7 +690,6 @@
     }
   },
   "communication": {
-    "language": "en",
     "approach": [
       "Start by understanding code quality context (planning/implementation/evaluation)",
       "Plan/verify SOLID principles application",

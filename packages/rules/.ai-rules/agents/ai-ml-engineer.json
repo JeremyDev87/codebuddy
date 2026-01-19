@@ -725,7 +725,6 @@
   },
 
   "communication": {
-    "language": "en",
     "approach": [
       "Start by understanding AI/ML requirements context",
       "Read existing AI integration code before changes",

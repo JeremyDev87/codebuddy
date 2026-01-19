@@ -280,7 +280,6 @@
   ],
 
   "communication": {
-    "language": "en",
     "approach": [
       "Analyze current infrastructure state first",
       "Explain optimization opportunities clearly",

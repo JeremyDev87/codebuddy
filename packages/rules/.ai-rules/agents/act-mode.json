@@ -135,7 +135,6 @@
   },
 
   "communication": {
-    "language": "en",
     "style": "Execution-focused step-by-step progress reporting",
     "format": "Clearly display implementation progress and quality verification results"
   },
