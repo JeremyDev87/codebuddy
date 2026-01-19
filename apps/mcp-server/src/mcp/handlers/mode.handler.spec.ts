@@ -7,6 +7,7 @@ import { ModelResolverService } from '../../model';
 import { SessionService } from '../../session/session.service';
 import { StateService } from '../../state/state.service';
 import { ContextDocumentService } from '../../context/context-document.service';
+import { DiagnosticLogService } from '../../diagnostic/diagnostic-log.service';
 
 describe('ModeHandler', () => {
   let handler: ModeHandler;
@@ -17,6 +18,7 @@ describe('ModeHandler', () => {
   let mockSessionService: SessionService;
   let mockStateService: StateService;
   let mockContextDocService: ContextDocumentService;
+  let mockDiagnosticLogService: DiagnosticLogService;
 
   const mockParseModeResult = {
     mode: 'PLAN',
@@ -37,6 +39,7 @@ describe('ModeHandler', () => {
 
     mockConfigService = {
       getLanguage: vi.fn().mockResolvedValue('ko'),
+      getProjectRoot: vi.fn().mockReturnValue('/test/project'),
       reload: vi.fn().mockResolvedValue({}),
     } as unknown as ConfigService;
 
@@ -117,6 +120,15 @@ describe('ModeHandler', () => {
       contextExists: vi.fn().mockResolvedValue(true),
     } as unknown as ContextDocumentService;
 
+    mockDiagnosticLogService = {
+      logConfigLoading: vi.fn().mockResolvedValue({ success: true }),
+      log: vi.fn().mockResolvedValue({ success: true }),
+      debug: vi.fn().mockResolvedValue({ success: true }),
+      info: vi.fn().mockResolvedValue({ success: true }),
+      warn: vi.fn().mockResolvedValue({ success: true }),
+      error: vi.fn().mockResolvedValue({ success: true }),
+    } as unknown as DiagnosticLogService;
+
     handler = new ModeHandler(
       mockKeywordService,
       mockConfigService,
@@ -125,6 +137,7 @@ describe('ModeHandler', () => {
       mockSessionService,
       mockStateService,
       mockContextDocService,
+      mockDiagnosticLogService,
     );
   });
 

@@ -23,6 +23,7 @@ import { ContextDocumentService } from '../context/context-document.service';
 import { ModelResolverService } from '../model';
 import { SessionService } from '../session/session.service';
 import { StateService } from '../state/state.service';
+import { DiagnosticLogService } from '../diagnostic/diagnostic-log.service';
 import type { ToolHandler } from './handlers';
 import {
   RulesHandler,
@@ -467,6 +468,7 @@ interface CreateMcpServiceOptions {
   modelResolverService?: Partial<ModelResolverService>;
   sessionService?: Partial<SessionService>;
   stateService?: Partial<StateService>;
+  diagnosticLogService?: Partial<DiagnosticLogService>;
 }
 
 function createMcpServiceWithHandlers(
@@ -494,6 +496,7 @@ function createMcpServiceWithHandlers(
       services.sessionService as SessionService,
       services.stateService as StateService,
       services.contextDocService as ContextDocumentService,
+      services.diagnosticLogService as DiagnosticLogService,
     ),
     new ChecklistContextHandler(
       services.checklistService as ChecklistService,
@@ -523,6 +526,7 @@ describe('McpService', () => {
   let mockModelResolverService: Partial<ModelResolverService>;
   let mockSessionService: Partial<SessionService>;
   let mockStateService: Partial<StateService>;
+  let mockDiagnosticLogService: Partial<DiagnosticLogService>;
 
   const testConfig: CodingBuddyConfig = {
     language: 'ko',
@@ -557,6 +561,14 @@ describe('McpService', () => {
     mockModelResolverService = createMockModelResolverService();
     mockSessionService = createMockSessionService();
     mockStateService = createMockStateService();
+    mockDiagnosticLogService = {
+      logConfigLoading: vi.fn().mockResolvedValue({ success: true }),
+      log: vi.fn().mockResolvedValue({ success: true }),
+      debug: vi.fn().mockResolvedValue({ success: true }),
+      info: vi.fn().mockResolvedValue({ success: true }),
+      warn: vi.fn().mockResolvedValue({ success: true }),
+      error: vi.fn().mockResolvedValue({ success: true }),
+    };
 
     // Store default mocks for use in helper function
     defaultMocks = {
@@ -574,6 +586,7 @@ describe('McpService', () => {
       modelResolverService: mockModelResolverService,
       sessionService: mockSessionService,
       stateService: mockStateService,
+      diagnosticLogService: mockDiagnosticLogService,
     };
 
     const mcpService = createMcpServiceWithHandlers(defaultMocks);

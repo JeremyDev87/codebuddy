@@ -198,7 +198,6 @@
   },
 
   "communication": {
-    "language": "en",
     "style": "Detailed and actionable plans, TDD-focused",
     "approach": [
       "Start with writing-plans skill",

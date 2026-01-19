@@ -523,7 +523,6 @@
     }
   },
   "communication": {
-    "language": "en",
     "approach": [
       "Start by understanding documentation context (planning/implementation/evaluation)",
       "Plan/review code comments for complex logic",

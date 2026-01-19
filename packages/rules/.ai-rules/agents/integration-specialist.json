@@ -549,7 +549,6 @@
     }
   },
   "communication": {
-    "language": "en",
     "approach": [
       "Start by understanding integration context (API type, webhook, OAuth)",
       "Plan/verify resilience patterns (retry, timeout, circuit breaker)",

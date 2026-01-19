@@ -653,7 +653,6 @@
     }
   },
   "communication": {
-    "language": "en",
     "approach": [
       "Start by understanding migration context and scope",
       "Identify appropriate migration pattern",

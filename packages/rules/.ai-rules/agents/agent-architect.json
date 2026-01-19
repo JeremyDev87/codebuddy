@@ -182,7 +182,6 @@
   ],
 
   "communication": {
-    "language": "en",
     "style": "Systematic and clear approach, schema-driven design",
     "approach": [
       "Start by understanding agent requirements",

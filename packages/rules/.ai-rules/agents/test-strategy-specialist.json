@@ -536,7 +536,6 @@
     }
   },
   "communication": {
-    "language": "en",
     "approach": [
       "Start by understanding test context (planning/implementation/evaluation)",
       "Plan/verify TDD vs Test-After approach",

@@ -321,7 +321,6 @@
   },
 
   "communication": {
-    "language": "en",
     "approach": [
       "Start by understanding current schema state",
       "Read existing migrations and models",

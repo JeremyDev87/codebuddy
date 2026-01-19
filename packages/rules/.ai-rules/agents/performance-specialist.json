@@ -532,7 +532,6 @@
     }
   },
   "communication": {
-    "language": "en",
     "approach": [
       "Start by understanding performance context (planning/implementation/evaluation)",
       "Plan/analyze bundle size and rendering",
