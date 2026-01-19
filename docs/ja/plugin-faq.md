@@ -63,7 +63,7 @@ CodingBuddy は、AI アシスタント間で一貫したコーディングプ�
 
 ```bash
 # 1. マーケットプレイスを追加
-claude marketplace add https://jeremydev87.github.io/codingbuddy
+claude marketplace add JeremyDev87/codingbuddy
 
 # 2. プラグインをインストール
 claude plugin install codingbuddy@jeremydev87

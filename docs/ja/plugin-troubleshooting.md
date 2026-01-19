@@ -83,6 +83,63 @@ CodingBuddy Claude Code プラグイン使用時のよくある問題の解決�
 
 ---
 
+## マーケットプレイスの問題
+
+### 「Invalid marketplace schema」エラー
+
+**症状**: `claude marketplace add` 実行時に以下のエラーが発生：
+```
+✘ Failed to add marketplace: Invalid marketplace schema from URL: : Invalid input: expected object, received string
+```
+
+**原因**: GitHub リポジトリ形式ではなく URL 形式を使用している。
+
+**解決方法**:
+```bash
+# 間違い（URL 形式 - 非推奨）
+claude marketplace add https://jeremydev87.github.io/codingbuddy
+
+# 正しい（GitHub リポジトリ形式）
+claude marketplace add JeremyDev87/codingbuddy
+```
+
+### URL 形式からの移行
+
+以前 URL 形式でマーケットプレイスを追加した場合：
+
+```bash
+# 1. 古いマーケットプレイスを削除
+claude marketplace remove https://jeremydev87.github.io/codingbuddy
+
+# 2. 正しい形式で追加
+claude marketplace add JeremyDev87/codingbuddy
+
+# 3. プラグインを再インストール
+claude plugin install codingbuddy@jeremydev87
+```
+
+### マーケットプレイスが見つからない
+
+**症状**: `claude marketplace add JeremyDev87/codingbuddy` 実行時に「not found」エラー
+
+**解決方法**:
+
+1. **スペルと大文字小文字を確認**
+   - GitHub ユーザー名: `JeremyDev87`（大文字小文字を区別）
+   - リポジトリ: `codingbuddy`
+
+2. **ネットワーク接続を確認**
+   ```bash
+   curl -I https://github.com/JeremyDev87/codingbuddy
+   ```
+
+3. **Claude Code を更新**
+   ```bash
+   npm update -g @anthropic-ai/claude-code
+   ```
+
+---
+
 ## MCP 接続の問題
 
 ### MCP サーバーが接続されない

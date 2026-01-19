@@ -288,7 +288,7 @@ module.exports = {
 ### 권장 설정
 
 모든 기능을 사용하려면:
-1. 마켓플레이스 추가: `claude marketplace add https://jeremydev87.github.io/codingbuddy`
+1. 마켓플레이스 추가: `claude marketplace add JeremyDev87/codingbuddy`
 2. 플러그인 설치: `claude plugin install codingbuddy@jeremydev87`
 3. MCP 서버 설치: `npm install -g codingbuddy`
 4. Claude 설정에 MCP 구성

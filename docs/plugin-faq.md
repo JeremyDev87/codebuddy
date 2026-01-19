@@ -63,7 +63,7 @@ All tools share the same rules from `packages/rules/.ai-rules/`.
 
 ```bash
 # 1. Add the marketplace
-claude marketplace add https://jeremydev87.github.io/codingbuddy
+claude marketplace add JeremyDev87/codingbuddy
 
 # 2. Install the plugin
 claude plugin install codingbuddy@jeremydev87

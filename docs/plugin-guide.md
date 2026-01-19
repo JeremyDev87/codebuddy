@@ -37,11 +37,13 @@ The simplest way to install the plugin:
 
 ```bash
 # 1. Add the marketplace
-claude marketplace add https://jeremydev87.github.io/codingbuddy
+claude marketplace add JeremyDev87/codingbuddy
 
 # 2. Install the plugin
 claude plugin install codingbuddy@jeremydev87
 ```
+
+> **Migration Note**: If you previously used `claude marketplace add https://jeremydev87.github.io/codingbuddy`, please remove the old marketplace and use the GitHub repository format shown above. The URL format is deprecated.
 
 This automatically:
 - Downloads the latest plugin version

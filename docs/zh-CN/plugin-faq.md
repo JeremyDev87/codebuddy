@@ -63,7 +63,7 @@ CodingBuddy 是一个多 AI 规则系统，为 AI 助手提供一致的编码实
 
 ```bash
 # 1. 添加市场
-claude marketplace add https://jeremydev87.github.io/codingbuddy
+claude marketplace add JeremyDev87/codingbuddy
 
 # 2. 安装插件
 claude plugin install codingbuddy@jeremydev87

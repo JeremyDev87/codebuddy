@@ -59,7 +59,7 @@ For enhanced integration with Claude Code:
 
 ```bash
 # 1. Add the marketplace
-claude marketplace add https://jeremydev87.github.io/codingbuddy
+claude marketplace add JeremyDev87/codingbuddy
 
 # 2. Install the plugin
 claude plugin install codingbuddy@jeremydev87
@@ -67,6 +67,8 @@ claude plugin install codingbuddy@jeremydev87
 # 3. Install MCP server for full functionality
 npm install -g codingbuddy
 ```
+
+> **Migration Note**: If you previously used `claude marketplace add https://jeremydev87.github.io/codingbuddy`, please remove it and use the GitHub repository format shown above. The URL format is deprecated.
 
 The plugin provides:
 - **Workflow Modes**: PLAN/ACT/EVAL/AUTO structured development

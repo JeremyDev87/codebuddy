@@ -83,6 +83,63 @@
 
 ---
 
+## 市场问题
+
+### "Invalid marketplace schema" 错误
+
+**症状**：执行 `claude marketplace add` 时出现以下错误：
+```
+✘ Failed to add marketplace: Invalid marketplace schema from URL: : Invalid input: expected object, received string
+```
+
+**原因**：使用了 URL 格式而不是 GitHub 仓库格式。
+
+**解决方法**：
+```bash
+# 错误（URL 格式 - 已弃用）
+claude marketplace add https://jeremydev87.github.io/codingbuddy
+
+# 正确（GitHub 仓库格式）
+claude marketplace add JeremyDev87/codingbuddy
+```
+
+### 从 URL 格式迁移
+
+如果您之前使用 URL 格式添加了市场：
+
+```bash
+# 1. 删除旧市场
+claude marketplace remove https://jeremydev87.github.io/codingbuddy
+
+# 2. 使用正确格式添加
+claude marketplace add JeremyDev87/codingbuddy
+
+# 3. 重新安装插件
+claude plugin install codingbuddy@jeremydev87
+```
+
+### 找不到市场
+
+**症状**：执行 `claude marketplace add JeremyDev87/codingbuddy` 时出现 "not found" 错误
+
+**解决方法**：
+
+1. **检查拼写和大小写**
+   - GitHub 用户名：`JeremyDev87`（区分大小写）
+   - 仓库：`codingbuddy`
+
+2. **验证网络连接**
+   ```bash
+   curl -I https://github.com/JeremyDev87/codingbuddy
+   ```
+
+3. **更新 Claude Code**
+   ```bash
+   npm update -g @anthropic-ai/claude-code
+   ```
+
+---
+
 ## MCP 连接问题
 
 ### MCP 服务器无法连接

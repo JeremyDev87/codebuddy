@@ -37,11 +37,13 @@ claude --version
 
 ```bash
 # 1. 添加市场
-claude marketplace add https://jeremydev87.github.io/codingbuddy
+claude marketplace add JeremyDev87/codingbuddy
 
 # 2. 安装插件
 claude plugin install codingbuddy@jeremydev87
 ```
+
+> **迁移说明**：如果您之前使用 `claude marketplace add https://jeremydev87.github.io/codingbuddy`，请删除旧的市场并使用上面显示的 GitHub 仓库格式。URL 格式已弃用。
 
 此命令会自动：
 - 下载最新版本的插件
