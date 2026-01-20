@@ -10,6 +10,8 @@
 
 Get up and running with Codingbuddy in minutes.
 
+**Codingbuddy orchestrates 29 specialized AI agents** to deliver human-expert-team-level code quality through the PLAN → ACT → EVAL workflow.
+
 ## Prerequisites
 
 - **Node.js**: v18 or higher
@@ -77,7 +79,8 @@ FORCE_COLOR=1 npx codingbuddy init
 
 Add Codingbuddy to your AI assistant. Here's an example for Claude Desktop:
 
-**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 
 ```json
 {

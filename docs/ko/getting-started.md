@@ -10,6 +10,8 @@
 
 몇 분 만에 Codingbuddy를 시작해 보세요.
 
+**Codingbuddy는 29개의 전문 AI 에이전트를 조율하여** PLAN → ACT → EVAL 워크플로우를 통해 인간 전문가 팀 수준의 코드 품질을 제공합니다.
+
 ## 사전 요구사항
 
 - **Node.js**: v18 이상
@@ -68,7 +70,8 @@ FORCE_COLOR=1 npx codingbuddy init
 
 AI 어시스턴트에 Codingbuddy를 추가합니다. Claude Desktop 예시:
 
-**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 
 ```json
 {

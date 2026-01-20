@@ -9,6 +9,8 @@
 
 # Claude Code Plugin Installation & Setup Guide
 
+**Codingbuddy orchestrates 29 specialized AI agents** to deliver human-expert-team-level code quality through the PLAN → ACT → EVAL workflow.
+
 This guide provides step-by-step instructions for installing and configuring the CodingBuddy Claude Code Plugin.
 
 ## Prerequisites

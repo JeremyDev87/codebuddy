@@ -10,6 +10,8 @@
 
 Pon en marcha Codingbuddy en minutos.
 
+**Codingbuddy orquesta 29 agentes de IA especializados** para ofrecer calidad de código a nivel de equipo de expertos humanos a través del flujo de trabajo PLAN → ACT → EVAL.
+
 ## Prerrequisitos
 
 - **Node.js**: v18 o superior
@@ -49,7 +51,8 @@ El modo con IA proporciona un análisis más profundo del proyecto y configuraci
 
 Añade Codingbuddy a tu asistente de IA. Aquí tienes un ejemplo para Claude Desktop:
 
-**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 
 ```json
 {

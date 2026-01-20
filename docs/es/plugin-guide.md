@@ -9,6 +9,8 @@
 
 # Guía de Instalación y Configuración del Plugin de Claude Code
 
+**Codingbuddy orquesta 29 agentes de IA especializados** para ofrecer calidad de código a nivel de equipo de expertos humanos a través del flujo de trabajo PLAN → ACT → EVAL.
+
 Esta guía proporciona instrucciones paso a paso para instalar y configurar el Plugin de CodingBuddy para Claude Code.
 
 ## Requisitos Previos

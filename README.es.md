@@ -13,34 +13,171 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 <p align="center">
-  <img src="docs/ai-rules-architecture.svg" alt="Codingbuddy AI Rules Architecture" width="800"/>
+  <img src="docs/ai-rules-architecture.svg" alt="Arquitectura Multi-Agente de Codingbuddy" width="800"/>
 </p>
 
-**Una única fuente de verdad para reglas de codificación AI en todos los asistentes de IA.**
+## Equipo de Expertos IA para Tu Código
 
-Codingbuddy proporciona un sistema de reglas unificado que funciona con Cursor, Claude Code, GitHub Copilot y más, para que todo tu equipo siga los mismos estándares de codificación, independientemente de la herramienta de IA que utilicen.
+**Codingbuddy orquesta 29 agentes de IA especializados para ofrecer calidad de código a nivel de equipo de expertos humanos.**
 
-## ¿Por qué Codingbuddy?
+Una sola IA no puede ser experta en todo. Codingbuddy crea un equipo de desarrollo de IA—arquitectos, desarrolladores, especialistas en seguridad, expertos en accesibilidad y más—que colaboran para revisar, verificar y refinar tu código hasta que cumpla con los estándares profesionales.
 
-- **Consistencia**: Todas las herramientas de IA siguen estándares de codificación idénticos
-- **Fuente única de verdad**: Actualiza las reglas una vez, todas las herramientas se benefician
-- **Sin dependencia de proveedor**: Reglas agnósticas de IA que funcionan con cualquier asistente
-- **Flujo de trabajo estructurado**: Ciclo de desarrollo PLAN → ACT → EVAL
+---
 
-## Inicio rápido
+## La Visión
 
-```bash
-# Inicializa tu proyecto (no requiere API key)
-npx codingbuddy init
+### El Problema
 
-# Opcional: Inicialización con IA para un análisis más profundo
-# npx codingbuddy init --ai  # Requiere ANTHROPIC_API_KEY
+Cuando le pides a una IA que escriba código, obtienes una única perspectiva. Sin revisión de seguridad. Sin verificación de accesibilidad. Sin validación de arquitectura. Solo una IA haciendo todo "aceptable" pero nada excelente.
 
-# Añade a tu herramienta de IA (ejemplo: Claude Desktop)
-# Consulta docs/es/supported-tools.md para otras herramientas de IA
+Los equipos de desarrollo humanos tienen especialistas:
+- **Arquitectos** que diseñan sistemas
+- **Ingenieros de seguridad** que encuentran vulnerabilidades
+- **Especialistas en QA** que detectan casos límite
+- **Expertos en rendimiento** que optimizan cuellos de botella
+
+### Nuestra Solución
+
+**Codingbuddy trae el modelo de equipo especializado a la programación con IA.**
+
+En lugar de que una sola IA intente hacerlo todo, Codingbuddy coordina múltiples agentes especializados que colaboran:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                       Tu Solicitud                           │
+│              "Implementar autenticación de usuario"          │
+└─────────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 📋 PLAN: Arquitecto de Soluciones + Especialista en Arquitectura│
+│          → Diseñar arquitectura del sistema                  │
+│          → Definir requisitos de seguridad                   │
+└─────────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 🚀 ACT: Desarrollador Backend + Especialista en Estrategia de Tests│
+│         → Implementar con TDD                                │
+│         → Seguir estándares de calidad                       │
+└─────────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 🔍 EVAL: Revisor de Código + Especialistas en Paralelo       │
+│          🔒 Seguridad    → ¿Vulnerabilidades JWT?            │
+│          ♿ Accesibilidad → ¿Cumplimiento WCAG?              │
+│          ⚡ Rendimiento  → ¿Optimización necesaria?          │
+│          📏 Calidad      → ¿Principios SOLID?                │
+└─────────────────────────────────────────────────────────────┘
+                            │
+              ┌─────────────┴─────────────┐
+              │                           │
+        Critical > 0?              Critical = 0 AND
+        High > 0?                  High = 0
+              │                           │
+              ▼                           ▼
+        Volver a PLAN              ✅ Calidad Alcanzada
+        con mejoras                Desplegar con confianza
 ```
 
-Añade a la configuración de Claude Desktop (`~/Library/Application Support/Claude/claude_desktop_config.json`):
+---
+
+## Arquitectura Multi-Agente
+
+### Sistema de Agentes de 3 Niveles
+
+| Nivel | Agentes | Rol |
+|-------|---------|-----|
+| **Agentes de Modo** | plan-mode, act-mode, eval-mode | Orquestación de flujo de trabajo |
+| **Agentes Principales** | solution-architect, frontend-developer, backend-developer, code-reviewer, +8 más | Implementación central |
+| **Agentes Especialistas** | security, accessibility, performance, test-strategy, +15 más | Experiencia de dominio |
+
+### Ejemplo de Colaboración de Agentes
+
+Cuando solicitas una funcionalidad, los agentes colaboran automáticamente:
+
+```
+🤖 solution-architect    → Diseña el enfoque
+   └── 👤 architecture-specialist  → Valida límites de capas
+   └── 👤 test-strategy-specialist → Planifica cobertura de tests
+
+🤖 backend-developer     → Implementa el código
+   └── 👤 security-specialist      → Revisa patrones de auth
+   └── 👤 event-architecture       → Diseña flujos de mensajes
+
+🤖 code-reviewer         → Evalúa calidad
+   └── 👤 4 especialistas en paralelo → Revisión multidimensional
+```
+
+---
+
+## Ciclo de Aseguramiento de Calidad
+
+### El Bucle PLAN → ACT → EVAL
+
+Codingbuddy implementa un ciclo de desarrollo orientado a la calidad:
+
+1. **PLAN**: Diseñar antes de codificar (arquitectura, estrategia de tests)
+2. **ACT**: Implementar con TDD y estándares de calidad
+3. **EVAL**: Revisión multi-especialista (seguridad, rendimiento, accesibilidad, calidad)
+4. **Iterar**: Continuar hasta alcanzar objetivos de calidad
+
+### Modo AUTO: Logro Autónomo de Calidad
+
+```bash
+# Solo describe lo que quieres
+AUTO: Implementar autenticación JWT con tokens de refresco
+
+# Codingbuddy automáticamente:
+# → Planifica la implementación
+# → Escribe código siguiendo TDD
+# → Revisa con 4+ especialistas
+# → Itera hasta: Critical=0 AND High=0
+# → Entrega código listo para producción
+```
+
+### Criterios de Salida
+
+| Severidad | Debe Corregirse Antes de Desplegar |
+|-----------|-----------------------------------|
+| 🔴 Critical | Sí - Problemas inmediatos de seguridad/datos |
+| 🟠 High | Sí - Problemas significativos |
+| 🟡 Medium | Opcional - Deuda técnica |
+| 🟢 Low | Opcional - Mejora |
+
+---
+
+## Lo Que Lo Hace Diferente
+
+| Programación IA Tradicional | Codingbuddy |
+|----------------------------|-------------|
+| Perspectiva de una sola IA | 29 perspectivas de agentes especialistas |
+| "Generar y esperar" | Planificar → Implementar → Verificar |
+| Sin puertas de calidad | Critical=0, High=0 requerido |
+| Revisión manual necesaria | Revisión multidimensional automatizada |
+| Calidad inconsistente | Refinamiento iterativo hasta cumplir estándares |
+
+---
+
+## Inicio Rápido
+
+### Prerrequisitos
+
+- **Node.js** 18.x o superior
+- **npm** 9.x+ o **yarn** 4.x+
+- Una herramienta de IA compatible (Claude Code, Cursor, GitHub Copilot, etc.)
+
+### Instalación
+
+```bash
+# Inicializa tu proyecto
+npx codingbuddy init
+
+# Añade a la configuración de Claude Desktop
+# macOS: ~/Library/Application Support/Claude/claude_desktop_config.json
+# Windows: %APPDATA%\Claude\claude_desktop_config.json
+```
 
 ```json
 {
@@ -53,23 +190,52 @@ Añade a la configuración de Claude Desktop (`~/Library/Application Support/Cla
 }
 ```
 
-### Plugin de Claude Code (Opcional)
+### Comenzar a Usar
 
-Para invocación nativa de habilidades en Claude Code:
+```
+PLAN: Implementar registro de usuario con verificación de email
+→ El equipo IA planifica la arquitectura
 
-```bash
-npm install codingbuddy-claude-plugin
+ACT
+→ El equipo IA implementa con TDD
+
+EVAL
+→ El equipo IA revisa desde 8+ perspectivas
+
+AUTO: Construir un sistema de autenticación completo
+→ El equipo IA itera hasta alcanzar la calidad
 ```
 
-El plugin proporciona acceso directo a los flujos de trabajo PLAN/ACT/EVAL y agentes especialistas sin configuración MCP.
+[Guía Completa de Inicio →](docs/es/getting-started.md)
 
-[Guía completa de inicio →](docs/es/getting-started.md)
+### Plugin de Claude Code (Opcional)
 
-## Herramientas de IA compatibles
+Para integración mejorada con Claude Code:
+
+```bash
+# Añadir el marketplace
+claude marketplace add JeremyDev87/codingbuddy
+
+# Instalar el plugin
+claude plugin install codingbuddy@jeremydev87
+
+# Instalar servidor MCP para funcionalidad completa
+npm install -g codingbuddy
+```
+
+| Documentación | Descripción |
+|---------------|-------------|
+| [Guía de Configuración del Plugin](docs/plugin-guide.md) | Instalación y configuración |
+| [Referencia Rápida](docs/plugin-quick-reference.md) | Comandos y modos de un vistazo |
+| [Arquitectura](docs/plugin-architecture.md) | Cómo funcionan juntos plugin y MCP |
+
+---
+
+## Herramientas de IA Compatibles
 
 | Herramienta | Estado |
 |-------------|--------|
-| Claude Code | ✅ Soporte MCP completo |
+| Claude Code | ✅ MCP Completo + Plugin |
 | Cursor | ✅ Compatible |
 | GitHub Copilot | ✅ Compatible |
 | Antigravity | ✅ Compatible |
@@ -77,29 +243,22 @@ El plugin proporciona acceso directo a los flujos de trabajo PLAN/ACT/EVAL y age
 | Kiro | ✅ Compatible |
 | OpenCode | ✅ Compatible |
 
-[Guías de configuración →](docs/es/supported-tools.md)
+[Guías de Configuración →](docs/es/supported-tools.md)
+
+---
 
 ## Documentación
 
 | Documento | Descripción |
 |-----------|-------------|
-| [Primeros pasos](docs/es/getting-started.md) | Instalación y configuración rápida |
+| [Primeros Pasos](docs/es/getting-started.md) | Instalación y configuración rápida |
 | [Filosofía](docs/es/philosophy.md) | Visión y principios de diseño |
-| [Herramientas compatibles](docs/es/supported-tools.md) | Guías de integración de herramientas IA |
+| [Sistema de Agentes](packages/rules/.ai-rules/agents/README.md) | Referencia completa de agentes |
+| [Herramientas Compatibles](docs/es/supported-tools.md) | Guías de integración de herramientas IA |
 | [Configuración](docs/config-schema.md) | Opciones del archivo de configuración |
 | [Referencia API](docs/api.md) | Capacidades del servidor MCP |
-| [Desarrollo](docs/development.md) | Contribuir y configuración local |
 
-## Cómo funciona
-
-Consulta el diagrama de arquitectura de arriba para una visión general del sistema de agentes de 3 capas:
-
-- **Layer 1 (Agentes de Modo)**: Ciclo de flujo de trabajo PLAN → ACT → EVAL → AUTO
-- **Layer 2 (Agentes Principales)**: Solution Architect, Technical Planner, Frontend/Backend/Mobile/Data Developer, Platform Engineer, Tooling Engineer, AI/ML Engineer, Agent Architect, Code Reviewer, DevOps
-- **Layer 3 (Especialistas)**: 14 expertos de dominio (Seguridad, Rendimiento, Accesibilidad, i18n, Observabilidad, Migración, Arquitectura de Eventos, Integración, etc.)
-- **Habilidades**: 14 capacidades reutilizables (TDD, Depuración, Brainstorming, Migración de Base de Datos, Respuesta a Incidentes, etc.)
-
-Todas las configuraciones de herramientas de IA referencian el mismo directorio `packages/rules/.ai-rules/`. Cambia las reglas una vez, y todas las herramientas siguen los estándares actualizados.
+---
 
 ## Contribuir
 

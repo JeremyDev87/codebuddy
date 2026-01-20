@@ -10,6 +10,8 @@
 
 数分でCodingbuddyを起動して実行できます。
 
+**Codingbuddyは29の専門AIエージェントを調整し**、PLAN → ACT → EVALワークフローを通じて人間の専門家チームレベルのコード品質を提供します。
+
 ## 前提条件
 
 - **Node.js**: v18以上
@@ -49,7 +51,8 @@ AI駆動モードはより深いプロジェクト分析とカスタマイズさ
 
 CodingbuddyをAIアシスタントに追加します。以下はClaude Desktopの例です：
 
-**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 
 ```json
 {

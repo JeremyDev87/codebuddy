@@ -12,62 +12,103 @@ This document explains the vision, core beliefs, and design principles behind Co
 
 ## Vision
 
-**One source of truth for AI coding rules across all AI assistants.**
+**AI Expert Team for Your Code**
 
-Today's development teams use multiple AI coding tools—Cursor, Claude Code, GitHub Copilot, and more. Each tool has its own configuration format, leading to:
+A single AI can't be an expert at everything. When you ask an AI to write code, you get a single perspective—no security review, no accessibility check, no architecture validation. Just one AI doing everything "okay" but nothing excellently.
 
-- Duplicated rules across multiple config files
-- Inconsistent coding standards depending on which AI tool is used
-- Maintenance burden when rules need to be updated
+Human development teams have specialists:
+- **Architects** who design systems
+- **Security engineers** who find vulnerabilities
+- **QA specialists** who catch edge cases
+- **Performance experts** who optimize bottlenecks
 
-Codingbuddy solves this by providing a unified rules system that works with any AI assistant.
+**Codingbuddy brings the specialist team model to AI coding.**
+
+Instead of one AI trying to do everything, Codingbuddy orchestrates 29 specialized agents that collaborate to review, verify, and refine your code until it meets professional standards.
 
 ## Core Beliefs
 
-### 1. AI-Agnostic Rules
+### 1. Multi-Agent Collaboration
 
-Rules should be written once and work everywhere. No vendor lock-in, no tool-specific syntax in core rules. Each AI tool adapts to the common format through lightweight adapters.
+Quality comes from multiple perspectives. Our 3-tier agent system ensures comprehensive coverage:
 
-### 2. Progressive Disclosure
+| Tier | Purpose | Examples |
+|------|---------|----------|
+| **Mode Agents** | Workflow orchestration | plan-mode, act-mode, eval-mode |
+| **Primary Agents** | Core implementation | solution-architect, frontend-developer, backend-developer |
+| **Specialist Agents** | Domain expertise | security, accessibility, performance, test-strategy |
+
+Each agent brings focused expertise, and they collaborate to achieve what no single AI could.
+
+### 2. Quality-Driven Development
+
+The PLAN → ACT → EVAL cycle ensures quality at every step:
+
+```
+PLAN: Design before coding (architecture, test strategy)
+  ↓
+ACT: Implement with TDD and quality standards
+  ↓
+EVAL: Multi-specialist review (security, performance, accessibility)
+  ↓
+Iterate until: Critical=0 AND High=0
+```
+
+### 3. Exit Criteria
+
+Ship only when quality targets are met:
+
+| Severity | Must Fix Before Ship |
+|----------|---------------------|
+| 🔴 Critical | Yes - Immediate security/data issues |
+| 🟠 High | Yes - Significant problems |
+| 🟡 Medium | Optional - Technical debt |
+| 🟢 Low | Optional - Enhancement |
+
+### 4. Progressive Disclosure
 
 Start simple, go deep when needed:
 
 - **Quick Start**: Get running in 2 minutes with `npx codingbuddy init`
-- **Configuration**: Customize tech stack, architecture, and conventions
-- **Specialist Agents**: Access domain experts (security, performance, accessibility)
-- **Full Customization**: Extend with project-specific rules
+- **Workflow Modes**: PLAN → ACT → EVAL structured development
+- **Specialist Agents**: Access 29 domain experts on demand
+- **AUTO Mode**: Autonomous iteration until quality achieved
 
-### 3. Convention Over Configuration
+### 5. Convention Over Configuration
 
 Sensible defaults that work for most projects:
 
 - PLAN → ACT → EVAL workflow
 - TDD-first development approach
-- 80%+ test coverage target
+- 90%+ test coverage target
 - SOLID principles and clean code
 
 Override only what you need to change.
 
-### 4. Community-Driven Standards
-
-The best practices come from real-world experience:
-
-- Rules are based on proven patterns from production codebases
-- Specialist agents encode domain expertise from practitioners
-- Open source and open to contributions
-
 ## Design Principles
 
-### Single Source of Truth
+### Agent Architecture
 
 ```
-packages/rules/.ai-rules/           ← The authoritative source
-├── rules/           ← Core rules (workflow, quality, project)
-├── agents/          ← Specialist knowledge
-└── adapters/        ← Tool-specific integration guides
+┌─────────────────────────────────────────┐
+│           Mode Agents (3)               │
+│    plan-mode, act-mode, eval-mode       │
+└─────────────────────────────────────────┘
+                    │
+                    ▼
+┌─────────────────────────────────────────┐
+│         Primary Agents (12)             │
+│  solution-architect, frontend-developer │
+│  backend-developer, code-reviewer, ...  │
+└─────────────────────────────────────────┘
+                    │
+                    ▼
+┌─────────────────────────────────────────┐
+│        Specialist Agents (15+)          │
+│   security, accessibility, performance  │
+│   test-strategy, event-architecture ... │
+└─────────────────────────────────────────┘
 ```
-
-All AI tool configurations reference `packages/rules/.ai-rules/`. Update once, all tools benefit.
 
 ### Separation of Concerns
 
@@ -97,35 +138,51 @@ Simple things should be simple. Complex things should be possible.
 
 Codingbuddy introduces a structured workflow for AI-assisted development:
 
-```
-PLAN → ACT → EVAL
-```
-
 ### PLAN Mode (Default)
 
 - Understand requirements
 - Design implementation approach
 - Identify risks and edge cases
 - No code changes made
+- Activates: Solution Architect + relevant specialists
 
 ### ACT Mode
 
 - Execute the plan
 - Follow TDD: Red → Green → Refactor
 - Make incremental, tested changes
+- Activates: Primary Developer + quality specialists
 
 ### EVAL Mode
 
 - Review implementation quality
-- Identify improvements
-- Suggest refactoring opportunities
+- Multi-dimensional assessment (security, performance, accessibility)
+- Identify improvements with severity levels
+- Activates: Code Reviewer + parallel specialists
+
+### AUTO Mode
+
+- Autonomous PLAN → ACT → EVAL cycling
+- Continues until: Critical=0 AND High=0
+- Maximum iteration safeguard
+- Best for complex features requiring iterative refinement
 
 This workflow prevents the common pitfall of AI assistants jumping straight into code without proper planning.
 
+## What Makes It Different
+
+| Traditional AI Coding | Codingbuddy |
+|----------------------|-------------|
+| Single AI perspective | 29 specialist agent perspectives |
+| "Generate and hope" | Plan → Implement → Verify |
+| No quality gates | Critical=0, High=0 required |
+| Manual review needed | Automated multi-dimensional review |
+| Inconsistent quality | Iterative refinement until standards met |
+
 ## What Codingbuddy Is Not
 
-- **Not a code generator**: It provides rules and context, not generated code
-- **Not a replacement for human judgment**: It augments, not replaces, developer decision-making
+- **Not a code generator**: It provides structure, expertise, and quality gates—not magic code
+- **Not a replacement for human judgment**: It augments developer decision-making with specialist perspectives
 - **Not a one-size-fits-all solution**: It's designed to be customized per project
 
 ## Further Reading
@@ -133,4 +190,4 @@ This workflow prevents the common pitfall of AI assistants jumping straight into
 - [Getting Started](./getting-started.md) - Quick setup guide
 - [Supported Tools](./supported-tools.md) - AI tool integration
 - [Core Rules](../packages/rules/.ai-rules/rules/core.md) - Workflow details
-- [Agents System](../packages/rules/.ai-rules/agents/README.md) - Specialist agents
+- [Agents System](../packages/rules/.ai-rules/agents/README.md) - Complete agent reference
