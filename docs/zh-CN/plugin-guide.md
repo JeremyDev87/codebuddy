@@ -9,6 +9,8 @@
 
 # Claude Code 插件安装与设置指南
 
+**Codingbuddy 协调 29 个专业 AI 智能体**，通过 PLAN → ACT → EVAL 工作流提供人类专家团队级别的代码质量。
+
 本指南提供 CodingBuddy Claude Code 插件的安装和配置步骤说明。
 
 ## 前置要求

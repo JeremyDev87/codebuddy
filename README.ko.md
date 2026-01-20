@@ -13,34 +13,171 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 <p align="center">
-  <img src="docs/ai-rules-architecture.svg" alt="Codingbuddy AI Rules Architecture" width="800"/>
+  <img src="docs/ai-rules-architecture.svg" alt="Codingbuddy 멀티에이전트 아키텍처" width="800"/>
 </p>
 
-**모든 AI 코딩 어시스턴트를 위한 단일 규칙 시스템**
+## 코드를 위한 AI 전문가 팀
 
-Codingbuddy는 Cursor, Claude Code, GitHub Copilot 등 다양한 AI 도구에서 동일한 코딩 규칙을 적용할 수 있는 통합 시스템을 제공합니다. 팀 전체가 어떤 AI 도구를 사용하든 동일한 코딩 표준을 따를 수 있습니다.
+**Codingbuddy는 29개의 전문 AI 에이전트를 조율하여 인간 전문가 팀 수준의 코드 품질을 제공합니다.**
 
-## 왜 Codingbuddy인가?
+단일 AI는 모든 것의 전문가가 될 수 없습니다. Codingbuddy는 아키텍트, 개발자, 보안 전문가, 접근성 전문가 등으로 구성된 AI 개발팀을 구성하여, 코드가 전문가 수준에 도달할 때까지 협업하며 검토하고 개선합니다.
 
-- **일관성**: 모든 AI 도구가 동일한 코딩 표준을 따름
-- **단일 소스**: 규칙을 한 번만 수정하면 모든 도구에 적용
-- **벤더 종속 없음**: AI에 구애받지 않는 규칙으로 어떤 어시스턴트와도 호환
-- **구조화된 워크플로우**: PLAN → ACT → EVAL 개발 사이클
+---
+
+## 비전
+
+### 문제점
+
+AI에게 코드를 요청하면 단일 관점만 얻게 됩니다. 보안 검토도 없고, 접근성 검사도 없으며, 아키텍처 검증도 없습니다. 그저 하나의 AI가 모든 것을 "그럭저럭" 하지만 어떤 것도 탁월하게 하지 못합니다.
+
+인간 개발팀에는 전문가들이 있습니다:
+- 시스템을 설계하는 **아키텍트**
+- 취약점을 찾는 **보안 엔지니어**
+- 엣지 케이스를 잡는 **QA 전문가**
+- 병목을 최적화하는 **성능 전문가**
+
+### 우리의 해결책
+
+**Codingbuddy는 AI 코딩에 전문가 팀 모델을 도입합니다.**
+
+하나의 AI가 모든 것을 시도하는 대신, Codingbuddy는 협업하는 여러 전문 에이전트를 조율합니다:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      당신의 요청                              │
+│              "사용자 인증 구현해줘"                            │
+└─────────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 📋 PLAN: 솔루션 아키텍트 + 아키텍처 전문가                    │
+│          → 시스템 아키텍처 설계                               │
+│          → 보안 요구사항 정의                                 │
+└─────────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 🚀 ACT: 백엔드 개발자 + 테스트 전략 전문가                    │
+│         → TDD로 구현                                         │
+│         → 품질 기준 준수                                      │
+└─────────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 🔍 EVAL: 코드 리뷰어 + 병렬 전문가들                          │
+│          🔒 보안      → JWT 취약점?                           │
+│          ♿ 접근성    → WCAG 준수?                            │
+│          ⚡ 성능      → 최적화 필요?                          │
+│          📏 품질      → SOLID 원칙?                           │
+└─────────────────────────────────────────────────────────────┘
+                            │
+              ┌─────────────┴─────────────┐
+              │                           │
+        Critical > 0?              Critical = 0 AND
+        High > 0?                  High = 0
+              │                           │
+              ▼                           ▼
+        개선사항과 함께              ✅ 품질 달성
+        PLAN으로 복귀              자신감 있게 배포
+```
+
+---
+
+## 멀티에이전트 아키텍처
+
+### 3계층 에이전트 시스템
+
+| 계층 | 에이전트 | 역할 |
+|------|----------|------|
+| **모드 에이전트** | plan-mode, act-mode, eval-mode | 워크플로우 오케스트레이션 |
+| **주요 에이전트** | solution-architect, frontend-developer, backend-developer, code-reviewer 등 8개 | 핵심 구현 |
+| **전문가 에이전트** | security, accessibility, performance, test-strategy 등 15개 | 도메인 전문성 |
+
+### 에이전트 협업 예시
+
+기능을 요청하면 에이전트들이 자동으로 협업합니다:
+
+```
+🤖 solution-architect    → 접근 방식 설계
+   └── 👤 architecture-specialist  → 레이어 경계 검증
+   └── 👤 test-strategy-specialist → 테스트 커버리지 계획
+
+🤖 backend-developer     → 코드 구현
+   └── 👤 security-specialist      → 인증 패턴 검토
+   └── 👤 event-architecture       → 메시지 플로우 설계
+
+🤖 code-reviewer         → 품질 평가
+   └── 👤 4개 전문가 병렬 실행    → 다차원 검토
+```
+
+---
+
+## 품질 보증 사이클
+
+### PLAN → ACT → EVAL 루프
+
+Codingbuddy는 품질 주도 개발 사이클을 적용합니다:
+
+1. **PLAN**: 코딩 전 설계 (아키텍처, 테스트 전략)
+2. **ACT**: TDD와 품질 기준으로 구현
+3. **EVAL**: 다중 전문가 검토 (보안, 성능, 접근성, 품질)
+4. **반복**: 품질 목표 달성까지 지속
+
+### AUTO 모드: 자율 품질 달성
+
+```bash
+# 원하는 것만 설명하세요
+AUTO: 리프레시 토큰과 JWT 인증 구현해줘
+
+# Codingbuddy가 자동으로:
+# → 구현 계획
+# → TDD로 코드 작성
+# → 4개 이상 전문가로 검토
+# → Critical=0 AND High=0까지 반복
+# → 프로덕션 준비 코드 제공
+```
+
+### 종료 기준
+
+| 심각도 | 배포 전 수정 필수 |
+|--------|------------------|
+| 🔴 Critical | 예 - 즉각적인 보안/데이터 이슈 |
+| 🟠 High | 예 - 중요한 문제 |
+| 🟡 Medium | 선택 - 기술 부채 |
+| 🟢 Low | 선택 - 개선 사항 |
+
+---
+
+## 차별점
+
+| 기존 AI 코딩 | Codingbuddy |
+|-------------|-------------|
+| 단일 AI 관점 | 29개 전문가 에이전트 관점 |
+| "생성하고 기도하기" | 계획 → 구현 → 검증 |
+| 품질 게이트 없음 | Critical=0, High=0 필수 |
+| 수동 검토 필요 | 자동 다차원 검토 |
+| 일관성 없는 품질 | 기준 충족까지 반복 개선 |
+
+---
 
 ## 빠른 시작
 
+### 전제 조건
+
+- **Node.js** 18.x 이상
+- **npm** 9.x+ 또는 **yarn** 4.x+
+- 지원되는 AI 도구 (Claude Code, Cursor, GitHub Copilot 등)
+
+### 설치
+
 ```bash
-# 프로젝트 초기화 (API 키 불필요)
+# 프로젝트 초기화
 npx codingbuddy init
 
-# 선택: AI 기반 초기화로 더 깊은 분석
-# npx codingbuddy init --ai  # ANTHROPIC_API_KEY 필요
-
-# AI 도구에 추가 (예: Claude Desktop)
-# 다른 AI 도구는 docs/ko/supported-tools.md 참조
+# Claude Desktop 설정에 추가
+# macOS: ~/Library/Application Support/Claude/claude_desktop_config.json
+# Windows: %APPDATA%\Claude\claude_desktop_config.json
 ```
-
-Claude Desktop 설정 파일에 추가 (`~/Library/Application Support/Claude/claude_desktop_config.json`):
 
 ```json
 {
@@ -53,23 +190,52 @@ Claude Desktop 설정 파일에 추가 (`~/Library/Application Support/Claude/cl
 }
 ```
 
-### Claude Code 플러그인 (선택)
+### 사용 시작
 
-Claude Code에서 네이티브 스킬 호출을 위해:
+```
+PLAN: 이메일 인증과 함께 사용자 등록 구현해줘
+→ AI 팀이 아키텍처 계획
 
-```bash
-npm install codingbuddy-claude-plugin
+ACT
+→ AI 팀이 TDD로 구현
+
+EVAL
+→ AI 팀이 8개 이상 관점에서 검토
+
+AUTO: 완전한 인증 시스템 만들어줘
+→ AI 팀이 품질 달성까지 반복
 ```
 
-이 플러그인은 MCP 설정 없이 PLAN/ACT/EVAL 워크플로우와 전문가 에이전트에 직접 접근할 수 있게 해줍니다.
-
 [전체 시작 가이드 →](docs/ko/getting-started.md)
+
+### Claude Code 플러그인 (선택)
+
+Claude Code와의 향상된 통합을 위해:
+
+```bash
+# 마켓플레이스 추가
+claude marketplace add JeremyDev87/codingbuddy
+
+# 플러그인 설치
+claude plugin install codingbuddy@jeremydev87
+
+# 전체 기능을 위한 MCP 서버 설치
+npm install -g codingbuddy
+```
+
+| 문서 | 설명 |
+|------|------|
+| [플러그인 설정 가이드](docs/plugin-guide.md) | 설치 및 설정 |
+| [빠른 참조](docs/plugin-quick-reference.md) | 명령어와 모드 한눈에 보기 |
+| [아키텍처](docs/plugin-architecture.md) | 플러그인과 MCP 작동 방식 |
+
+---
 
 ## 지원 AI 도구
 
 | 도구 | 상태 |
 |------|------|
-| Claude Code | ✅ 전체 MCP 지원 |
+| Claude Code | ✅ 전체 MCP + 플러그인 |
 | Cursor | ✅ 지원 |
 | GitHub Copilot | ✅ 지원 |
 | Antigravity | ✅ 지원 |
@@ -79,27 +245,20 @@ npm install codingbuddy-claude-plugin
 
 [설정 가이드 →](docs/ko/supported-tools.md)
 
+---
+
 ## 문서
 
 | 문서 | 설명 |
 |------|------|
 | [시작하기](docs/ko/getting-started.md) | 설치 및 빠른 설정 |
 | [철학](docs/ko/philosophy.md) | 비전과 설계 원칙 |
+| [에이전트 시스템](packages/rules/.ai-rules/agents/README.md) | 전체 에이전트 참조 |
 | [지원 도구](docs/ko/supported-tools.md) | AI 도구 통합 가이드 |
 | [설정](docs/config-schema.md) | 설정 파일 옵션 |
 | [API 레퍼런스](docs/api.md) | MCP 서버 기능 |
-| [개발 가이드](docs/development.md) | 기여 및 로컬 설정 |
 
-## 작동 방식
-
-위 아키텍처 다이어그램에서 3계층 에이전트 시스템의 전체 구조를 확인하세요:
-
-- **Layer 1 (모드 에이전트)**: PLAN → ACT → EVAL → AUTO 워크플로우 사이클
-- **Layer 2 (주요 에이전트)**: Solution Architect, Technical Planner, Frontend/Backend/Mobile/Data Developer, Platform Engineer, Tooling Engineer, AI/ML Engineer, Agent Architect, Code Reviewer, DevOps
-- **Layer 3 (전문가)**: 14명의 도메인 전문가 (보안, 성능, 접근성, i18n, 관측 가능성, 마이그레이션, 이벤트 아키텍처, 통합 등)
-- **스킬**: 14개의 재사용 가능한 기능 (TDD, 디버깅, 브레인스토밍, 데이터베이스 마이그레이션, 인시던트 대응 등)
-
-모든 AI 도구 설정이 동일한 `packages/rules/.ai-rules/` 디렉토리를 참조합니다. 규칙을 한 번 수정하면 모든 도구가 업데이트된 표준을 따릅니다.
+---
 
 ## 기여하기
 

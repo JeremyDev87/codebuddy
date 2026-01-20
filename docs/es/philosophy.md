@@ -12,125 +12,182 @@ Este documento explica la visión, las creencias fundamentales y los principios 
 
 ## Visión
 
-**Una única fuente de reglas de codificación de IA para todos los asistentes de IA**
+**Equipo de Expertos IA para Tu Código**
 
-Los equipos de desarrollo actuales utilizan múltiples herramientas de codificación con IA: Cursor, Claude Code, GitHub Copilot y más. Cada herramienta tiene su propio formato de configuración, lo que lleva a:
+Una sola IA no puede ser experta en todo. Cuando le pides a una IA que escriba código, obtienes una única perspectiva—sin revisión de seguridad, sin verificación de accesibilidad, sin validación de arquitectura. Solo una IA haciendo todo "aceptable" pero nada excelente.
 
-- Duplicación de reglas en múltiples archivos de configuración
-- Estándares de codificación inconsistentes según la herramienta de IA utilizada
-- Carga de mantenimiento al actualizar reglas
+Los equipos de desarrollo humanos tienen especialistas:
+- **Arquitectos** que diseñan sistemas
+- **Ingenieros de seguridad** que encuentran vulnerabilidades
+- **Especialistas en QA** que detectan casos límite
+- **Expertos en rendimiento** que optimizan cuellos de botella
 
-Codingbuddy resuelve esto proporcionando un sistema de reglas unificado compatible con cualquier asistente de IA.
+**Codingbuddy trae el modelo de equipo especializado a la programación con IA.**
 
-## Creencias fundamentales
+En lugar de que una sola IA intente hacerlo todo, Codingbuddy coordina 29 agentes especializados que colaboran para revisar, verificar y refinar tu código hasta que cumpla con los estándares profesionales.
 
-### 1. Reglas agnósticas de IA
+## Creencias Fundamentales
 
-Las reglas se escriben una vez y funcionan en todas partes. Sin dependencia de proveedores, sin sintaxis específica de herramientas en las reglas principales. Cada herramienta de IA se adapta al formato común a través de adaptadores ligeros.
+### 1. Colaboración Multi-Agente
 
-### 2. Divulgación progresiva
+La calidad proviene de múltiples perspectivas. Nuestro sistema de agentes de 3 niveles asegura una cobertura completa:
 
-Comienza simple, profundiza cuando sea necesario:
+| Nivel | Propósito | Ejemplos |
+|-------|-----------|----------|
+| **Agentes de Modo** | Orquestación de flujo de trabajo | plan-mode, act-mode, eval-mode |
+| **Agentes Principales** | Implementación central | solution-architect, frontend-developer, backend-developer |
+| **Agentes Especialistas** | Experiencia de dominio | security, accessibility, performance, test-strategy |
 
-- **Inicio rápido**: Funcionando en 2 minutos con `npx codingbuddy init`
-- **Configuración**: Personaliza stack tecnológico, arquitectura y convenciones
-- **Agentes especialistas**: Accede a expertos de dominio (seguridad, rendimiento, accesibilidad)
-- **Personalización completa**: Extiende con reglas específicas del proyecto
+Cada agente aporta experiencia enfocada, y colaboran para lograr lo que ninguna IA sola podría.
 
-### 3. Convención sobre configuración
+### 2. Desarrollo Orientado a la Calidad
+
+El ciclo PLAN → ACT → EVAL asegura calidad en cada paso:
+
+```
+PLAN: Diseñar antes de codificar (arquitectura, estrategia de tests)
+  ↓
+ACT: Implementar con TDD y estándares de calidad
+  ↓
+EVAL: Revisión multi-especialista (seguridad, rendimiento, accesibilidad)
+  ↓
+Iterar hasta: Critical=0 AND High=0
+```
+
+### 3. Criterios de Salida
+
+Enviar solo cuando se cumplan los objetivos de calidad:
+
+| Severidad | Debe Corregirse Antes de Enviar |
+|-----------|--------------------------------|
+| 🔴 Critical | Sí - Problemas inmediatos de seguridad/datos |
+| 🟠 High | Sí - Problemas significativos |
+| 🟡 Medium | Opcional - Deuda técnica |
+| 🟢 Low | Opcional - Mejora |
+
+### 4. Divulgación Progresiva
+
+Comenzar simple, profundizar cuando sea necesario:
+
+- **Inicio Rápido**: Funciona en 2 minutos con `npx codingbuddy init`
+- **Modos de Flujo de Trabajo**: Desarrollo estructurado PLAN → ACT → EVAL
+- **Agentes Especialistas**: Acceso bajo demanda a 29 expertos de dominio
+- **Modo AUTO**: Iteración autónoma hasta alcanzar la calidad
+
+### 5. Convención Sobre Configuración
 
 Valores predeterminados sensatos que funcionan para la mayoría de los proyectos:
 
 - Flujo de trabajo PLAN → ACT → EVAL
-- Enfoque de desarrollo TDD-first
-- Objetivo de cobertura de pruebas del 80%+
+- Enfoque de desarrollo TDD primero
+- Objetivo de cobertura de tests 90%+
 - Principios SOLID y código limpio
 
-Solo anula lo que necesites cambiar.
+Anular solo lo que necesites cambiar.
 
-### 4. Estándares impulsados por la comunidad
+## Principios de Diseño
 
-Las mejores prácticas provienen de la experiencia del mundo real:
-
-- Reglas basadas en patrones probados de bases de código en producción
-- Agentes especialistas que codifican la experiencia de dominio de los profesionales
-- Código abierto y abierto a contribuciones
-
-## Principios de diseño
-
-### Fuente única de verdad
+### Arquitectura de Agentes
 
 ```
-packages/rules/.ai-rules/           ← Fuente autoritativa
-├── rules/           ← Reglas principales (flujo de trabajo, calidad, proyecto)
-├── agents/          ← Conocimiento especializado
-└── adapters/        ← Guías de integración específicas por herramienta
+┌─────────────────────────────────────────┐
+│         Agentes de Modo (3)             │
+│    plan-mode, act-mode, eval-mode       │
+└─────────────────────────────────────────┘
+                    │
+                    ▼
+┌─────────────────────────────────────────┐
+│       Agentes Principales (12)          │
+│  solution-architect, frontend-developer │
+│  backend-developer, code-reviewer, ...  │
+└─────────────────────────────────────────┘
+                    │
+                    ▼
+┌─────────────────────────────────────────┐
+│      Agentes Especialistas (15+)        │
+│   security, accessibility, performance  │
+│   test-strategy, event-architecture ... │
+└─────────────────────────────────────────┘
 ```
 
-Todas las configuraciones de herramientas de IA referencian `packages/rules/.ai-rules/`. Actualiza una vez, todas las herramientas se benefician.
-
-### Separación de responsabilidades
+### Separación de Responsabilidades
 
 | Capa | Propósito | Formato |
 |------|-----------|---------|
-| **Rules** | Qué hacer (flujo de trabajo, estándares de calidad) | Markdown |
-| **Agents** | Quién sabe qué (conocimiento especializado) | JSON |
-| **Adapters** | Cómo integrar (configuración específica de herramienta) | Markdown |
+| **Reglas** | Qué hacer (flujo de trabajo, estándares de calidad) | Markdown |
+| **Agentes** | Quién sabe qué (experiencia especializada) | JSON |
+| **Adaptadores** | Cómo integrar (configuración específica de herramienta) | Markdown |
 
 Esta separación permite:
 
-- Las reglas evolucionan independientemente del soporte de herramientas
-- Añadir nuevos agentes sin cambiar las reglas principales
-- Soportar nuevas herramientas sin modificar las reglas existentes
+- Que las reglas evolucionen independientemente del soporte de herramientas
+- Nuevos agentes sin cambiar las reglas centrales
+- Soporte de nuevas herramientas sin modificar reglas existentes
 
-### Extensibilidad sobre complejidad
+### Extensibilidad Sobre Complejidad
 
-El sistema está diseñado para ser extendido, no configurado:
+El sistema está diseñado para extenderse, no configurarse:
 
-- Añade nuevos agentes especialistas creando archivos JSON
-- Soporta nuevas herramientas escribiendo guías de adaptador
-- Incluye contexto específico del proyecto sin modificar las reglas principales
+- Agregar nuevos agentes especialistas creando archivos JSON
+- Soportar nuevas herramientas de IA escribiendo guías de adaptadores
+- Incluir contexto específico del proyecto sin modificar reglas centrales
 
 Las cosas simples deben ser simples. Las cosas complejas deben ser posibles.
 
-## Modelo de flujo de trabajo
+## El Modelo de Flujo de Trabajo
 
 Codingbuddy introduce un flujo de trabajo estructurado para el desarrollo asistido por IA:
 
-```
-PLAN → ACT → EVAL
-```
+### Modo PLAN (Predeterminado)
 
-### Modo PLAN (predeterminado)
-
-- Entender los requisitos
-- Diseñar el enfoque de implementación
+- Entender requisitos
+- Diseñar enfoque de implementación
 - Identificar riesgos y casos límite
 - Sin cambios de código
+- Activa: Arquitecto de Soluciones + especialistas relevantes
 
 ### Modo ACT
 
 - Ejecutar el plan
 - Seguir TDD: Red → Green → Refactor
-- Cambios incrementales y probados
+- Hacer cambios incrementales y probados
+- Activa: Desarrollador Principal + especialistas de calidad
 
 ### Modo EVAL
 
-- Revisar la calidad de la implementación
-- Identificar mejoras
-- Sugerir oportunidades de refactorización
+- Revisar calidad de implementación
+- Evaluación multidimensional (seguridad, rendimiento, accesibilidad)
+- Identificar mejoras con niveles de severidad
+- Activa: Revisor de Código + especialistas en paralelo
 
-Este flujo de trabajo previene la trampa común de que los asistentes de IA salten directamente al código sin una planificación adecuada.
+### Modo AUTO
 
-## Lo que Codingbuddy no es
+- Ciclo autónomo PLAN → ACT → EVAL
+- Continúa hasta: Critical=0 AND High=0
+- Salvaguarda de iteración máxima
+- Mejor para características complejas que requieren refinamiento iterativo
 
-- **No es un generador de código**: Proporciona reglas y contexto, no código generado
-- **No es un reemplazo del juicio humano**: Mejora, no reemplaza, la toma de decisiones del desarrollador
+Este flujo de trabajo previene el error común de los asistentes de IA de saltar directamente al código sin una planificación adecuada.
+
+## Lo Que Lo Hace Diferente
+
+| Programación IA Tradicional | Codingbuddy |
+|---------------------------|-------------|
+| Perspectiva de una sola IA | 29 perspectivas de agentes especialistas |
+| "Generar y esperar" | Planificar → Implementar → Verificar |
+| Sin puertas de calidad | Critical=0, High=0 requerido |
+| Revisión manual necesaria | Revisión multidimensional automatizada |
+| Calidad inconsistente | Refinamiento iterativo hasta cumplir estándares |
+
+## Lo Que Codingbuddy No Es
+
+- **No es un generador de código**: Proporciona estructura, experiencia y puertas de calidad—no código mágico
+- **No es un reemplazo del juicio humano**: Aumenta la toma de decisiones del desarrollador con perspectivas de especialistas
 - **No es una solución única para todo**: Está diseñado para ser personalizado por proyecto
 
-## Lecturas adicionales
+## Lectura Adicional
 
-- [Primeros pasos](./getting-started.md) - Guía de configuración rápida
-- [Herramientas compatibles](./supported-tools.md) - Integración de herramientas de IA
-- [Reglas principales](../../packages/rules/.ai-rules/rules/core.md) - Detalles del flujo de trabajo
-- [Sistema de agentes](../../packages/rules/.ai-rules/agents/README.md) - Agentes especialistas
+- [Primeros Pasos](./getting-started.md) - Guía de configuración rápida
+- [Herramientas Compatibles](./supported-tools.md) - Integración de herramientas IA
+- [Reglas Centrales](../../packages/rules/.ai-rules/rules/core.md) - Detalles del flujo de trabajo
+- [Sistema de Agentes](../../packages/rules/.ai-rules/agents/README.md) - Referencia completa de agentes

@@ -10,6 +10,8 @@
 
 几分钟内即可启动并运行 Codingbuddy。
 
+**Codingbuddy 协调 29 个专业 AI 智能体**，通过 PLAN → ACT → EVAL 工作流提供人类专家团队级别的代码质量。
+
 ## 前提条件
 
 - **Node.js**：v18 或更高版本
@@ -49,7 +51,8 @@ AI 驱动模式提供更深入的项目分析和更个性化的配置。
 
 将 Codingbuddy 添加到您的 AI 助手。以下是 Claude Desktop 的示例：
 
-**macOS**：`~/Library/Application Support/Claude/claude_desktop_config.json`
+- **macOS**：`~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**：`%APPDATA%\Claude\claude_desktop_config.json`
 
 ```json
 {
