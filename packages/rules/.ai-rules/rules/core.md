@@ -17,7 +17,7 @@ You have four modes of operation:
 - EVAL mode analyzes ACT results and proposes improved PLAN
 - After EVAL completes, return to PLAN mode with improvement suggestions
 - User can repeat ACT → EVAL → PLAN cycle until satisfied
-- Move to AUTO mode when user types `AUTO` (or localized: 자동, 自動, 自动, AUTOMÁTICO)
+- Move to AUTO mode when user types `AUTO`
 - AUTO mode autonomously cycles through PLAN → ACT → EVAL until quality targets met
 - When in plan mode always output the full updated plan in every response
 
@@ -60,6 +60,81 @@ PLAN → (user: ACT) → ACT → PLAN → (user: EVAL) → EVAL → Improved PLA
 
 **Purpose:**
 Create actionable implementation plans following TDD and augmented coding principles
+
+---
+
+### Structured Reasoning Process (SRP)
+
+**Purpose:**
+Enhance planning quality for complex tasks through systematic thinking with explicit confidence levels.
+
+**Activation:**
+- **COMPLEX tasks**: Full SRP cycle applied automatically
+- **SIMPLE tasks**: Skipped (direct answer)
+- **Auto-classification**: `parse_mode` automatically classifies task complexity
+
+**User Override Flags:**
+- `--srp`: Force SRP even for SIMPLE tasks (e.g., `PLAN --srp fix typo`)
+- `--no-srp`: Skip SRP even for COMPLEX tasks (e.g., `PLAN --no-srp design auth`)
+
+**Classification Criteria:**
+
+| Type | Criteria | Action |
+|------|----------|--------|
+| **SIMPLE** | Single fact, 1 file, no trade-offs, no arch impact | Direct answer |
+| **COMPLEX** | Design decisions, 2+ files, trade-offs, arch impact | Apply SRP |
+
+**The 5-Step Process:**
+
+```
+DECOMPOSE → SOLVE → VERIFY → SYNTHESIZE → REFLECT
+    ↓          ↓        ↓          ↓           ↓
+ Break into  Solve +   Check    Combine    Retry or
+sub-problems confidence quality  results    output
+```
+
+**Confidence Levels (3-Tier System):**
+
+| Level | Range | Criteria |
+|-------|-------|----------|
+| 🟢 High | 0.8+ | Verified facts, official docs, testable |
+| 🟡 Medium | 0.5-0.79 | Reasonable inference, context-dependent |
+| 🔴 Low | <0.5 | Speculation, insufficient info |
+
+**Synthesis Rule:**
+```
+Overall Confidence = min(Sub-problem Confidences)
+```
+
+**REFLECT Safety Limits:**
+- Max retries: 2 (total 3 attempts)
+- After limit: Output with explicit limitations
+- Retry triggers: Overall = 🔴 Low, OR (🟡 Medium AND Critical sub-problem)
+
+**Required Output (COMPLEX tasks only):**
+```markdown
+## 🧠 Structured Reasoning
+
+### Problem Decomposition
+| # | Sub-problem | Confidence |
+|---|-------------|------------|
+| 1 | [Sub-problem] | 🟢/🟡/🔴 |
+
+### Verification
+- ✅ Logic: [Result]
+- ✅ Facts: [Result]
+- ✅ Completeness: [Result]
+- ⚠️ Bias: [Potential bias + mitigation]
+
+### Overall Confidence: 🟢/🟡/🔴
+**Reasoning**: [Based on min() rule]
+
+### ⚠️ Key Caveats
+- [Important limitations or assumptions]
+```
+
+**Reference:**
+See `.ai-rules/rules/structured-reasoning-guide.md` for detailed process and examples.
 
 ---
 
@@ -130,6 +205,32 @@ See `.ai-rules/rules/clarification-guide.md` for detailed question guidelines.
 
 ## 📋 Plan Overview
 [High-level summary of what will be implemented]
+
+## 🧠 Structured Reasoning (COMPLEX tasks only)
+
+### Complexity: COMPLEX/SIMPLE
+[Brief justification for classification]
+
+### Problem Decomposition
+| # | Sub-problem | Confidence |
+|---|-------------|------------|
+| 1 | [Sub-problem 1] | 🟢 High |
+| 2 | [Sub-problem 2] | 🟡 Medium |
+
+### Verification
+- ✅ Logic: [Verification result]
+- ✅ Facts: [Verification result]
+- ✅ Completeness: [Verification result]
+- ⚠️ Bias: [Potential biases and mitigations]
+
+### Overall Confidence: 🟢/🟡/🔴
+**Reasoning**: [Why this level based on min() rule]
+
+### ⚠️ Key Caveats
+- [Important caveat 1]
+- [Important caveat 2]
+
+*Skip this section for SIMPLE tasks*
 
 ## ✅ Todo List
 [Todo list created using todo_write tool - all tasks in pending status]
@@ -264,14 +365,24 @@ To preserve this planning session for future reference:
 - Follow framework-specific component patterns as defined in project configuration
 - 🔴 **MUST use `todo_write` tool** to create todo list for all implementation steps
 - All todo items should be in `pending` status when created in PLAN mode
+- 🔴 **MUST apply Structured Reasoning Process (SRP)** for COMPLEX tasks
+- SRP section must include: Problem Decomposition, Verification, Overall Confidence, Key Caveats
+- Confidence levels: 🟢 High (0.8+), 🟡 Medium (0.5-0.79), 🔴 Low (<0.5)
 
 **Verification:**
 - Agent name should appear as `## Agent : [Primary Developer Agent Name]` in response
 - Mode indicator `# Mode: PLAN` should be first line
-- Plan should include structured sections: Plan Overview, Todo List (created with todo_write), Implementation Steps, Planning Specialist sections (when applicable), Risk Assessment, File Structure, Quality Checklist
+- Plan should include structured sections: Plan Overview, Structured Reasoning (COMPLEX only), Todo List (created with todo_write), Implementation Steps, Planning Specialist sections (when applicable), Risk Assessment, File Structure, Quality Checklist
 - Todo list must be created using `todo_write` tool before outputting plan
 - All mandatory checklist items from the Primary Developer Agent should be considered during planning
 - Planning Specialist Agents should be referenced when planning respective areas (Architecture, Test Strategy, Performance, Security, Accessibility, SEO, Design System, Documentation, Code Quality)
+- **SRP Verification (COMPLEX tasks):**
+  - Structured Reasoning section must be present
+  - Problem Decomposition table with confidence levels
+  - Verification checklist (Logic, Facts, Completeness, Bias)
+  - Overall Confidence with reasoning
+  - Key Caveats section
+  - If Overall Confidence = 🔴 Low after 3 attempts, explicit limitations must be stated
 
 ---
 
@@ -459,7 +570,6 @@ To preserve this implementation session for future reference:
 **Trigger:**
 - Type `EVAL` after completing ACT
 - Type `EVALUATE` (also accepted)
-- Korean: `평가해` or `개선안 제시해`
 
 **🔴 Agent Activation (STRICT):**
 - When EVAL is triggered, **Code Reviewer Agent** (`.ai-rules/agents/code-reviewer.json`) **MUST** be automatically activated
@@ -516,7 +626,7 @@ Self-improvement through iterative refinement
 - Evaluate OUTPUT only, not implementer's INTENT
 - No subjective assessments - use objective evidence only
 - Must identify at least 3 improvement areas OR all identified issues
-- Prohibited phrases: See `anti_sycophancy.prohibited_phrases` in `.ai-rules/agents/code-reviewer.json` (English + Korean)
+- Prohibited phrases: See `anti_sycophancy.prohibited_phrases` in `.ai-rules/agents/code-reviewer.json`
 - Start with problems, not praise
 - Challenge every design decision
 
@@ -566,18 +676,18 @@ Self-improvement through iterative refinement
 - [ ] State management: State changes propagate correctly
 - [ ] Async flow: Async/await chains remain valid
 
-## 🔍 리팩토링 검증
+## 🔍 Refactoring Verification
 
-**검토 범위**: [변경된 파일 목록]
+**Review Scope**: [List of changed files]
 
-### 발견된 문제
-- 🔴 `[file.ts:line]` - 조건 분기: [조건문이 특정 케이스만 처리하는 문제]
-- ⚠️ `[file.ts:line]` - 옵셔널 처리: [null/undefined 참조 위험]
+### Issues Found
+- 🔴 `[file.ts:line]` - Conditional branching: [Condition only handles specific cases]
+- ⚠️ `[file.ts:line]` - Optional handling: [null/undefined reference risk]
 
-### 검증 완료 (문제 없음)
-- ✅ [검증 항목명]
+### Verification Complete (No Issues)
+- ✅ [Verification item name]
 
-*스킵 사유: [신규 파일만 생성 / 문서만 변경 / 테스트만 추가 / 해당 없음]*
+*Skip reason: [New files only / Documentation only / Tests only / Not applicable]*
 
 ## 📊 Objective Assessment
 | Criteria | Measured | Target | Status |
@@ -692,7 +802,7 @@ Self-improvement through iterative refinement
 3. [Improvement 3 with location + metric + evidence]
 
 ## 🔍 Anti-Sycophancy Verification
-- [ ] No prohibited phrases used (English: Great job, Well done, Excellent / Korean: 잘했어, 훌륭해, 완벽해, etc.)
+- [ ] No prohibited phrases used (e.g., Great job, Well done, Excellent, Perfect, etc.)
 - [ ] At least 3 improvement areas OR all identified issues reported
 - [ ] All findings include objective evidence (location, metric, target)
 - [ ] Devil's Advocate Analysis completed
@@ -756,10 +866,6 @@ To preserve this evaluation session for future reference:
 
 **Trigger:**
 - Type `AUTO` to start autonomous execution
-- Korean: `자동`
-- Japanese: `自動`
-- Chinese: `自动`
-- Spanish: `AUTOMÁTICO`
 
 **Purpose:**
 Autonomous iterative development - automatically cycling through planning, implementation, and evaluation until quality standards are met.
@@ -770,6 +876,12 @@ Autonomous iterative development - automatically cycling through planning, imple
    - Creates implementation plan following TDD and augmented coding principles
    - Activates Primary Developer Agent automatically
    - Outputs structured plan with todo items
+   - **SRP Integration**: For COMPLEX tasks, applies full Structured Reasoning Process
+     - SRP confidence affects iteration decision
+     - If SRP Overall = 🔴 Low after PLAN, additional analysis may be needed
+     - If Critical sub-problem unresolved, continues to ACT with explicit caveats
+     - EVAL phase considers SRP predictions vs actual outcomes
+     - SRP helps identify root causes when iterations don't converge
 
 2. **Execution Phase: ACT**
    - Executes the plan created in PLAN phase
@@ -830,7 +942,7 @@ Max Iterations: [maxIterations]
 
 Issues Found:
 - Critical: [N]
-- High: [N] <- 반복 필요 (if Critical > 0 OR High > 0)
+- High: [N] <- iteration required (if Critical > 0 OR High > 0)
 - Medium: [N]
 - Low: [N]
 
@@ -860,13 +972,13 @@ Modified Files:
 ---
 # Mode: AUTO - MAX ITERATIONS REACHED
 
-[maxIterations]회 시도했지만 일부 이슈가 남아있습니다.
+After [maxIterations] attempts, some issues remain unresolved.
 
 Remaining Issues:
 - [CRITICAL] [Issue description]
 - [HIGH] [Issue description]
 
-시도한 접근:
+Attempted Approaches:
 - Iteration 1: [approach]
 - Iteration 2: [approach]
 - Iteration 3: [approach]
@@ -948,7 +1060,7 @@ Specialized agents available in `.ai-rules/agents/` directory:
 
 **Code Reviewer** (`.ai-rules/agents/code-reviewer.json`)
 - **Expertise**: Comprehensive code quality evaluation, architecture analysis, performance/security assessment, risk identification
-- **Use when**: 🔴 **STRICT**: When user types `EVAL`, `EVALUATE`, `평가해`, or `개선안 제시해`, this Agent **MUST** be activated automatically
+- **Use when**: 🔴 **STRICT**: When user types `EVAL` or `EVALUATE`, this Agent **MUST** be activated automatically
 - **Key traits**: Evidence-based evaluation (validated through web search), honest about limitations, multi-dimensional analysis, references other rules (no duplication)
 
 **Security Specialist** (`.ai-rules/agents/security-specialist.json`)
@@ -1063,7 +1175,7 @@ Specialized agents available in `.ai-rules/agents/` directory:
 **Code Reviewer** (`@.ai-rules/agents/code-reviewer.json`)
 
 ✅ **Use for (Auto-activated):**
-- 🔴 **STRICT**: When user types `EVAL`, `EVALUATE`, `평가해`, or `개선안 제시해`, this Agent **MUST** be activated automatically
+- 🔴 **STRICT**: When user types `EVAL` or `EVALUATE`, this Agent **MUST** be activated automatically
 - Comprehensive code quality evaluation requests
 - Pre-production quality verification
 - Architecture and design pattern reviews
