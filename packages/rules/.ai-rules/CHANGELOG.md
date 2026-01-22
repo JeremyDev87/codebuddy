@@ -5,6 +5,34 @@ All notable changes to the Multi-AI Coding Assistant Common Rules System will be
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - 2026-01-22
+
+### Added
+
+- **Self-Hosted Plugin Marketplace**
+  - Claude Code plugin marketplace with GitHub Pages deployment
+  - `codingbuddy marketplace add` command for plugin discovery
+  - Automatic GitHub Pages setup in CI workflow
+
+- **SRP Complexity Classifier**
+  - Multi-language support for keyword complexity analysis
+  - Enhanced intent detection for PLAN mode agent selection
+
+### Fixed
+
+- Auto mode detection for PLAN/ACT/EVAL/AUTO keywords in hooks
+- Language configuration now properly respected with diagnostic logging
+- Marketplace add command GitHub repo format handling
+
+### Changed
+
+- **Documentation Improvements**
+  - Multi-language plugin documentation (i18n)
+  - Multi-agent philosophy introduction added to all language versions
+  - Architecture diagram synchronized with current codebase
+
+---
+
 ## [3.0.0] - 2026-01-17
 
 ### Added

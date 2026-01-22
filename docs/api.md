@@ -26,7 +26,7 @@ Codingbuddy implements the [Model Context Protocol (MCP)](https://modelcontextpr
 ```json
 {
   "name": "codingbuddy-rules-server",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "capabilities": {
     "resources": {},
     "tools": {},
