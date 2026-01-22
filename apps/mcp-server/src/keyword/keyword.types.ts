@@ -296,6 +296,40 @@ export interface AutoConfig {
 }
 
 /**
+ * Task complexity classification for SRP (Structured Reasoning Process).
+ *
+ * - SIMPLE: Direct answer without full SRP cycle
+ * - COMPLEX: Full SRP cycle required (DECOMPOSE → SOLVE → VERIFY → SYNTHESIZE → REFLECT)
+ */
+export type TaskComplexity = 'SIMPLE' | 'COMPLEX';
+
+/**
+ * User override flags for SRP application.
+ *
+ * - --srp: Force SRP even for SIMPLE tasks
+ * - --no-srp: Skip SRP even for COMPLEX tasks
+ */
+export type SrpOverride = 'force' | 'skip' | 'auto';
+
+/**
+ * Result of complexity classification.
+ */
+export interface ComplexityClassification {
+  /** Classified complexity level */
+  complexity: TaskComplexity;
+  /** Human-readable reason for classification */
+  reason: string;
+  /** Confidence score (0-1) */
+  confidence: number;
+  /** Matched indicators that led to classification */
+  matchedIndicators: string[];
+  /** Whether SRP should be applied (considering overrides) */
+  applySrp: boolean;
+  /** User override if present */
+  override?: SrpOverride;
+}
+
+/**
  * Result of parsing a workflow mode from user prompt.
  *
  * **Naming Convention Note:**
@@ -329,6 +363,10 @@ export interface ParseModeResult {
   activation_message?: ActivationMessage;
   /** AUTO mode configuration (only in AUTO mode response) */
   autoConfig?: AutoConfig;
+  /** @apiProperty External API - do not rename. Task complexity classification (only in PLAN mode response) */
+  complexity?: ComplexityClassification;
+  /** @apiProperty External API - do not rename. SRP instructions (only when complexity is COMPLEX) */
+  srpInstructions?: string;
 }
 
 export interface ModeConfig {

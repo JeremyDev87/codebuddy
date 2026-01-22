@@ -124,7 +124,8 @@ describe('KeywordService', () => {
 
         expect(result.mode).toBe('PLAN');
         expect(result.originalPrompt).toBe('design auth feature');
-        expect(result.instructions).toBe('Design first approach.');
+        // Instructions may include SRP content for COMPLEX tasks
+        expect(result.instructions).toContain('Design first approach.');
         expect(result.rules).toHaveLength(1);
         expect(result.rules[0].name).toBe('rules/core.md');
         expect(result.warnings).toBeUndefined();
@@ -886,7 +887,8 @@ describe('KeywordService', () => {
 
         expect(result.mode).toBe('PLAN');
         expect(result.originalPrompt).toBe('design feature');
-        expect(result.instructions).toBe('Design first approach.');
+        // Instructions may include SRP content for COMPLEX tasks
+        expect(result.instructions).toContain('Design first approach.');
         expect(result.rules).toHaveLength(1);
         expect(result.warnings).toBeUndefined();
       });
@@ -912,6 +914,70 @@ describe('KeywordService', () => {
         expect(result.agent).toBe('plan-mode');
         expect(result.delegates_to).toBe('frontend-developer');
       });
+    });
+  });
+
+  describe('complexity classification', () => {
+    it('classifies COMPLEX task and includes SRP instructions', async () => {
+      const result = await service.parseMode(
+        'PLAN How should we design the authentication system?',
+      );
+
+      expect(result.complexity).toBeDefined();
+      expect(result.complexity?.complexity).toBe('COMPLEX');
+      expect(result.complexity?.applySrp).toBe(true);
+      expect(result.srpInstructions).toBeDefined();
+      expect(result.srpInstructions).toContain('Structured Reasoning Process');
+    });
+
+    it('classifies SIMPLE task and skips SRP', async () => {
+      const result = await service.parseMode('PLAN fix typo in file');
+
+      expect(result.complexity).toBeDefined();
+      expect(result.complexity?.complexity).toBe('SIMPLE');
+      expect(result.complexity?.applySrp).toBe(false);
+      expect(result.srpInstructions).toBeUndefined();
+    });
+
+    it('respects --srp override flag for SIMPLE tasks', async () => {
+      const result = await service.parseMode('PLAN fix typo --srp');
+
+      expect(result.complexity?.complexity).toBe('SIMPLE');
+      expect(result.complexity?.applySrp).toBe(true);
+      expect(result.complexity?.override).toBe('force');
+      expect(result.srpInstructions).toBeDefined();
+    });
+
+    it('respects --no-srp override flag for COMPLEX tasks', async () => {
+      const result = await service.parseMode(
+        'PLAN How should we design the auth? --no-srp',
+      );
+
+      expect(result.complexity?.complexity).toBe('COMPLEX');
+      expect(result.complexity?.applySrp).toBe(false);
+      expect(result.complexity?.override).toBe('skip');
+      expect(result.srpInstructions).toBeUndefined();
+    });
+
+    it('does not add complexity for ACT mode', async () => {
+      const result = await service.parseMode('ACT implement login');
+
+      expect(result.complexity).toBeUndefined();
+      expect(result.srpInstructions).toBeUndefined();
+    });
+
+    it('does not add complexity for EVAL mode', async () => {
+      const result = await service.parseMode('EVAL review code');
+
+      expect(result.complexity).toBeUndefined();
+      expect(result.srpInstructions).toBeUndefined();
+    });
+
+    it('adds complexity for AUTO mode (includes PLAN phase)', async () => {
+      const result = await service.parseMode('AUTO design new feature');
+
+      expect(result.complexity).toBeDefined();
+      expect(result.complexity?.complexity).toBe('COMPLEX');
     });
   });
 

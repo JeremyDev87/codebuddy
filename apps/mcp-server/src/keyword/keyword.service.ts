@@ -16,7 +16,12 @@ import {
   type PrimaryAgentSource,
   type ActAgentRecommendation,
   type AutoConfig,
+  type ComplexityClassification,
 } from './keyword.types';
+import {
+  classifyComplexity,
+  generateSrpInstructions,
+} from './complexity-classifier';
 import { DEFAULT_AUTO_CONFIG } from './auto-executor.types';
 
 /**
@@ -420,6 +425,9 @@ export class KeywordService {
     // 6. Add AUTO config for AUTO mode
     await this.addAutoConfigToResult(result, mode);
 
+    // 7. Add complexity classification for PLAN mode (or AUTO which includes PLAN phase)
+    this.addComplexityToResult(result, mode, originalPrompt);
+
     return result;
   }
 
@@ -545,6 +553,44 @@ export class KeywordService {
 
     const autoConfig = await this.getAutoConfig();
     result.autoConfig = autoConfig;
+  }
+
+  /**
+   * Add complexity classification for PLAN mode (or AUTO which includes PLAN phase).
+   *
+   * Classifies task complexity as SIMPLE or COMPLEX and adds SRP instructions
+   * when the task requires structured reasoning.
+   *
+   * @param result - The ParseModeResult to modify
+   * @param mode - Current workflow mode
+   * @param originalPrompt - User's original prompt
+   */
+  private addComplexityToResult(
+    result: ParseModeResult,
+    mode: Mode,
+    originalPrompt: string,
+  ): void {
+    // Only apply complexity classification for PLAN mode or AUTO (which starts with PLAN)
+    if (mode !== 'PLAN' && mode !== 'AUTO') {
+      return;
+    }
+
+    // Classify the task complexity
+    const classification: ComplexityClassification =
+      classifyComplexity(originalPrompt);
+    result.complexity = classification;
+
+    // Generate SRP instructions if complexity warrants it
+    // Note: srpInstructions is kept separate (no mutation of result.instructions)
+    // Consumer can decide how to combine them
+    const srpInstructions = generateSrpInstructions(classification);
+    if (srpInstructions) {
+      result.srpInstructions = srpInstructions;
+    }
+
+    this.logger.log(
+      `Complexity: ${classification.complexity}, SRP: ${classification.applySrp ? 'applied' : 'skipped'}, confidence: ${classification.confidence.toFixed(2)}`,
+    );
   }
 
   /**
