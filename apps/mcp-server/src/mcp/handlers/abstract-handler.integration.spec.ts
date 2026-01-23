@@ -93,6 +93,11 @@ describe('Handler Security Integration', () => {
     mockRulesService = {
       searchRules: vi.fn().mockResolvedValue([]),
       getAgent: vi.fn().mockResolvedValue({ name: 'test-agent' }),
+      getSkill: vi.fn().mockResolvedValue({
+        name: 'test-skill',
+        description: 'Test skill',
+        content: 'Test content',
+      }),
     } as unknown as RulesService;
 
     mockLanguageService = {
@@ -162,7 +167,10 @@ describe('Handler Security Integration', () => {
       mockDiagnosticLogService,
     );
     rulesHandler = new RulesHandler(mockRulesService);
-    skillHandler = new SkillHandler(mockSkillRecommendationService);
+    skillHandler = new SkillHandler(
+      mockSkillRecommendationService,
+      mockRulesService,
+    );
   });
 
   describe('__proto__ pollution protection', () => {

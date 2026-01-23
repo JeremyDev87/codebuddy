@@ -85,6 +85,19 @@ export const AIConfigSchema = z.object({
    * ```
    */
   excludeAgents: z.array(z.string()).optional(),
+  /**
+   * Maximum number of skills to auto-include in parse_mode response.
+   * Limits response size while providing relevant skill content.
+   * Default: 3
+   *
+   * @example
+   * ```javascript
+   * ai: {
+   *   maxIncludedSkills: 5,
+   * }
+   * ```
+   */
+  maxIncludedSkills: z.number().int().min(0).max(10).optional(),
 });
 
 export const AutoConfigSchema = z.object({

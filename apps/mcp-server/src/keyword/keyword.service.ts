@@ -6,6 +6,7 @@ import {
   ALL_PRIMARY_AGENTS,
   ACT_PRIMARY_AGENTS,
   DEFAULT_ACT_AGENT,
+  DEFAULT_MAX_INCLUDED_SKILLS,
   type Mode,
   type RuleContent,
   type ParseModeResult,
@@ -17,6 +18,7 @@ import {
   type ActAgentRecommendation,
   type AutoConfig,
   type ComplexityClassification,
+  type IncludedSkill,
 } from './keyword.types';
 import {
   classifyComplexity,
@@ -32,6 +34,57 @@ export interface ParseModeOptions {
   recommendedActAgent?: string;
   /** Resolution context for file-based inference */
   context?: ResolutionContext;
+}
+
+/**
+ * Optional dependencies for KeywordService.
+ * Groups optional callback functions to reduce constructor parameter count.
+ */
+export interface KeywordServiceOptions {
+  /** Primary agent resolver for dynamic agent selection */
+  primaryAgentResolver?: PrimaryAgentResolver;
+  /** Function to load AUTO mode configuration */
+  loadAutoConfigFn?: () => Promise<AutoConfig | null>;
+  /** Function to get skill recommendations based on prompt */
+  getSkillRecommendationsFn?: (prompt: string) => SkillRecommendationInfo[];
+  /** Function to load full skill content by name */
+  loadSkillContentFn?: (skillName: string) => Promise<SkillContentInfo | null>;
+  /** Function to load agent system prompt */
+  loadAgentSystemPromptFn?: (
+    agentName: string,
+    mode: Mode,
+  ) => Promise<AgentSystemPromptInfo | null>;
+  /** Function to get max included skills from config (defaults to DEFAULT_MAX_INCLUDED_SKILLS) */
+  getMaxIncludedSkillsFn?: () => Promise<number | null>;
+}
+
+/**
+ * Skill recommendation result from SkillRecommendationService
+ */
+export interface SkillRecommendationInfo {
+  skillName: string;
+  confidence: 'high' | 'medium' | 'low';
+  matchedPatterns: string[];
+  description: string;
+}
+
+/**
+ * Skill content loaded from RulesService
+ */
+export interface SkillContentInfo {
+  name: string;
+  description: string;
+  content: string;
+}
+
+/**
+ * Agent system prompt loaded from AgentService
+ */
+export interface AgentSystemPromptInfo {
+  agentName: string;
+  displayName: string;
+  systemPrompt: string;
+  description: string;
 }
 import { PrimaryAgentResolver } from './primary-agent-resolver';
 import { ActivationMessageBuilder } from './activation-message.builder';
@@ -136,100 +189,77 @@ export class KeywordService {
   private cacheHits = 0;
   private cacheMisses = 0;
 
-  /**
-   * Cached regex patterns for context-aware specialist detection.
-   * Static properties to avoid regex recompilation on each method call.
-   * Follows Open/Closed principle - add new specialists by adding patterns.
-   */
+  // Optional dependencies from options
+  private readonly loadAutoConfigFn?: () => Promise<AutoConfig | null>;
+  private readonly getSkillRecommendationsFn?: (
+    prompt: string,
+  ) => SkillRecommendationInfo[];
+  private readonly loadSkillContentFn?: (
+    skillName: string,
+  ) => Promise<SkillContentInfo | null>;
+  private readonly loadAgentSystemPromptFn?: (
+    agentName: string,
+    mode: Mode,
+  ) => Promise<AgentSystemPromptInfo | null>;
+  private readonly getMaxIncludedSkillsFn?: () => Promise<number | null>;
 
   /**
    * Context-aware specialist patterns for automatic agent recommendation.
-   *
-   * These patterns detect domain-specific keywords in user prompts and
-   * recommend relevant specialist agents for parallel execution.
-   *
-   * @remarks
-   * - Patterns support both Korean and English keywords for i18n
-   * - All patterns are case-insensitive (using /i flag)
-   * - Patterns are checked against the full prompt text
-   * - Multiple patterns can match, resulting in multiple specialists
-   *
-   * @example
-   * ```typescript
-   * // Prompt: "Implement OAuth authentication for API"
-   * // Matches: security-specialist (OAuth, auth)
-   *
-   * // Prompt: "외부 API 연동 보안 점검"
-   * // Matches: integration-specialist (외부, 연동), security-specialist (보안)
-   * ```
-   *
-   * @see {@link MODE_DEFAULT_SPECIALISTS} for mode-based default specialists
-   * @see packages/rules/.ai-rules/agents/ for specialist agent definitions
+   * Static patterns to avoid regex recompilation on each method call.
    */
   private static readonly CONTEXT_SPECIALIST_PATTERNS: ReadonlyArray<{
     pattern: RegExp;
     specialist: string;
   }> = [
-    // Security keywords → security-specialist
     {
       pattern:
         /보안|security|auth|인증|JWT|OAuth|XSS|CSRF|취약점|vulnerability/i,
       specialist: 'security-specialist',
     },
-    // Accessibility keywords → accessibility-specialist
     {
       pattern:
         /접근성|accessibility|a11y|WCAG|aria|스크린\s*리더|screen\s*reader/i,
       specialist: 'accessibility-specialist',
     },
-    // Performance keywords → performance-specialist
     {
       pattern:
         /성능|performance|최적화|optimiz|빠르게|느린|slow|fast|bundle\s*size|로딩/i,
       specialist: 'performance-specialist',
     },
-    // i18n keywords → i18n-specialist
     {
       pattern:
         /다국어|i18n|internationalization|번역|locale|translation|localization/i,
       specialist: 'i18n-specialist',
     },
-    // SEO keywords → seo-specialist
     {
       pattern:
         /SEO|검색\s*엔진|search\s*engine|메타|meta\s*tag|sitemap|구조화\s*데이터/i,
       specialist: 'seo-specialist',
     },
-    // Documentation keywords → documentation-specialist
     {
       pattern: /문서화|document|README|API\s*문서|JSDoc|주석|comment/i,
       specialist: 'documentation-specialist',
     },
-    // UI/UX keywords → ui-ux-designer
     {
       pattern:
         /UI|UX|디자인|design\s*system|사용자\s*경험|user\s*experience|인터랙션/i,
       specialist: 'ui-ux-designer',
     },
-    // Integration keywords → integration-specialist
     {
       pattern:
         /외부\s*서비스|external\s*(api|service)|webhook|웹훅|third-?party|circuit\s*breaker|retry\s*pattern|API\s*integration|서드파티|연동|SDK\s*wrapper/i,
       specialist: 'integration-specialist',
     },
-    // Observability keywords → observability-specialist
     {
       pattern:
         /observability|관측성|distributed\s*trac|분산\s*추적|SLI|SLO|error\s*budget|OpenTelemetry|otel|Prometheus|Grafana|Jaeger|Zipkin|log\s*aggregat|로그\s*수집|alerting\s*strateg|알림\s*전략|메트릭\s*수집|metric\s*collect|tracing\s*infra|monitoring|대시보드|dashboard|logs?\s*manag/i,
       specialist: 'observability-specialist',
     },
-    // Event architecture keywords → event-architecture-specialist
     {
       pattern:
         /event[- ]?driven|이벤트\s*기반|message\s*queue|메시지\s*큐|Kafka|RabbitMQ|SQS|Azure\s*Service\s*Bus|event\s*sourc|CQRS|saga\s*pattern|분산\s*트랜잭션|distributed\s*transaction|pub\/?sub|dead\s*letter|DLQ|websocket|SSE|server[- ]?sent|real[- ]?time|실시간|async\s*messag|비동기\s*통신/i,
       specialist: 'event-architecture-specialist',
     },
-    // Migration keywords → migration-specialist
     {
       pattern:
         /migration|마이그레이션|migrate|이전|legacy\s*(system|code|moderniz)|레거시|upgrade\s*(framework|version|library)|업그레이드|strangler\s*fig|branch\s*by\s*abstraction|blue[- ]?green|canary\s*(deploy|release)|rollback|롤백|api\s*version|deprecat|dual[- ]?write|backward\s*compatib|호환성|zero[- ]?downtime|data\s*migration|데이터\s*마이그레이션|schema\s*migration|스키마\s*변경|cutover|전환/i,
@@ -237,14 +267,28 @@ export class KeywordService {
     },
   ];
 
+  /**
+   * Create a KeywordService instance.
+   *
+   * @param loadConfigFn - Function to load mode configuration
+   * @param loadRuleFn - Function to load rule content by path
+   * @param loadAgentInfoFn - Optional function to load agent info by name
+   * @param options - Optional dependencies grouped for cleaner API
+   */
   constructor(
     private readonly loadConfigFn: () => Promise<KeywordModesConfig>,
     private readonly loadRuleFn: (path: string) => Promise<string>,
     private readonly loadAgentInfoFn?: (agentName: string) => Promise<unknown>,
-    primaryAgentResolver?: PrimaryAgentResolver,
-    private readonly loadAutoConfigFn?: () => Promise<AutoConfig | null>,
+    options?: KeywordServiceOptions,
   ) {
-    this.primaryAgentResolver = primaryAgentResolver;
+    // Extract options with defaults
+    this.primaryAgentResolver = options?.primaryAgentResolver;
+    this.loadAutoConfigFn = options?.loadAutoConfigFn;
+    this.getSkillRecommendationsFn = options?.getSkillRecommendationsFn;
+    this.loadSkillContentFn = options?.loadSkillContentFn;
+    this.loadAgentSystemPromptFn = options?.loadAgentSystemPromptFn;
+    this.getMaxIncludedSkillsFn = options?.getMaxIncludedSkillsFn;
+
     // Environment-based TTL: 5 minutes for development, 1 hour for production
     this.cacheTTL = process.env.NODE_ENV === 'production' ? 3600000 : 300000;
   }
@@ -428,6 +472,12 @@ export class KeywordService {
     // 7. Add complexity classification for PLAN mode (or AUTO which includes PLAN phase)
     this.addComplexityToResult(result, mode, originalPrompt);
 
+    // 8. Auto-include relevant skills (for MCP mode to force AI execution)
+    await this.addIncludedSkillsToResult(result, originalPrompt);
+
+    // 9. Auto-include primary agent system prompt (for MCP mode to force AI execution)
+    await this.addIncludedAgentToResult(result, mode);
+
     return result;
   }
 
@@ -591,6 +641,98 @@ export class KeywordService {
     this.logger.log(
       `Complexity: ${classification.complexity}, SRP: ${classification.applySrp ? 'applied' : 'skipped'}, confidence: ${classification.confidence.toFixed(2)}`,
     );
+  }
+
+  /**
+   * Auto-include relevant skills in the response for MCP mode.
+   * This forces AI clients to have skill content without additional tool calls.
+   */
+  private async addIncludedSkillsToResult(
+    result: ParseModeResult,
+    originalPrompt: string,
+  ): Promise<void> {
+    if (!this.getSkillRecommendationsFn || !this.loadSkillContentFn) return;
+
+    try {
+      const recommendations = this.getSkillRecommendationsFn(originalPrompt);
+      if (recommendations.length === 0) return;
+
+      const maxSkills = await this.getMaxIncludedSkills();
+      const skills = await this.loadSkillsInParallel(
+        recommendations.slice(0, maxSkills),
+      );
+
+      if (skills.length > 0) {
+        result.included_skills = skills;
+        this.logger.log(
+          `Auto-included ${skills.length} skills: ${skills.map(s => s.name).join(', ')}`,
+        );
+      }
+    } catch (error) {
+      this.logger.warn(
+        `Failed to auto-include skills: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+    }
+  }
+
+  /** Get max included skills from config or use default. */
+  private async getMaxIncludedSkills(): Promise<number> {
+    if (!this.getMaxIncludedSkillsFn) return DEFAULT_MAX_INCLUDED_SKILLS;
+
+    const configValue = await asyncWithFallback({
+      fn: () => this.getMaxIncludedSkillsFn!(),
+      fallback: null,
+      errorMessage: 'Failed to load maxIncludedSkills config: ${error}',
+      logger: this.logger,
+    });
+
+    return configValue ?? DEFAULT_MAX_INCLUDED_SKILLS;
+  }
+
+  /**
+   * Load multiple skills in parallel and filter out failed loads.
+   */
+  private async loadSkillsInParallel(
+    recommendations: SkillRecommendationInfo[],
+  ): Promise<IncludedSkill[]> {
+    const loadPromises = recommendations.map(async rec => {
+      const content = await this.loadSkillContentFn!(rec.skillName);
+      if (!content) return null;
+
+      return {
+        name: content.name,
+        description: content.description,
+        content: content.content,
+        reason: `Matched patterns: ${rec.matchedPatterns.join(', ')} (confidence: ${rec.confidence})`,
+      };
+    });
+
+    const results = await Promise.all(loadPromises);
+    return results.filter((skill): skill is IncludedSkill => skill !== null);
+  }
+
+  /** Auto-include primary agent system prompt for MCP mode. */
+  private async addIncludedAgentToResult(
+    result: ParseModeResult,
+    mode: Mode,
+  ): Promise<void> {
+    if (!this.loadAgentSystemPromptFn || !result.delegates_to) return;
+
+    const agentPrompt = await asyncWithFallback({
+      fn: () => this.loadAgentSystemPromptFn!(result.delegates_to!, mode),
+      fallback: null,
+      errorMessage: 'Failed to auto-include agent: ${error}',
+      logger: this.logger,
+    });
+
+    if (agentPrompt) {
+      result.included_agent = {
+        name: agentPrompt.displayName,
+        systemPrompt: agentPrompt.systemPrompt,
+        expertise: result.delegate_agent_info?.expertise ?? [],
+      };
+      this.logger.log(`Auto-included agent: ${agentPrompt.displayName}`);
+    }
   }
 
   /**

@@ -486,6 +486,7 @@ function createMcpServiceWithHandlers(
     ),
     new SkillHandler(
       services.skillRecommendationService as SkillRecommendationService,
+      services.rulesService as RulesService,
     ),
     new AgentHandler(services.agentService as AgentService),
     new ModeHandler(

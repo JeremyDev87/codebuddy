@@ -245,6 +245,36 @@ export interface ParallelAgentRecommendation {
   hint: string;
 }
 
+/**
+ * Skill content included in parse_mode response for forced execution.
+ * When AI clients receive this, they have the full skill content
+ * without needing additional tool calls.
+ */
+export interface IncludedSkill {
+  /** Skill name (e.g., 'brainstorming', 'test-driven-development') */
+  name: string;
+  /** Human-readable description */
+  description: string;
+  /** Full skill instructions content (markdown) */
+  content: string;
+  /** Why this skill was included */
+  reason: string;
+}
+
+/**
+ * Agent system prompt included in parse_mode response for forced execution.
+ * When AI clients receive this, they have the full agent context
+ * without needing additional tool calls.
+ */
+export interface IncludedAgent {
+  /** Agent name (e.g., 'frontend-developer', 'code-reviewer') */
+  name: string;
+  /** Full system prompt for the agent */
+  systemPrompt: string;
+  /** Agent's areas of expertise */
+  expertise: string[];
+}
+
 /** Source of Primary Agent selection */
 export type PrimaryAgentSource =
   | 'explicit'
@@ -294,6 +324,13 @@ export interface AutoConfig {
   /** Maximum PLAN → ACT → EVAL iterations */
   maxIterations: number;
 }
+
+/**
+ * Default maximum number of skills to auto-include in parse_mode response.
+ * Limits response size while providing relevant skill content.
+ * Can be overridden via project config `ai.maxIncludedSkills`.
+ */
+export const DEFAULT_MAX_INCLUDED_SKILLS = 3;
 
 /**
  * Task complexity classification for SRP (Structured Reasoning Process).
@@ -367,6 +404,18 @@ export interface ParseModeResult {
   complexity?: ComplexityClassification;
   /** @apiProperty External API - do not rename. SRP instructions (only when complexity is COMPLEX) */
   srpInstructions?: string;
+  /**
+   * @apiProperty External API - do not rename.
+   * Auto-included skills based on prompt analysis.
+   * AI clients should execute these skills without additional tool calls.
+   */
+  included_skills?: IncludedSkill[];
+  /**
+   * @apiProperty External API - do not rename.
+   * Auto-included primary agent with full system prompt.
+   * AI clients should adopt this agent's persona without additional tool calls.
+   */
+  included_agent?: IncludedAgent;
 }
 
 export interface ModeConfig {

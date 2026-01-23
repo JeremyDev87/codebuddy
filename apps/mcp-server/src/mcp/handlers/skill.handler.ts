@@ -3,6 +3,7 @@ import type { ToolDefinition } from './base.handler';
 import type { ToolResponse } from '../response.utils';
 import { AbstractHandler } from './abstract-handler';
 import { SkillRecommendationService } from '../../skill/skill-recommendation.service';
+import { RulesService } from '../../rules/rules.service';
 import type { ListSkillsOptions } from '../../skill/skill-recommendation.types';
 import { createJsonResponse, createErrorResponse } from '../response.utils';
 import { extractRequiredString } from '../../shared/validation.constants';
@@ -11,17 +12,19 @@ import { extractRequiredString } from '../../shared/validation.constants';
  * Handler for skill-related tools
  * - recommend_skills: Recommend skills based on user prompt
  * - list_skills: List all available skills
+ * - get_skill: Get skill content by name
  */
 @Injectable()
 export class SkillHandler extends AbstractHandler {
   constructor(
     private readonly skillRecommendationService: SkillRecommendationService,
+    private readonly rulesService: RulesService,
   ) {
     super();
   }
 
   protected getHandledTools(): string[] {
-    return ['recommend_skills', 'list_skills'];
+    return ['recommend_skills', 'list_skills', 'get_skill'];
   }
 
   protected async handleTool(
@@ -33,6 +36,8 @@ export class SkillHandler extends AbstractHandler {
         return this.handleRecommendSkills(args);
       case 'list_skills':
         return this.handleListSkills(args);
+      case 'get_skill':
+        return this.handleGetSkill(args);
       default:
         return createErrorResponse(`Unknown tool: ${toolName}`);
     }
@@ -73,6 +78,22 @@ export class SkillHandler extends AbstractHandler {
           required: [],
         },
       },
+      {
+        name: 'get_skill',
+        description:
+          'Get skill content by name. Returns the full skill definition including name, description, and instructions content.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            skillName: {
+              type: 'string',
+              description:
+                'Name of the skill (e.g., brainstorming, test-driven-development, systematic-debugging)',
+            },
+          },
+          required: ['skillName'],
+        },
+      },
     ];
   }
 
@@ -111,6 +132,26 @@ export class SkillHandler extends AbstractHandler {
     } catch (error) {
       return createErrorResponse(
         `Failed to list skills: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+    }
+  }
+
+  private async handleGetSkill(
+    args: Record<string, unknown> | undefined,
+  ): Promise<ToolResponse> {
+    const skillName = extractRequiredString(args, 'skillName');
+    if (skillName === null) {
+      return createErrorResponse('Missing required parameter: skillName');
+    }
+
+    try {
+      const skill = await this.rulesService.getSkill(skillName);
+      return createJsonResponse(skill);
+    } catch (error) {
+      return createErrorResponse(
+        error instanceof Error
+          ? error.message
+          : `Skill '${skillName}' not found.`,
       );
     }
   }
