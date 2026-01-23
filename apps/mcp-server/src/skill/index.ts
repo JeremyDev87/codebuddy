@@ -5,6 +5,9 @@
  * Supports multilingual keyword matching (EN, KO, JA, ZH, ES).
  */
 
+// Module
+export { SkillModule } from './skill.module';
+
 // Types
 export * from './skill-recommendation.types';
 

@@ -1,10 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { SkillHandler } from './skill.handler';
 import { SkillRecommendationService } from '../../skill/skill-recommendation.service';
+import { RulesService } from '../../rules/rules.service';
 
 describe('SkillHandler', () => {
   let handler: SkillHandler;
   let mockSkillRecommendationService: SkillRecommendationService;
+  let mockRulesService: RulesService;
 
   beforeEach(() => {
     mockSkillRecommendationService = {
@@ -18,7 +20,19 @@ describe('SkillHandler', () => {
       }),
     } as unknown as SkillRecommendationService;
 
-    handler = new SkillHandler(mockSkillRecommendationService);
+    mockRulesService = {
+      getSkill: vi.fn().mockResolvedValue({
+        name: 'test-skill',
+        description: 'Test skill description',
+        content: 'Test skill content',
+        path: 'skills/test-skill/SKILL.md',
+      }),
+    } as unknown as RulesService;
+
+    handler = new SkillHandler(
+      mockSkillRecommendationService,
+      mockRulesService,
+    );
   });
 
   describe('handle', () => {
@@ -90,13 +104,14 @@ describe('SkillHandler', () => {
   });
 
   describe('getToolDefinitions', () => {
-    it('should return tool definitions for recommend_skills and list_skills', () => {
+    it('should return tool definitions for recommend_skills, list_skills, and get_skill', () => {
       const definitions = handler.getToolDefinitions();
 
-      expect(definitions).toHaveLength(2);
+      expect(definitions).toHaveLength(3);
       expect(definitions.map(d => d.name)).toEqual([
         'recommend_skills',
         'list_skills',
+        'get_skill',
       ]);
     });
 
@@ -108,6 +123,51 @@ describe('SkillHandler', () => {
 
       expect(recommendSkills?.inputSchema.required).toContain('prompt');
       expect(recommendSkills?.inputSchema.properties.prompt).toBeDefined();
+    });
+
+    it('should have correct schema for get_skill', () => {
+      const definitions = handler.getToolDefinitions();
+      const getSkill = definitions.find(d => d.name === 'get_skill');
+
+      expect(getSkill?.inputSchema.required).toContain('skillName');
+      expect(getSkill?.inputSchema.properties.skillName).toBeDefined();
+    });
+  });
+
+  describe('get_skill handler', () => {
+    it('should handle get_skill with valid skillName', async () => {
+      const result = await handler.handle('get_skill', {
+        skillName: 'brainstorming',
+      });
+
+      expect(result?.isError).toBeFalsy();
+      expect(mockRulesService.getSkill).toHaveBeenCalledWith('brainstorming');
+    });
+
+    it('should return error for get_skill without skillName', async () => {
+      const result = await handler.handle('get_skill', {});
+
+      expect(result?.isError).toBe(true);
+      expect(result?.content[0]).toMatchObject({
+        type: 'text',
+        text: expect.stringContaining('Missing required parameter: skillName'),
+      });
+    });
+
+    it('should return error when skill not found', async () => {
+      mockRulesService.getSkill = vi
+        .fn()
+        .mockRejectedValue(new Error('Skill not found: unknown-skill'));
+
+      const result = await handler.handle('get_skill', {
+        skillName: 'unknown-skill',
+      });
+
+      expect(result?.isError).toBe(true);
+      expect(result?.content[0]).toMatchObject({
+        type: 'text',
+        text: expect.stringContaining('Skill not found'),
+      });
     });
   });
 

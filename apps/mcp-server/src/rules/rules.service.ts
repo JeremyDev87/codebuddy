@@ -5,6 +5,7 @@ import * as path from 'path';
 import { AgentProfile, SearchResult } from './rules.types';
 import { isPathSafe } from '../shared/security.utils';
 import { parseAgentProfile, AgentSchemaError } from './agent.schema';
+import { parseSkill, SkillSchemaError, type Skill } from './skill.schema';
 import { CustomService } from '../custom';
 import { ConfigService } from '../config/config.service';
 import { MODE_AGENTS } from '../keyword/keyword.types';
@@ -220,5 +221,83 @@ export class RulesService {
     }
 
     return results.sort((a, b) => b.score - a.score);
+  }
+
+  // ============================================================================
+  // Skill Operations
+  // ============================================================================
+
+  /**
+   * List all available skills from the skills directory
+   * @returns Array of skill summaries with name and description
+   */
+  async listSkillsFromDir(): Promise<
+    Array<{ name: string; description: string }>
+  > {
+    const skillsDir = path.join(this.rulesDir, 'skills');
+    const summaries: Array<{ name: string; description: string }> = [];
+
+    try {
+      const entries = await fs.readdir(skillsDir, { withFileTypes: true });
+
+      for (const entry of entries) {
+        if (entry.isDirectory()) {
+          const skillPath = path.join(skillsDir, entry.name, 'SKILL.md');
+          try {
+            const content = await fs.readFile(skillPath, 'utf-8');
+            const skill = parseSkill(content, `skills/${entry.name}/SKILL.md`);
+            summaries.push({
+              name: skill.name,
+              description: skill.description,
+            });
+          } catch (error) {
+            // Skip invalid skills but log warning
+            this.logger.warn(
+              `Failed to parse skill '${entry.name}': ${error instanceof Error ? error.message : 'Unknown error'}`,
+            );
+          }
+        }
+      }
+    } catch (error) {
+      this.logger.warn(
+        `Failed to list skills: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+    }
+
+    return summaries;
+  }
+
+  /**
+   * Get a skill by name
+   * @param name - Skill name (must be lowercase alphanumeric with hyphens)
+   * @returns Parsed skill object
+   * @throws Error if skill not found or invalid
+   */
+  async getSkill(name: string): Promise<Skill> {
+    // Validate name format (lowercase alphanumeric with hyphens)
+    if (!/^[a-z0-9-]+$/.test(name)) {
+      throw new Error(`Invalid skill name format: ${name}`);
+    }
+
+    const skillPath = `skills/${name}/SKILL.md`;
+
+    // Security check
+    if (!isPathSafe(this.rulesDir, skillPath)) {
+      this.logger.warn(`Path traversal attempt blocked for skill: ${name}`);
+      throw new Error('Access denied: Invalid path');
+    }
+
+    const fullPath = path.join(this.rulesDir, skillPath);
+
+    try {
+      const content = await fs.readFile(fullPath, 'utf-8');
+      return parseSkill(content, skillPath);
+    } catch (error) {
+      if (error instanceof SkillSchemaError) {
+        this.logger.warn(`Invalid skill '${name}': ${error.message}`);
+        throw new Error(`Invalid skill: ${name}`);
+      }
+      throw new Error(`Skill not found: ${name}`);
+    }
   }
 }

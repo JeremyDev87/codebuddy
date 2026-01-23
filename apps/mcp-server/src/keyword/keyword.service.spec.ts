@@ -1,6 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { KeywordService } from './keyword.service';
-import type { KeywordModesConfig } from './keyword.types';
+import {
+  KeywordService,
+  type SkillRecommendationInfo,
+  type SkillContentInfo,
+  type AgentSystemPromptInfo,
+} from './keyword.service';
+import type { KeywordModesConfig, Mode } from './keyword.types';
 import type { PrimaryAgentResolver } from './primary-agent-resolver';
 
 /**
@@ -543,8 +548,7 @@ describe('KeywordService', () => {
           mockLoadConfig,
           mockLoadRule,
           mockLoadAgentInfo,
-          undefined,
-          mockLoadAutoConfig,
+          { loadAutoConfigFn: mockLoadAutoConfig },
         );
 
         const result = await serviceWithAutoConfig.parseMode(
@@ -562,8 +566,7 @@ describe('KeywordService', () => {
           mockLoadConfig,
           mockLoadRule,
           mockLoadAgentInfo,
-          undefined,
-          mockLoadAutoConfig,
+          { loadAutoConfigFn: mockLoadAutoConfig },
         );
 
         const result = await serviceWithAutoConfig.parseMode(
@@ -582,8 +585,7 @@ describe('KeywordService', () => {
           mockLoadConfig,
           mockLoadRule,
           mockLoadAgentInfo,
-          undefined,
-          mockLoadAutoConfig,
+          { loadAutoConfigFn: mockLoadAutoConfig },
         );
 
         const result = await serviceWithAutoConfig.parseMode(
@@ -1068,7 +1070,9 @@ describe('KeywordService', () => {
         mockLoadConfig,
         mockLoadRule,
         mockLoadAgentInfo,
-        mockResolver as unknown as PrimaryAgentResolver,
+        {
+          primaryAgentResolver: mockResolver as unknown as PrimaryAgentResolver,
+        },
       );
 
       const result = await serviceWithResolver.parseMode('PLAN design API');
@@ -1094,7 +1098,9 @@ describe('KeywordService', () => {
         mockLoadConfig,
         mockLoadRule,
         mockLoadAgentInfo,
-        mockResolver as unknown as PrimaryAgentResolver,
+        {
+          primaryAgentResolver: mockResolver as unknown as PrimaryAgentResolver,
+        },
       );
 
       const result = await serviceWithResolver.parseMode('PLAN build UI');
@@ -1119,7 +1125,9 @@ describe('KeywordService', () => {
         mockLoadConfig,
         mockLoadRule,
         mockLoadAgentInfo,
-        mockResolver as unknown as PrimaryAgentResolver,
+        {
+          primaryAgentResolver: mockResolver as unknown as PrimaryAgentResolver,
+        },
       );
 
       const result = await serviceWithResolver.parseMode('ACT implement');
@@ -1141,7 +1149,9 @@ describe('KeywordService', () => {
         mockLoadConfig,
         mockLoadRule,
         mockLoadAgentInfo,
-        mockResolver as unknown as PrimaryAgentResolver,
+        {
+          primaryAgentResolver: mockResolver as unknown as PrimaryAgentResolver,
+        },
       );
 
       const result = await serviceWithResolver.parseMode('EVAL review');
@@ -1168,7 +1178,9 @@ describe('KeywordService', () => {
         mockLoadConfig,
         mockLoadRule,
         mockLoadAgentInfo,
-        mockResolver as unknown as PrimaryAgentResolver,
+        {
+          primaryAgentResolver: mockResolver as unknown as PrimaryAgentResolver,
+        },
       );
 
       const result = await serviceWithResolver.parseMode('PLAN design');
@@ -1262,7 +1274,9 @@ describe('KeywordService', () => {
         mockLoadConfig,
         mockLoadRule,
         mockLoadAgentInfo,
-        mockResolver as unknown as PrimaryAgentResolver,
+        {
+          primaryAgentResolver: mockResolver as unknown as PrimaryAgentResolver,
+        },
       );
 
       const result = await serviceWithResolver.parseMode(
@@ -1293,7 +1307,9 @@ describe('KeywordService', () => {
         mockLoadConfig,
         mockLoadRule,
         mockLoadAgentInfo,
-        mockResolver as unknown as PrimaryAgentResolver,
+        {
+          primaryAgentResolver: mockResolver as unknown as PrimaryAgentResolver,
+        },
       );
 
       const result = await serviceWithResolver.parseMode('PLAN design API', {
@@ -1324,7 +1340,9 @@ describe('KeywordService', () => {
         mockLoadConfig,
         mockLoadRule,
         mockLoadAgentInfo,
-        mockResolver as unknown as PrimaryAgentResolver,
+        {
+          primaryAgentResolver: mockResolver as unknown as PrimaryAgentResolver,
+        },
       );
 
       const result = await serviceWithResolver.parseMode('EVAL review code', {
@@ -1348,7 +1366,9 @@ describe('KeywordService', () => {
         mockLoadConfig,
         mockLoadRule,
         mockLoadAgentInfo,
-        mockResolver as unknown as PrimaryAgentResolver,
+        {
+          primaryAgentResolver: mockResolver as unknown as PrimaryAgentResolver,
+        },
       );
 
       const result = await serviceWithResolver.parseMode(
@@ -1377,7 +1397,9 @@ describe('KeywordService', () => {
         mockLoadConfig,
         mockLoadRule,
         mockLoadAgentInfo,
-        mockResolver as unknown as PrimaryAgentResolver,
+        {
+          primaryAgentResolver: mockResolver as unknown as PrimaryAgentResolver,
+        },
       );
 
       // Empty string should be treated as undefined
@@ -1408,7 +1430,9 @@ describe('KeywordService', () => {
         mockLoadConfig,
         mockLoadRule,
         mockLoadAgentInfo,
-        mockResolver as unknown as PrimaryAgentResolver,
+        {
+          primaryAgentResolver: mockResolver as unknown as PrimaryAgentResolver,
+        },
       );
 
       // Whitespace should be treated as undefined at MCP layer
@@ -1990,6 +2014,671 @@ describe('KeywordService', () => {
         expect(result.parallelAgentsRecommendation?.specialists).toContain(
           'observability-specialist',
         );
+      });
+    });
+  });
+
+  describe('auto-included skills and agents (MCP mode enhancement)', () => {
+    describe('included_skills', () => {
+      it('auto-includes skills when skill functions are provided', async () => {
+        const mockSkillRecommendations = vi.fn(
+          (prompt: string): SkillRecommendationInfo[] => {
+            if (prompt.includes('debug')) {
+              return [
+                {
+                  skillName: 'systematic-debugging',
+                  confidence: 'high',
+                  matchedPatterns: ['debug'],
+                  description: 'Debug systematically',
+                },
+              ];
+            }
+            return [];
+          },
+        );
+
+        const mockLoadSkillContent = vi.fn(
+          async (skillName: string): Promise<SkillContentInfo | null> => {
+            if (skillName === 'systematic-debugging') {
+              return {
+                name: 'systematic-debugging',
+                description: 'Debug systematically',
+                content: '# Debugging Skill\nFollow these steps...',
+              };
+            }
+            return null;
+          },
+        );
+
+        const serviceWithSkills = new KeywordService(
+          mockLoadConfig,
+          mockLoadRule,
+          mockLoadAgentInfo,
+          {
+            getSkillRecommendationsFn: mockSkillRecommendations,
+            loadSkillContentFn: mockLoadSkillContent,
+          },
+        );
+
+        const result = await serviceWithSkills.parseMode('PLAN debug issue');
+
+        expect(result.included_skills).toBeDefined();
+        expect(result.included_skills).toHaveLength(1);
+        expect(result.included_skills![0]).toMatchObject({
+          name: 'systematic-debugging',
+          description: 'Debug systematically',
+          content: '# Debugging Skill\nFollow these steps...',
+        });
+        expect(result.included_skills![0].reason).toContain('debug');
+      });
+
+      it('limits included skills to 3 maximum (default)', async () => {
+        const mockSkillRecommendations = vi.fn(
+          (): SkillRecommendationInfo[] => [
+            {
+              skillName: 'skill-1',
+              confidence: 'high',
+              matchedPatterns: [],
+              description: 'Skill 1',
+            },
+            {
+              skillName: 'skill-2',
+              confidence: 'high',
+              matchedPatterns: [],
+              description: 'Skill 2',
+            },
+            {
+              skillName: 'skill-3',
+              confidence: 'high',
+              matchedPatterns: [],
+              description: 'Skill 3',
+            },
+            {
+              skillName: 'skill-4',
+              confidence: 'medium',
+              matchedPatterns: [],
+              description: 'Skill 4',
+            },
+            {
+              skillName: 'skill-5',
+              confidence: 'low',
+              matchedPatterns: [],
+              description: 'Skill 5',
+            },
+          ],
+        );
+
+        const mockLoadSkillContent = vi.fn(
+          async (skillName: string): Promise<SkillContentInfo | null> => ({
+            name: skillName,
+            description: `Description for ${skillName}`,
+            content: `Content for ${skillName}`,
+          }),
+        );
+
+        const serviceWithSkills = new KeywordService(
+          mockLoadConfig,
+          mockLoadRule,
+          mockLoadAgentInfo,
+          {
+            getSkillRecommendationsFn: mockSkillRecommendations,
+            loadSkillContentFn: mockLoadSkillContent,
+          },
+        );
+
+        const result = await serviceWithSkills.parseMode('PLAN complex task');
+
+        expect(result.included_skills).toBeDefined();
+        expect(result.included_skills).toHaveLength(3);
+        expect(result.included_skills!.map(s => s.name)).toEqual([
+          'skill-1',
+          'skill-2',
+          'skill-3',
+        ]);
+      });
+
+      it('respects runtime config for max included skills', async () => {
+        const mockSkillRecommendations = vi.fn(
+          (): SkillRecommendationInfo[] => [
+            {
+              skillName: 'skill-1',
+              confidence: 'high',
+              matchedPatterns: [],
+              description: 'Skill 1',
+            },
+            {
+              skillName: 'skill-2',
+              confidence: 'high',
+              matchedPatterns: [],
+              description: 'Skill 2',
+            },
+            {
+              skillName: 'skill-3',
+              confidence: 'high',
+              matchedPatterns: [],
+              description: 'Skill 3',
+            },
+          ],
+        );
+
+        const mockLoadSkillContent = vi.fn(
+          async (skillName: string): Promise<SkillContentInfo | null> => ({
+            name: skillName,
+            description: `Description for ${skillName}`,
+            content: `Content for ${skillName}`,
+          }),
+        );
+
+        // Config says max 2 skills
+        const mockGetMaxIncludedSkills = vi.fn().mockResolvedValue(2);
+
+        const serviceWithConfiguredSkills = new KeywordService(
+          mockLoadConfig,
+          mockLoadRule,
+          mockLoadAgentInfo,
+          {
+            getSkillRecommendationsFn: mockSkillRecommendations,
+            loadSkillContentFn: mockLoadSkillContent,
+            getMaxIncludedSkillsFn: mockGetMaxIncludedSkills,
+          },
+        );
+
+        const result =
+          await serviceWithConfiguredSkills.parseMode('PLAN complex task');
+
+        expect(result.included_skills).toBeDefined();
+        expect(result.included_skills).toHaveLength(2);
+        expect(result.included_skills!.map(s => s.name)).toEqual([
+          'skill-1',
+          'skill-2',
+        ]);
+        expect(mockGetMaxIncludedSkills).toHaveBeenCalled();
+      });
+
+      it('falls back to default when getMaxIncludedSkillsFn returns null', async () => {
+        const mockSkillRecommendations = vi.fn(
+          (): SkillRecommendationInfo[] => [
+            {
+              skillName: 'skill-1',
+              confidence: 'high',
+              matchedPatterns: [],
+              description: 'Skill 1',
+            },
+            {
+              skillName: 'skill-2',
+              confidence: 'high',
+              matchedPatterns: [],
+              description: 'Skill 2',
+            },
+            {
+              skillName: 'skill-3',
+              confidence: 'high',
+              matchedPatterns: [],
+              description: 'Skill 3',
+            },
+            {
+              skillName: 'skill-4',
+              confidence: 'high',
+              matchedPatterns: [],
+              description: 'Skill 4',
+            },
+          ],
+        );
+
+        const mockLoadSkillContent = vi.fn(
+          async (skillName: string): Promise<SkillContentInfo | null> => ({
+            name: skillName,
+            description: `Description for ${skillName}`,
+            content: `Content for ${skillName}`,
+          }),
+        );
+
+        // Config returns null - should use default (3)
+        const mockGetMaxIncludedSkills = vi.fn().mockResolvedValue(null);
+
+        const serviceWithNullConfig = new KeywordService(
+          mockLoadConfig,
+          mockLoadRule,
+          mockLoadAgentInfo,
+          {
+            getSkillRecommendationsFn: mockSkillRecommendations,
+            loadSkillContentFn: mockLoadSkillContent,
+            getMaxIncludedSkillsFn: mockGetMaxIncludedSkills,
+          },
+        );
+
+        const result = await serviceWithNullConfig.parseMode('PLAN task');
+
+        expect(result.included_skills).toBeDefined();
+        expect(result.included_skills).toHaveLength(3);
+      });
+
+      it('falls back to default when getMaxIncludedSkillsFn throws', async () => {
+        const mockSkillRecommendations = vi.fn(
+          (): SkillRecommendationInfo[] => [
+            {
+              skillName: 'skill-1',
+              confidence: 'high',
+              matchedPatterns: [],
+              description: 'Skill 1',
+            },
+            {
+              skillName: 'skill-2',
+              confidence: 'high',
+              matchedPatterns: [],
+              description: 'Skill 2',
+            },
+            {
+              skillName: 'skill-3',
+              confidence: 'high',
+              matchedPatterns: [],
+              description: 'Skill 3',
+            },
+            {
+              skillName: 'skill-4',
+              confidence: 'high',
+              matchedPatterns: [],
+              description: 'Skill 4',
+            },
+          ],
+        );
+
+        const mockLoadSkillContent = vi.fn(
+          async (skillName: string): Promise<SkillContentInfo | null> => ({
+            name: skillName,
+            description: `Description for ${skillName}`,
+            content: `Content for ${skillName}`,
+          }),
+        );
+
+        // Config throws error - should use default (3)
+        const mockGetMaxIncludedSkills = vi
+          .fn()
+          .mockRejectedValue(new Error('Config error'));
+
+        const serviceWithErrorConfig = new KeywordService(
+          mockLoadConfig,
+          mockLoadRule,
+          mockLoadAgentInfo,
+          {
+            getSkillRecommendationsFn: mockSkillRecommendations,
+            loadSkillContentFn: mockLoadSkillContent,
+            getMaxIncludedSkillsFn: mockGetMaxIncludedSkills,
+          },
+        );
+
+        const result = await serviceWithErrorConfig.parseMode('PLAN task');
+
+        expect(result.included_skills).toBeDefined();
+        expect(result.included_skills).toHaveLength(3);
+      });
+
+      it('does not include skills when no matches found', async () => {
+        const mockSkillRecommendations = vi.fn(
+          (): SkillRecommendationInfo[] => [],
+        );
+        const mockLoadSkillContent = vi.fn();
+
+        const serviceWithSkills = new KeywordService(
+          mockLoadConfig,
+          mockLoadRule,
+          mockLoadAgentInfo,
+          {
+            getSkillRecommendationsFn: mockSkillRecommendations,
+            loadSkillContentFn: mockLoadSkillContent,
+          },
+        );
+
+        const result = await serviceWithSkills.parseMode('PLAN simple task');
+
+        expect(result.included_skills).toBeUndefined();
+        expect(mockLoadSkillContent).not.toHaveBeenCalled();
+      });
+
+      it('skips skills that fail to load', async () => {
+        const mockSkillRecommendations = vi.fn(
+          (): SkillRecommendationInfo[] => [
+            {
+              skillName: 'working-skill',
+              confidence: 'high',
+              matchedPatterns: [],
+              description: 'Working',
+            },
+            {
+              skillName: 'failing-skill',
+              confidence: 'high',
+              matchedPatterns: [],
+              description: 'Failing',
+            },
+          ],
+        );
+
+        const mockLoadSkillContent = vi.fn(
+          async (skillName: string): Promise<SkillContentInfo | null> => {
+            if (skillName === 'failing-skill') {
+              return null;
+            }
+            return {
+              name: skillName,
+              description: 'Working skill',
+              content: 'Content',
+            };
+          },
+        );
+
+        const serviceWithSkills = new KeywordService(
+          mockLoadConfig,
+          mockLoadRule,
+          mockLoadAgentInfo,
+          {
+            getSkillRecommendationsFn: mockSkillRecommendations,
+            loadSkillContentFn: mockLoadSkillContent,
+          },
+        );
+
+        const result = await serviceWithSkills.parseMode('PLAN task');
+
+        expect(result.included_skills).toBeDefined();
+        expect(result.included_skills).toHaveLength(1);
+        expect(result.included_skills![0].name).toBe('working-skill');
+      });
+
+      it('handles skill recommendation service errors gracefully', async () => {
+        const mockSkillRecommendations = vi.fn(() => {
+          throw new Error('Service unavailable');
+        });
+        const mockLoadSkillContent = vi.fn();
+
+        const serviceWithSkills = new KeywordService(
+          mockLoadConfig,
+          mockLoadRule,
+          mockLoadAgentInfo,
+          {
+            getSkillRecommendationsFn: mockSkillRecommendations,
+            loadSkillContentFn: mockLoadSkillContent,
+          },
+        );
+
+        const result = await serviceWithSkills.parseMode('PLAN task');
+
+        // Should not throw, just skip skill inclusion
+        expect(result.mode).toBe('PLAN');
+        expect(result.included_skills).toBeUndefined();
+      });
+
+      it('does not include skills when skill functions not provided', async () => {
+        // Default service without skill functions
+        const result = await service.parseMode('PLAN debug issue');
+
+        expect(result.included_skills).toBeUndefined();
+      });
+    });
+
+    describe('included_agent', () => {
+      it('auto-includes agent system prompt when function is provided', async () => {
+        const mockLoadAgentSystemPrompt = vi.fn(
+          async (
+            agentName: string,
+            mode: Mode,
+          ): Promise<AgentSystemPromptInfo | null> => ({
+            agentName,
+            displayName: 'Frontend Developer',
+            systemPrompt: `You are a ${agentName} in ${mode} mode. Follow TDD.`,
+            description: 'Frontend development specialist',
+          }),
+        );
+
+        const serviceWithAgentPrompt = new KeywordService(
+          mockLoadConfig,
+          mockLoadRule,
+          mockLoadAgentInfo,
+          { loadAgentSystemPromptFn: mockLoadAgentSystemPrompt },
+        );
+
+        const result = await serviceWithAgentPrompt.parseMode(
+          'PLAN design feature',
+        );
+
+        expect(result.included_agent).toBeDefined();
+        expect(result.included_agent).toMatchObject({
+          name: 'Frontend Developer',
+          systemPrompt: expect.stringContaining('frontend-developer'),
+          expertise: ['React', 'Next.js', 'TDD', 'TypeScript'],
+        });
+      });
+
+      it('still includes agent when delegates_to falls back to default', async () => {
+        const mockLoadAgentSystemPrompt = vi.fn(
+          async (
+            agentName: string,
+            mode: Mode,
+          ): Promise<AgentSystemPromptInfo | null> => ({
+            agentName,
+            displayName: 'Default Agent',
+            systemPrompt: `You are ${agentName} in ${mode} mode.`,
+            description: 'Default agent',
+          }),
+        );
+
+        // Config without delegates_to - will use default fallback
+        const configWithoutDelegate: KeywordModesConfig = {
+          modes: {
+            PLAN: {
+              description: 'Planning phase',
+              instructions: 'Design approach.',
+              rules: ['rules/core.md'],
+              agent: 'plan-mode',
+              // No delegates_to - will fallback to 'frontend-developer'
+            },
+            ACT: mockConfig.modes.ACT,
+            EVAL: mockConfig.modes.EVAL,
+            AUTO: mockConfig.modes.AUTO,
+          },
+          defaultMode: 'PLAN',
+        };
+
+        const serviceWithAgentPrompt = new KeywordService(
+          vi.fn().mockResolvedValue(configWithoutDelegate),
+          mockLoadRule,
+          mockLoadAgentInfo,
+          { loadAgentSystemPromptFn: mockLoadAgentSystemPrompt },
+        );
+
+        const result = await serviceWithAgentPrompt.parseMode(
+          'PLAN design feature',
+        );
+
+        // Since no PrimaryAgentResolver is provided and no delegates_to in config,
+        // it will use default 'frontend-developer' (fallback behavior)
+        expect(result.delegates_to).toBe('frontend-developer');
+        // Agent system prompt function SHOULD be called with the fallback agent
+        expect(mockLoadAgentSystemPrompt).toHaveBeenCalledWith(
+          'frontend-developer',
+          'PLAN',
+        );
+        expect(result.included_agent).toBeDefined();
+        expect(result.included_agent?.name).toBe('Default Agent');
+      });
+
+      it('handles agent system prompt load errors gracefully', async () => {
+        const mockLoadAgentSystemPrompt = vi.fn(async () => {
+          throw new Error('Agent not found');
+        });
+
+        const serviceWithAgentPrompt = new KeywordService(
+          mockLoadConfig,
+          mockLoadRule,
+          mockLoadAgentInfo,
+          { loadAgentSystemPromptFn: mockLoadAgentSystemPrompt },
+        );
+
+        const result = await serviceWithAgentPrompt.parseMode(
+          'PLAN design feature',
+        );
+
+        // Should not throw, just skip agent inclusion
+        expect(result.mode).toBe('PLAN');
+        expect(result.delegates_to).toBe('frontend-developer');
+        expect(result.included_agent).toBeUndefined();
+      });
+
+      it('does not include agent when function not provided', async () => {
+        // Default service without agent system prompt function
+        const result = await service.parseMode('PLAN design feature');
+
+        expect(result.included_agent).toBeUndefined();
+      });
+
+      it('includes agent for ACT mode with different delegate', async () => {
+        const mockLoadAgentSystemPrompt = vi.fn(
+          async (
+            agentName: string,
+            mode: Mode,
+          ): Promise<AgentSystemPromptInfo | null> => ({
+            agentName,
+            displayName:
+              agentName === 'code-reviewer' ? 'Code Reviewer' : 'Dev',
+            systemPrompt: `You are ${agentName} in ${mode} mode.`,
+            description: 'Specialist agent',
+          }),
+        );
+
+        const serviceWithAgentPrompt = new KeywordService(
+          mockLoadConfig,
+          mockLoadRule,
+          mockLoadAgentInfo,
+          { loadAgentSystemPromptFn: mockLoadAgentSystemPrompt },
+        );
+
+        const result =
+          await serviceWithAgentPrompt.parseMode('EVAL review code');
+
+        expect(result.included_agent).toBeDefined();
+        expect(result.included_agent?.name).toBe('Code Reviewer');
+        expect(result.included_agent?.systemPrompt).toContain('EVAL');
+      });
+    });
+
+    describe('combined skills and agent inclusion', () => {
+      it('includes both skills and agent in response', async () => {
+        const mockSkillRecommendations = vi.fn(
+          (): SkillRecommendationInfo[] => [
+            {
+              skillName: 'test-skill',
+              confidence: 'high',
+              matchedPatterns: ['test'],
+              description: 'Test skill',
+            },
+          ],
+        );
+
+        const mockLoadSkillContent = vi.fn(
+          async (): Promise<SkillContentInfo | null> => ({
+            name: 'test-skill',
+            description: 'Test skill',
+            content: 'Test content',
+          }),
+        );
+
+        const mockLoadAgentSystemPrompt = vi.fn(
+          async (
+            agentName: string,
+            mode: Mode,
+          ): Promise<AgentSystemPromptInfo | null> => ({
+            agentName,
+            displayName: 'Test Agent',
+            systemPrompt: `Agent prompt for ${mode}`,
+            description: 'Test agent',
+          }),
+        );
+
+        const serviceWithBoth = new KeywordService(
+          mockLoadConfig,
+          mockLoadRule,
+          mockLoadAgentInfo,
+          {
+            getSkillRecommendationsFn: mockSkillRecommendations,
+            loadSkillContentFn: mockLoadSkillContent,
+            loadAgentSystemPromptFn: mockLoadAgentSystemPrompt,
+          },
+        );
+
+        const result = await serviceWithBoth.parseMode('PLAN test feature');
+
+        expect(result.included_skills).toBeDefined();
+        expect(result.included_skills).toHaveLength(1);
+        expect(result.included_agent).toBeDefined();
+        expect(result.included_agent?.systemPrompt).toContain('PLAN');
+      });
+    });
+  });
+
+  describe('branch coverage edge cases', () => {
+    describe('getAgentInfo with invalid data', () => {
+      it('returns undefined when loadAgentInfoFn returns null', async () => {
+        const mockLoadAgentInfoNull = vi.fn().mockResolvedValue(null);
+        const serviceWithNullAgent = new KeywordService(
+          mockLoadConfig,
+          mockLoadRule,
+          mockLoadAgentInfoNull,
+        );
+
+        const result = await serviceWithNullAgent.parseMode('PLAN test');
+
+        // delegates_to should still be set from config, but delegate_agent_info should be undefined
+        expect(result.delegates_to).toBe('frontend-developer');
+        expect(result.delegate_agent_info).toBeUndefined();
+      });
+
+      it('returns undefined when loadAgentInfoFn returns non-object', async () => {
+        const mockLoadAgentInfoString = vi
+          .fn()
+          .mockResolvedValue('not an object');
+        const serviceWithStringAgent = new KeywordService(
+          mockLoadConfig,
+          mockLoadRule,
+          mockLoadAgentInfoString,
+        );
+
+        const result = await serviceWithStringAgent.parseMode('PLAN test');
+
+        expect(result.delegates_to).toBe('frontend-developer');
+        expect(result.delegate_agent_info).toBeUndefined();
+      });
+    });
+
+    describe('resolvePrimaryAgent fallback for EVAL mode', () => {
+      it('returns null for EVAL mode when no resolver and no static delegates_to', async () => {
+        // Config with EVAL mode having no delegates_to
+        const configWithoutEvalDelegate: KeywordModesConfig = {
+          modes: {
+            PLAN: mockConfig.modes.PLAN,
+            ACT: mockConfig.modes.ACT,
+            EVAL: {
+              description: 'Eval phase',
+              instructions: 'Evaluate code.',
+              rules: ['rules/core.md'],
+              agent: 'eval-mode',
+              // No delegates_to for EVAL
+            },
+            AUTO: mockConfig.modes.AUTO,
+          },
+          defaultMode: 'PLAN',
+        };
+
+        const serviceWithoutEvalDelegate = new KeywordService(
+          vi.fn().mockResolvedValue(configWithoutEvalDelegate),
+          mockLoadRule,
+          mockLoadAgentInfo,
+          // No PrimaryAgentResolver
+        );
+
+        const result =
+          await serviceWithoutEvalDelegate.parseMode('EVAL review code');
+
+        // Since no resolver and no delegates_to for EVAL, should have no delegate
+        expect(result.mode).toBe('EVAL');
+        expect(result.delegates_to).toBeUndefined();
       });
     });
   });
